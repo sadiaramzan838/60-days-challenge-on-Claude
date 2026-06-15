@@ -152,8 +152,6 @@ Day 14 – Job Red Flag Detector
 
   Day 15 – Astrology & Life Analysis
 
-Reviewed the Personality Analysis section to understand behavioral traits, strengths, and potential growth areas.
-Analyzed Career & Wealth Insights to explore possible career paths, opportunities, and financial tendencies.
-Explored Relationship Analysis to better understand interpersonal dynamics and communication patterns.
-Examined recurring Life Patterns and Themes identified throughout the report.
-Reviewed Future Forecasts and AI-generated Recommendations for personal and professional development.
+Explored how AI can generate personalized life-analysis reports using structured personal data.
+Provided key personal inputs, including full name, date of birth, birth time, birth location, profession, relationship status, and current concerns.
+Generated a detailed astrology-based report using Claude AI.
