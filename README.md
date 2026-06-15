@@ -150,3 +150,18 @@ Day 14 – Job Red Flag Detector
 * Learned how AI can assist in job evaluation, risk assessment, and informed career decision-making.
 * Documented screenshots, generated reports, findings, and key takeaways.
 
+* Day 15 – Astrology & Life Analysis
+
+* Explored how AI can generate personalized life-analysis reports using structured personal information.
+* Provided details such as name, date of birth, birth time, birth location, profession, relationship status, and current concerns.
+* Generated a comprehensive astrology-based report using Claude AI.
+* Reviewed Personality Analysis to understand behavioral patterns, strengths, and potential growth areas.
+* Analyzed Career & Wealth insights to identify possible career directions, opportunities, and financial tendencies.
+* Explored Relationship Analysis to understand interpersonal dynamics and communication patterns.
+* Examined Life Patterns and recurring themes highlighted throughout the report.
+* Reviewed future forecasts and AI-generated recommendations for personal and professional development.
+* Learned how AI can transform user-provided data into detailed, structured, and personalized reports.
+* Observed the importance of providing accurate context to improve the quality and relevance of AI-generated insights.
+* Documented generated reports, screenshots, observations, and key takeaways.
+
+
