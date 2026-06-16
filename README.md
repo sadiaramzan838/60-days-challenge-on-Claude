@@ -155,3 +155,15 @@ Day 14 – Job Red Flag Detector
 Explored how AI can generate personalized life-analysis reports using structured personal data.
 Provided key personal inputs, including full name, date of birth, birth time, birth location, profession, relationship status, and current concerns.
 Generated a detailed astrology-based report using Claude AI.
+
+Day 16 – Stock Fundamental Research Skill
+
+* Created a Custom Skill in Claude: **stock-fundamental-research**
+* Added structured instructions for stock fundamental analysis (valuation, growth, risks, ownership).
+* Applied strict rules: no buy/sell advice, no fake data, proper sourcing.
+* Tested using stocks like TCS and Infosys.
+* Generated reports with charts, financial ratios, and risk analysis.
+* Verified skill reusability without re-entering prompts.
+* Learned how to build reusable AI workflows and structured outputs.
+* Documented screenshots of skill setup and generated reports.
+
