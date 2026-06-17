@@ -167,3 +167,13 @@ Day 16 – Stock Fundamental Research Skill
 * Learned how to build reusable AI workflows and structured outputs.
 * Documented screenshots of skill setup and generated reports.
 
+  Day 17 – Vehicle Cost Analysis Dashboard
+
+* Built an AI-powered Vehicle Cost Analysis Dashboard using Claude.
+* Analyzed fuel costs, maintenance expenses, CO₂ emissions, and refuel/recharge times.
+* Compared Petrol, Diesel, CNG, EV, and E85 fuel options.
+* Explored E85 economics, break-even calculations, and environmental impact.
+* Generated an interactive HTML dashboard with charts and KPI cards.
+* Learned how AI can transform CSV data into meaningful insights and visual dashboards.
+
+
