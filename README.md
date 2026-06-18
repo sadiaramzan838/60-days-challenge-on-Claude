@@ -176,4 +176,12 @@ Day 16 – Stock Fundamental Research Skill
 * Generated an interactive HTML dashboard with charts and KPI cards.
 * Learned how AI can transform CSV data into meaningful insights and visual dashboards.
 
+Day 18 – Brain Dump Action Planner Skill
+
+* Created a custom Claude skill: **brain-dump-action-planner**.
+* Converted meeting notes into a structured dashboard.
+* Generated summaries, action items, risks, blockers, and open questions.
+* Tested the skill with different note formats.
+* Learned how Custom Skills can automate note analysis and improve productivity.
+* Documented screenshots and key learnings.
 
