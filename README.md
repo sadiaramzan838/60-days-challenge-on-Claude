@@ -198,3 +198,14 @@ Day 19 – Football Intelligence Hub
 * Learned how AI can combine knowledge assessment, predictive analysis, and personality profiling into a personalized experience.
 * Documented screenshots, generated reports, results, and key takeaways.
 
+Day 20 – Face Puzzle Game
+
+Built an AI-powered Face Puzzle Game using Claude AI.
+Generated a complete HTML application with embedded CSS and JavaScript.
+Integrated webcam access to capture and use personal photos as puzzle images.
+Added multiple difficulty levels (3×3, 4×4, and 5×5).
+Tested drag-and-drop and touch interactions across devices.
+Implemented a timer, move counter, and local leaderboard system.
+Completed the puzzle and analyzed gameplay results.
+Learned how AI can accelerate game development using browser APIs, image processing, and interactive UI design.
+Documented screenshots, source code, gameplay testing, and key learnings.
