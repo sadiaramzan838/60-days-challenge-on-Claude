@@ -209,3 +209,12 @@ Implemented a timer, move counter, and local leaderboard system.
 Completed the puzzle and analyzed gameplay results.
 Learned how AI can accelerate game development using browser APIs, image processing, and interactive UI design.
 Documented screenshots, source code, gameplay testing, and key learnings.
+
+Day 21 – Digital Privacy Dashboard
+
+* Built a Digital Privacy Dashboard using Claude.
+* Analyzed Privacy Score and Digital Footprint Score.
+* Explored Exposure Heatmap and Risk Radar.
+* Reviewed Company Exposure Ranking and Digital Twin Profile.
+* Tested dashboard interactions in the browser.
+* Learned how AI can visualize privacy risks and digital exposure.
