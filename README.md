@@ -240,3 +240,10 @@ Day 24 – Business Strategy Report
 * Analyzed the Business Model Canvas, Revenue Model, and Go-To-Market Strategy.
 * Reviewed Customer Acquisition, First 100 Users Plan, and Competitive Positioning.
 * Evaluated SWOT Analysis, Investor Pitch, Investment Scorecard, and Final Verdict.
+
+**Day 25 – AI Shark Tank Simulator**
+
+* Built an interactive AI Shark Tank Simulator using HTML.
+* Tested startup pitching, investor Q&A, and evaluation flow.
+* Analyzed startup scorecards, valuation, and funding recommendations.
+* Generated and downloaded a complete pitch report with results.
