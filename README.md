@@ -241,9 +241,17 @@ Day 24 – Business Strategy Report
 * Reviewed Customer Acquisition, First 100 Users Plan, and Competitive Positioning.
 * Evaluated SWOT Analysis, Investor Pitch, Investment Scorecard, and Final Verdict.
 
-**Day 25 – AI Shark Tank Simulator**
+Day 25 – AI Shark Tank Simulator**
 
 * Built an interactive AI Shark Tank Simulator using HTML.
 * Tested startup pitching, investor Q&A, and evaluation flow.
 * Analyzed startup scorecards, valuation, and funding recommendations.
 * Generated and downloaded a complete pitch report with results.
+
+Day 26 – Prior Authorization Workflow Simulator
+
+* Built an interactive **Prior Authorization Workflow Simulator** in HTML.
+* Simulated the complete workflow from patient intake to approval, denial, and appeal scenarios.
+* Learned how required documents, payer decisions, and elapsed time impact the authorization process.
+* Explored workflow tracking, educational explanations, and multiple patient scenarios to understand the end-to-end process.
+
