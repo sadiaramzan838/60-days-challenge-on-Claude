@@ -255,3 +255,8 @@ Day 26 – Prior Authorization Workflow Simulator
 * Learned how required documents, payer decisions, and elapsed time impact the authorization process.
 * Explored workflow tracking, educational explanations, and multiple patient scenarios to understand the end-to-end process.
 
+Day 27 - Prior Authorization Story Simulator
+
+- Built an interactive HTML-based story simulator that explains the complete Prior Authorization process through Rahul's healthcare journey.
+- Added branching choices, chapter progression, dynamic progress tracking, and explanatory dialogues for each stage.
+- Tested different story paths, completed the approval workflow, and reviewed the final healthcare process takeaways.
