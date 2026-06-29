@@ -267,3 +267,9 @@ Day 28 – Hospital Admission Readiness Simulator
 Built an interactive Hospital Admission Readiness Simulator using HTML, Tailwind CSS, and JavaScript.
 Simulated the complete hospital admission workflow, including Prior Authorization, insurance verification, bed assignment, documentation, and care coordination.
 Implemented readiness scoring, risk tracking, timeline milestones, and admission decision logic based on healthcare workflow requirements.
+
+Day 29 – Operation Lifeline Supply Chain Crisis Simulator
+
+- Built an interactive **Operation Lifeline Supply Chain Crisis Simulator** using React and HTML.
+- Simulated crisis management, supplier negotiations, and executive decision-making.
+- Evaluated business performance through AI investments and a final executive dashboard.
