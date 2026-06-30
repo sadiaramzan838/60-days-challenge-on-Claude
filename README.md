@@ -273,3 +273,9 @@ Day 29 – Operation Lifeline Supply Chain Crisis Simulator
 - Built an interactive **Operation Lifeline Supply Chain Crisis Simulator** using React and HTML.
 - Simulated crisis management, supplier negotiations, and executive decision-making.
 - Evaluated business performance through AI investments and a final executive dashboard.
+
+Day 30 – Supply Chain Builder
+
+* Built an interactive Supply Chain Builder using React and HTML.
+* Simulated supply chain decisions with live business metrics and trade-off explanations.
+* Generated a final performance dashboard with supply chain score and improvement recommendations.
