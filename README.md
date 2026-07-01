@@ -279,3 +279,9 @@ Day 30 – Supply Chain Builder
 * Built an interactive Supply Chain Builder using React and HTML.
 * Simulated supply chain decisions with live business metrics and trade-off explanations.
 * Generated a final performance dashboard with supply chain score and improvement recommendations.
+
+Day 31 – AI Supply Chain Control Tower
+
+* Built an interactive AI Supply Chain Control Tower using HTML, CSS, and JavaScript.
+* Simulated real-time operational alerts with decision-based gameplay and live KPI tracking.
+* Implemented a final performance dashboard with scoring, grades, operational insights, and replay functionality.
