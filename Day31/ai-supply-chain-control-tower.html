@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Supply Chain Control Tower</title>
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root{
+  --bg:            #0a0e16;
+  --bg-panel:      #0f1826;
+  --bg-card:       #121f30;
+  --bg-card-hover: #16283c;
+  --border:        rgba(148,163,184,0.14);
+  --border-strong: rgba(148,163,184,0.28);
+  --text:          #e7edf5;
+  --text-dim:      #8ea1b8;
+  --text-faint:    #5c7086;
+
+  --cyan:   #22d3ee;
+  --cyan-dim: rgba(34,211,238,0.15);
+  --blue:   #3b82f6;
+  --blue-dim: rgba(59,130,246,0.15);
+  --red:    #fb3a52;
+  --red-dim:  rgba(251,58,82,0.15);
+  --orange: #f59e0b;
+  --orange-dim: rgba(245,158,11,0.15);
+  --green:  #2fd88a;
+  --green-dim: rgba(47,216,138,0.15);
+
+  --font-display: ui-monospace, "SF Mono", "Cascadia Code", "Consolas", monospace;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  --radius: 10px;
+}
+
+*{ box-sizing:border-box; }
+html,body{
+  margin:0; padding:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* subtle grid texture on the background, like a schematic */
+body{
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+
+button{
+  font-family:inherit;
+  cursor:pointer;
+  border:none;
+  background:none;
+  color:inherit;
+}
+button:focus-visible, .modal-close:focus-visible{
+  outline:2px solid var(--cyan);
+  outline-offset:2px;
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; }
+}
+
+/* ============================================================
+   LAYOUT SHELL
+   ============================================================ */
+#app{
+  max-width:1360px;
+  margin:0 auto;
+  padding:18px 20px 40px;
+}
+
+/* ---------- Header ---------- */
+.header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:14px 20px;
+  background:linear-gradient(180deg, var(--bg-panel), rgba(15,24,38,0.4));
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  margin-bottom:16px;
+  flex-wrap:wrap;
+}
+.header-left{ display:flex; align-items:center; gap:14px; }
+
+.tower-mark{
+  position:relative;
+  width:38px; height:38px;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:radial-gradient(circle at 30% 30%, var(--cyan-dim), transparent 70%);
+  border:1px solid var(--border-strong);
+  flex-shrink:0;
+}
+.tower-mark::before{
+  content:"";
+  position:absolute; inset:0;
+  border-radius:50%;
+  background:conic-gradient(from 0deg, transparent 0deg, var(--cyan) 40deg, transparent 90deg);
+  animation:sweep 2.4s linear infinite;
+  opacity:0.85;
+}
+.tower-mark::after{
+  content:"";
+  position:absolute;
+  width:6px; height:6px;
+  border-radius:50%;
+  background:var(--cyan);
+  box-shadow:0 0 8px var(--cyan);
+}
+@keyframes sweep{ to{ transform:rotate(360deg); } }
+
+.title-block h1{
+  margin:0;
+  font-family:var(--font-display);
+  font-size:16px;
+  letter-spacing:0.06em;
+  color:var(--text);
+}
+.title-block .sub{
+  margin:2px 0 0;
+  font-size:11px;
+  letter-spacing:0.14em;
+  color:var(--text-faint);
+  display:flex; align-items:center; gap:6px;
+}
+.live-dot{
+  width:6px; height:6px; border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 6px var(--green);
+  animation:pulse-dot 1.6s ease-in-out infinite;
+}
+@keyframes pulse-dot{ 0%,100%{ opacity:1; } 50%{ opacity:0.35; } }
+
+.header-right{ display:flex; align-items:center; gap:10px; }
+
+.icon-btn{
+  width:38px; height:38px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:var(--bg-card);
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px;
+  color:var(--text-dim);
+  transition:background 0.15s, color 0.15s, border-color 0.15s;
+}
+.icon-btn:hover{ background:var(--bg-card-hover); color:var(--text); border-color:var(--border-strong); }
+.icon-btn[aria-pressed="true"]{ color:var(--cyan); border-color:var(--cyan); }
+
+.timer-chip{
+  font-family:var(--font-display);
+  font-size:20px;
+  letter-spacing:0.05em;
+  padding:6px 14px;
+  border-radius:8px;
+  border:1px solid var(--border-strong);
+  background:var(--bg-card);
+  color:var(--cyan);
+  min-width:88px;
+  text-align:center;
+}
+.timer-chip.low{ color:var(--red); border-color:var(--red); animation:pulse-dot 0.8s infinite; }
+
+/* ---------- KPI Bar ---------- */
+.kpi-bar{
+  display:grid;
+  grid-template-columns:repeat(8, 1fr);
+  gap:10px;
+  margin-bottom:16px;
+}
+.kpi-card{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:10px 12px;
+  position:relative;
+  overflow:hidden;
+  transition:border-color 0.2s, transform 0.2s;
+}
+.kpi-card::before{
+  content:"";
+  position:absolute; left:0; top:0; bottom:0; width:3px;
+  background:var(--accent, var(--cyan));
+}
+.kpi-card.flash{ transform:translateY(-2px); border-color:var(--border-strong); }
+.kpi-label{
+  font-size:9.5px;
+  letter-spacing:0.09em;
+  text-transform:uppercase;
+  color:var(--text-faint);
+  margin:0 0 5px;
+}
+.kpi-value{
+  font-family:var(--font-display);
+  font-size:19px;
+  font-weight:600;
+  color:var(--text);
+  display:flex; align-items:baseline; gap:3px;
+}
+.kpi-value .unit{ font-size:10px; color:var(--text-faint); font-weight:400; }
+.kpi-delta{ font-size:10px; margin-top:3px; height:12px; }
+.kpi-delta.up{ color:var(--green); }
+.kpi-delta.down{ color:var(--red); }
+
+/* ---------- Main grid ---------- */
+.main-grid{
+  display:grid;
+  grid-template-columns: 2fr 1fr;
+  gap:16px;
+  align-items:start;
+}
+
+.panel{
+  background:var(--bg-panel);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:14px;
+}
+.panel-title{
+  font-family:var(--font-display);
+  font-size:11px;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  color:var(--text-faint);
+  margin:0 0 12px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.panel-title .count-tag{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  padding:2px 8px;
+  border-radius:20px;
+  color:var(--text-dim);
+  font-size:10px;
+}
+
+/* ---------- Alert feed ---------- */
+#alertFeed{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  min-height:220px;
+}
+.empty-feed{
+  text-align:center;
+  padding:50px 10px;
+  color:var(--text-faint);
+  font-size:13px;
+  border:1px dashed var(--border);
+  border-radius:var(--radius);
+}
+
+.alert-card{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-left:3px solid var(--accent);
+  border-radius:var(--radius);
+  padding:13px 14px;
+  animation:cardIn 0.3s ease;
+  position:relative;
+}
+@keyframes cardIn{ from{ opacity:0; transform:translateX(8px); } to{ opacity:1; transform:none; } }
+
+.alert-card.priority-critical{ --accent:var(--red); }
+.alert-card.priority-high{ --accent:var(--orange); }
+.alert-card.priority-medium{ --accent:var(--cyan); }
+
+.alert-card.priority-critical{ animation:pulse-card 1.1s ease-in-out infinite; }
+@keyframes pulse-card{
+  0%,100%{ box-shadow:0 0 0 rgba(251,58,82,0); }
+  50%{ box-shadow:0 0 14px rgba(251,58,82,0.28); }
+}
+
+.alert-top{
+  display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:6px;
+}
+.alert-title-row{ display:flex; align-items:center; gap:8px; }
+.alert-icon{ font-size:16px; }
+.alert-title{ font-size:14.5px; font-weight:600; margin:0; }
+.badge{
+  font-size:9.5px;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  padding:3px 8px;
+  border-radius:20px;
+  font-weight:600;
+  flex-shrink:0;
+}
+.badge.priority-critical{ background:var(--red-dim); color:var(--red); }
+.badge.priority-high{ background:var(--orange-dim); color:var(--orange); }
+.badge.priority-medium{ background:var(--cyan-dim); color:var(--cyan); }
+
+.alert-desc{ font-size:12.5px; color:var(--text-dim); margin:0 0 8px; line-height:1.45; }
+.alert-impact{
+  font-size:11px;
+  color:var(--text-faint);
+  margin:0 0 10px;
+  font-family:var(--font-display);
+}
+.alert-impact strong{ color:var(--orange); font-weight:600; }
+
+.alert-timerbar{
+  height:4px; border-radius:4px; background:rgba(255,255,255,0.06);
+  overflow:hidden; margin-bottom:10px;
+}
+.alert-timerbar-fill{
+  height:100%;
+  background:var(--accent);
+  transition:width 1s linear;
+}
+
+.action-grid{
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:6px;
+}
+.action-btn{
+  font-size:11px;
+  padding:8px 6px;
+  border-radius:7px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,0.02);
+  color:var(--text-dim);
+  transition:background 0.15s, color 0.15s, border-color 0.15s;
+  text-align:center;
+}
+.action-btn:hover{ background:var(--bg-card-hover); color:var(--text); border-color:var(--border-strong); }
+.action-btn.action-ignore, .action-btn.action-delay{ color:var(--text-faint); }
+
+/* ---------- Event log ---------- */
+#eventLog{
+  display:flex; flex-direction:column; gap:8px;
+  max-height:520px; overflow-y:auto;
+  padding-right:4px;
+}
+#eventLog::-webkit-scrollbar{ width:6px; }
+#eventLog::-webkit-scrollbar-thumb{ background:var(--border-strong); border-radius:4px; }
+
+.log-entry{
+  font-size:11.5px;
+  padding:8px 10px;
+  border-radius:7px;
+  background:rgba(255,255,255,0.02);
+  border-left:2px solid var(--text-faint);
+  color:var(--text-dim);
+  line-height:1.4;
+}
+.log-entry.good{ border-color:var(--green); }
+.log-entry.bad{ border-color:var(--red); }
+.log-entry.neutral{ border-color:var(--orange); }
+.log-time{ color:var(--text-faint); font-family:var(--font-display); margin-right:6px; }
+
+/* signature sparkline */
+.pulse-wrap{ margin-top:16px; }
+#sparkline{ width:100%; height:60px; display:block; }
+.pulse-caption{
+  display:flex; justify-content:space-between;
+  font-size:10px; color:var(--text-faint); margin-top:4px;
+  font-family:var(--font-display);
+}
+
+/* ---------- Overlays / Modals ---------- */
+.overlay{
+  position:fixed; inset:0;
+  background:rgba(6,9,14,0.82);
+  backdrop-filter:blur(3px);
+  display:flex; align-items:center; justify-content:center;
+  z-index:50;
+  padding:20px;
+}
+.overlay[hidden]{ display:none; }
+
+.modal{
+  width:100%; max-width:560px;
+  background:var(--bg-panel);
+  border:1px solid var(--border-strong);
+  border-radius:14px;
+  padding:28px;
+  max-height:88vh; overflow-y:auto;
+}
+.modal h2{
+  font-family:var(--font-display);
+  font-size:19px; letter-spacing:0.03em;
+  margin:0 0 4px;
+}
+.modal .modal-sub{ color:var(--text-faint); font-size:12px; margin:0 0 20px; letter-spacing:0.05em;}
+.modal p{ font-size:13.5px; color:var(--text-dim); line-height:1.6; }
+.modal ul{ font-size:13px; color:var(--text-dim); line-height:1.7; padding-left:18px; }
+.modal .legend-row{ display:flex; align-items:center; gap:8px; margin:4px 0; font-size:12.5px; color:var(--text-dim); }
+.legend-dot{ width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+
+.btn-primary{
+  background:linear-gradient(180deg, var(--cyan), #14a8c4);
+  color:#04141a;
+  font-weight:700;
+  padding:12px 22px;
+  border-radius:9px;
+  font-size:13.5px;
+  letter-spacing:0.03em;
+  margin-top:10px;
+}
+.btn-primary:hover{ filter:brightness(1.08); }
+.btn-secondary{
+  background:var(--bg-card);
+  border:1px solid var(--border-strong);
+  color:var(--text);
+  padding:11px 20px;
+  border-radius:9px;
+  font-size:13px;
+  margin-top:10px;
+  margin-left:8px;
+}
+.btn-secondary:hover{ background:var(--bg-card-hover); }
+
+.modal-close{
+  position:absolute; top:16px; right:18px;
+  font-size:20px; color:var(--text-faint);
+  width:30px; height:30px; border-radius:50%;
+}
+.modal-close:hover{ color:var(--text); background:var(--bg-card); }
+.modal-wrap{ position:relative; }
+
+/* Results grid */
+.results-kpi-grid{
+  display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:16px 0;
+}
+.results-kpi-grid .r-item{
+  background:var(--bg-card); border:1px solid var(--border); border-radius:8px;
+  padding:8px 10px;
+}
+.r-item .r-label{ font-size:9.5px; color:var(--text-faint); letter-spacing:0.06em; text-transform:uppercase;}
+.r-item .r-value{ font-family:var(--font-display); font-size:15px; margin-top:2px; }
+
+.grade-hero{
+  display:flex; align-items:center; gap:16px;
+  padding:16px; border-radius:10px;
+  background:var(--bg-card); border:1px solid var(--border-strong);
+  margin-bottom:6px;
+}
+.grade-letter{
+  font-family:var(--font-display); font-size:42px; font-weight:700;
+  width:74px; text-align:center;
+}
+.grade-text h3{ margin:0 0 4px; font-size:15px; }
+.grade-text p{ margin:0; font-size:12.5px; color:var(--text-dim); }
+
+/* ---------- Responsive ---------- */
+@media (max-width:1000px){
+  .kpi-bar{ grid-template-columns:repeat(4,1fr); }
+  .main-grid{ grid-template-columns:1fr; }
+}
+@media (max-width:560px){
+  .kpi-bar{ grid-template-columns:repeat(2,1fr); }
+  .action-grid{ grid-template-columns:repeat(2,1fr); }
+  .header{ padding:12px 14px; }
+  .results-kpi-grid{ grid-template-columns:repeat(2,1fr); }
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ================= HEADER ================= -->
+  <header class="header">
+    <div class="header-left">
+      <div class="tower-mark" aria-hidden="true"></div>
+      <div class="title-block">
+        <h1>AI SUPPLY CHAIN CONTROL TOWER</h1>
+        <p class="sub"><span class="live-dot"></span> HEAD OF OPERATIONS &middot; LIVE SESSION</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="timer-chip" id="timerChip">03:00</div>
+      <button class="icon-btn" id="pauseBtn" title="Pause" aria-pressed="false">⏸</button>
+      <button class="icon-btn" id="soundBtn" title="Sound" aria-pressed="true">🔊</button>
+      <button class="icon-btn" id="helpBtn" title="Instructions">❓</button>
+    </div>
+  </header>
+
+  <!-- ================= KPI BAR ================= -->
+  <section class="kpi-bar" id="kpiBar" aria-label="Live operations KPIs"></section>
+
+  <!-- ================= MAIN GRID ================= -->
+  <div class="main-grid">
+
+    <section class="panel">
+      <p class="panel-title">Active Alerts <span class="count-tag" id="alertCount">0 live</span></p>
+      <div id="alertFeed">
+        <div class="empty-feed" id="emptyFeed">Tower is quiet. Press Start Shift to open the alert channel.</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <p class="panel-title">Ops Event Log <span class="count-tag" id="logCount">0 entries</span></p>
+      <div id="eventLog"></div>
+      <div class="pulse-wrap">
+        <canvas id="sparkline" width="300" height="60"></canvas>
+        <div class="pulse-caption"><span>SCORE PULSE</span><span id="pulseNow">0</span></div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- ================= START OVERLAY ================= -->
+<div class="overlay" id="startOverlay">
+  <div class="modal modal-wrap">
+    <h2>Welcome to the Control Tower</h2>
+    <p class="modal-sub">SHIFT BRIEFING</p>
+    <p>You're the Head of Operations for a global supply network. For the next <strong>3 minutes</strong>, alerts will stream in from ports, factories, warehouses and trucks. Pick the right response before each alert's clock runs out — every decision moves your KPIs.</p>
+    <ul>
+      <li>Match the action to the problem. The best fix protects revenue and lifts your score; the wrong fix costs you.</li>
+      <li><strong>Ignore</strong> or <strong>Delay Decision</strong> are rarely free — use them only when nothing else fits.</li>
+      <li>Alerts left unresolved auto-fail when their clock hits zero.</li>
+      <li>Difficulty ramps up — expect more alerts, faster, as the shift goes on.</li>
+    </ul>
+    <div class="legend-row"><span class="legend-dot" style="background:var(--red)"></span> Critical — resolve immediately</div>
+    <div class="legend-row"><span class="legend-dot" style="background:var(--orange)"></span> High — resolve soon</div>
+    <div class="legend-row"><span class="legend-dot" style="background:var(--cyan)"></span> Medium — manage the queue</div>
+    <button class="btn-primary" id="startBtn">Start Shift ▸</button>
+  </div>
+</div>
+
+<!-- ================= HELP MODAL ================= -->
+<div class="overlay" id="helpOverlay" hidden>
+  <div class="modal modal-wrap">
+    <button class="modal-close" id="helpClose">×</button>
+    <h2>How the Tower Works</h2>
+    <p class="modal-sub">INSTRUCTIONS</p>
+    <p><strong>Objective:</strong> keep your KPIs high and your score climbing before the 3-minute shift ends.</p>
+    <p><strong>KPIs:</strong> Service Level, Customer Satisfaction, Inventory Health and Transportation Efficiency are percentages you want high. Operating Cost is a dollar figure you want low. Revenue Protected only ever climbs — it's the value you've saved through good calls.</p>
+    <p><strong>Actions:</strong> Expedite Shipment, Use Backup Supplier, Reroute Trucks, Increase Production, Transfer Inventory and Approve Air Freight each solve some problems better than others. Ignore and Delay Decision are fallback moves with real consequences.</p>
+    <p><strong>Priority colors:</strong> red = critical, orange = high, cyan = medium. Critical alerts pulse and expire fastest.</p>
+    <button class="btn-primary" id="helpClose2">Got it</button>
+  </div>
+</div>
+
+<!-- ================= PAUSE OVERLAY ================= -->
+<div class="overlay" id="pauseOverlay" hidden>
+  <div class="modal modal-wrap" style="text-align:center; max-width:340px;">
+    <h2 style="margin-bottom:6px;">Shift Paused</h2>
+    <p class="modal-sub">The tower is holding position</p>
+    <button class="btn-primary" id="resumeBtn">Resume Shift</button>
+  </div>
+</div>
+
+<!-- ================= END OVERLAY ================= -->
+<div class="overlay" id="endOverlay" hidden>
+  <div class="modal modal-wrap" style="max-width:640px;">
+    <h2>Shift Debrief</h2>
+    <p class="modal-sub">FINAL PERFORMANCE REPORT</p>
+
+    <div class="grade-hero">
+      <div class="grade-letter" id="gradeLetter">B</div>
+      <div class="grade-text">
+        <h3 id="gradeHeadline">Solid shift.</h3>
+        <p id="gradeSummary">Your summary will appear here.</p>
+      </div>
+    </div>
+
+    <div class="results-kpi-grid" id="resultsGrid"></div>
+
+    <button class="btn-primary" id="playAgainBtn">Play Again ▸</button>
+    <button class="btn-secondary" id="closeEndBtn">Close</button>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   CONFIG & STATE
+   ============================================================ */
+const SHIFT_SECONDS = 180;
+const MAX_ACTIVE_ALERTS = 6;
+
+const PRIORITY_META = {
+  critical: { label:"Critical", mult:1.5, life:[11,17] },
+  high:     { label:"High",     mult:1.2, life:[17,24] },
+  medium:   { label:"Medium",   mult:1.0, life:[24,34] }
+};
+
+const ACTIONS = [
+  { key:"expedite",  label:"Expedite Shipment" },
+  { key:"backup",    label:"Use Backup Supplier" },
+  { key:"reroute",   label:"Reroute Trucks" },
+  { key:"produce",   label:"Increase Production" },
+  { key:"transfer",  label:"Transfer Inventory" },
+  { key:"airfreight",label:"Approve Air Freight" },
+  { key:"ignore",    label:"Ignore",          extra:"action-ignore" },
+  { key:"delay",     label:"Delay Decision",  extra:"action-delay" }
+];
+
+// Alert type definitions: best/ok action keys drive outcome tiers.
+const ALERT_TYPES = [
+  { key:"port", icon:"🚨", title:"Port Congestion",
+    desc:(l)=>`Containers are stacking up at ${l}, stalling inbound cargo.`,
+    impact:(v)=>`<strong>$${v}k/day</strong> in delayed inventory value`,
+    best:"airfreight", ok:"reroute" },
+  { key:"supplier", icon:"🚨", title:"Supplier Delay",
+    desc:(l)=>`Your key supplier in ${l} has pushed back the delivery window.`,
+    impact:(v)=>`<strong>${v}%</strong> production risk if unresolved`,
+    best:"backup", ok:"expedite" },
+  { key:"truck", icon:"🚨", title:"Truck Breakdown",
+    desc:(l)=>`A freight truck broke down on route near ${l}.`,
+    impact:(v)=>`<strong>${v} orders</strong> at risk of late delivery`,
+    best:"reroute", ok:"expedite" },
+  { key:"warehouse", icon:"🚨", title:"Warehouse Running Out of Stock",
+    desc:(l)=>`The ${l} warehouse is projected to stock out within hours.`,
+    impact:(v)=>`<strong>$${v}k</strong> in unfulfilled orders`,
+    best:"transfer", ok:"produce" },
+  { key:"customs", icon:"🚨", title:"Customs Inspection",
+    desc:(l)=>`A shipment is held for customs inspection at ${l}.`,
+    impact:(v)=>`<strong>${v}hr</strong> clearance delay accumulating`,
+    best:"expedite", ok:"airfreight" },
+  { key:"demand", icon:"🚨", title:"Demand Spike",
+    desc:(l)=>`Demand in the ${l} region just spiked well above forecast.`,
+    impact:(v)=>`<strong>$${v}k</strong> in upside revenue if met`,
+    best:"produce", ok:"transfer" },
+  { key:"factory", icon:"🚨", title:"Factory Machine Failure",
+    desc:(l)=>`A critical machine failed on the ${l} production line.`,
+    impact:(v)=>`<strong>${v}%</strong> output capacity lost`,
+    best:"backup", ok:"transfer" },
+  { key:"weather", icon:"🚨", title:"Weather Disruption",
+    desc:(l)=>`Severe weather is disrupting routes through ${l}.`,
+    impact:(v)=>`<strong>${v} shipments</strong> delayed in transit`,
+    best:"reroute", ok:"airfreight" },
+  { key:"count", icon:"🚨", title:"Wrong Inventory Count",
+    desc:(l)=>`A stock discrepancy was flagged at the ${l} facility.`,
+    impact:(v)=>`<strong>$${v}k</strong> valuation risk from inaccurate counts`,
+    best:"transfer", ok:"produce" },
+  { key:"damaged", icon:"🚨", title:"Damaged Shipment",
+    desc:(l)=>`A shipment arrived damaged en route to ${l}.`,
+    impact:(v)=>`<strong>$${v}k</strong> in goods potentially written off`,
+    best:"expedite", ok:"backup" }
+];
+
+const LOCATIONS = ["Rotterdam","Karachi","Shanghai","Los Angeles","Dubai","Hamburg","Singapore","Chicago","Lahore","Jebel Ali","Mumbai","Houston"];
+
+// Outcome tiers, before priority multiplier is applied to kpi/score deltas.
+const OUTCOME = {
+  best:  { serviceLevel:3,  satisfaction:3,  inventoryHealth:2,  transportEfficiency:2,  cost:-500,  revenue:2200, score:100, tag:"good"    },
+  ok:    { serviceLevel:1,  satisfaction:0,  inventoryHealth:1,  transportEfficiency:1,  cost:200,   revenue:900,  score:45,  tag:"good"    },
+  poor:  { serviceLevel:-4, satisfaction:-3, inventoryHealth:-2, transportEfficiency:-2, cost:1500,  revenue:0,    score:-30, tag:"bad"     },
+  ignore:{ serviceLevel:-6, satisfaction:-5, inventoryHealth:-3, transportEfficiency:-3, cost:2500,  revenue:0,    score:-60, tag:"bad"     },
+  fail:  { serviceLevel:-8, satisfaction:-6, inventoryHealth:-4, transportEfficiency:-4, cost:3200,  revenue:0,    score:-80, tag:"bad"     },
+  delayImmediate: { serviceLevel:-1, satisfaction:0, inventoryHealth:0, transportEfficiency:0, cost:300, revenue:0, score:0, tag:"neutral" },
+  delayRecover:   { serviceLevel:2,  satisfaction:1, inventoryHealth:1, transportEfficiency:1, cost:-200, revenue:600, score:20, tag:"good" },
+  delayWorsen:    { serviceLevel:-3, satisfaction:-3, inventoryHealth:-2, transportEfficiency:-2, cost:1000, revenue:0, score:-40, tag:"bad" }
+};
+
+const KPI_DEFS = [
+  { key:"serviceLevel",  label:"Service Level",        unit:"%",  fmt:v=>Math.round(v) },
+  { key:"satisfaction",  label:"Customer Satisfaction",unit:"%",  fmt:v=>Math.round(v) },
+  { key:"inventoryHealth", label:"Inventory Health",   unit:"%",  fmt:v=>Math.round(v) },
+  { key:"transportEfficiency", label:"Transport Eff.", unit:"%",  fmt:v=>Math.round(v) },
+  { key:"cost",           label:"Operating Cost",      unit:"$",  fmt:v=>Math.round(v).toLocaleString(), prefix:"$" },
+  { key:"revenue",        label:"Revenue Protected",   unit:"$",  fmt:v=>Math.round(v).toLocaleString(), prefix:"$" },
+  { key:"score",          label:"Score",               unit:"",   fmt:v=>Math.round(v) },
+  { key:"timeLeft",       label:"Time Remaining",      unit:"",   fmt:v=>fmtTime(v) }
+];
+
+let state = null;
+
+function freshState(){
+  return {
+    running:false, paused:false,
+    timeLeft:SHIFT_SECONDS,
+    kpis:{
+      serviceLevel:92, satisfaction:88, inventoryHealth:85, transportEfficiency:90,
+      cost:250000, revenue:0, score:0
+    },
+    activeAlerts:[],
+    nextAlertId:1,
+    spawnTimer:5,
+    correct:0, wrong:0, resolvedTotal:0,
+    scoreHistory:[0],
+    tickHandle:null,
+    delayTimeouts:[]
+  };
+}
+
+/* ============================================================
+   UTIL
+   ============================================================ */
+function fmtTime(s){
+  s = Math.max(0, Math.round(s));
+  const m = Math.floor(s/60), sec = s%60;
+  return String(m).padStart(2,"0") + ":" + String(sec).padStart(2,"0");
+}
+function rnd(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function pick(arr){ return arr[rnd(0,arr.length-1)]; }
+function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+/* ============================================================
+   DOM REFS
+   ============================================================ */
+const kpiBar = document.getElementById("kpiBar");
+const alertFeed = document.getElementById("alertFeed");
+const emptyFeed = document.getElementById("emptyFeed");
+const alertCountEl = document.getElementById("alertCount");
+const eventLog = document.getElementById("eventLog");
+const logCountEl = document.getElementById("logCount");
+const timerChip = document.getElementById("timerChip");
+const sparkline = document.getElementById("sparkline");
+const pulseNow = document.getElementById("pulseNow");
+
+const startOverlay = document.getElementById("startOverlay");
+const helpOverlay = document.getElementById("helpOverlay");
+const pauseOverlay = document.getElementById("pauseOverlay");
+const endOverlay = document.getElementById("endOverlay");
+
+/* ============================================================
+   RENDER: KPI BAR
+   ============================================================ */
+function renderKpiBar(){
+  kpiBar.innerHTML = "";
+  KPI_DEFS.forEach(def=>{
+    const card = document.createElement("div");
+    card.className = "kpi-card";
+    card.id = "kpi-" + def.key;
+    let accent = "var(--cyan)";
+    if(def.key==="cost") accent = "var(--orange)";
+    if(def.key==="revenue") accent = "var(--green)";
+    if(def.key==="score") accent = "var(--blue)";
+    if(def.key==="timeLeft") accent = "var(--cyan)";
+    card.style.setProperty("--accent", accent);
+    card.innerHTML = `
+      <p class="kpi-label">${def.label}</p>
+      <div class="kpi-value"><span class="kpi-num">--</span><span class="unit">${def.unit==="%"?"%":""}</span></div>
+      <div class="kpi-delta" id="delta-${def.key}"></div>
+    `;
+    kpiBar.appendChild(card);
+  });
+  updateKpiDisplay({});
+}
+
+function updateKpiDisplay(prevKpis){
+  KPI_DEFS.forEach(def=>{
+    const card = document.getElementById("kpi-"+def.key);
+    if(!card) return;
+    const raw = def.key==="timeLeft" ? state.timeLeft : state.kpis[def.key];
+    const numEl = card.querySelector(".kpi-num");
+    const prefix = def.prefix || "";
+    numEl.textContent = prefix + def.fmt(raw);
+
+    if(def.key!=="timeLeft" && prevKpis && def.key in prevKpis){
+      const diff = state.kpis[def.key] - prevKpis[def.key];
+      const deltaEl = document.getElementById("delta-"+def.key);
+      if(Math.abs(diff) > 0.4){
+        const goodDir = (def.key==="cost") ? diff<0 : diff>0;
+        deltaEl.className = "kpi-delta " + (goodDir?"up":"down");
+        const shown = def.key==="cost"||def.key==="revenue" ? Math.round(diff).toLocaleString() : Math.round(diff);
+        deltaEl.textContent = (diff>0?"+":"") + shown;
+        card.classList.add("flash");
+        setTimeout(()=>card.classList.remove("flash"), 350);
+        setTimeout(()=>{ if(deltaEl) deltaEl.textContent=""; }, 1600);
+      }
+    }
+  });
+  timerChip.textContent = fmtTime(state.timeLeft);
+  timerChip.classList.toggle("low", state.timeLeft<=20);
+}
+
+/* ============================================================
+   ALERT GENERATION
+   ============================================================ */
+function difficultyFraction(){
+  return clamp((SHIFT_SECONDS - state.timeLeft) / SHIFT_SECONDS, 0, 1);
+}
+
+function pickPriority(){
+  const f = difficultyFraction();
+  // As time passes, weight shifts toward higher priority.
+  const criticalW = 15 + f*25;
+  const highW = 35 + f*10;
+  const mediumW = 50 - f*35;
+  const total = criticalW+highW+mediumW;
+  const r = Math.random()*total;
+  if(r < criticalW) return "critical";
+  if(r < criticalW+highW) return "high";
+  return "medium";
+}
+
+function spawnAlert(){
+  if(state.activeAlerts.length >= MAX_ACTIVE_ALERTS) return;
+  const type = pick(ALERT_TYPES);
+  const priority = pickPriority();
+  const meta = PRIORITY_META[priority];
+  const life = rnd(meta.life[0], meta.life[1]);
+  const loc = pick(LOCATIONS);
+  const impactVal = rnd(8, 95);
+
+  const alert = {
+    id: state.nextAlertId++,
+    typeKey: type.key,
+    icon: type.icon,
+    title: type.title,
+    desc: type.desc(loc),
+    impactHtml: type.impact(impactVal),
+    priority,
+    best: type.best,
+    ok: type.ok,
+    life,
+    timeLeft: life,
+    status:"active"
+  };
+  state.activeAlerts.push(alert);
+  renderAlerts();
+}
+
+/* ============================================================
+   RENDER: ALERT FEED
+   ============================================================ */
+function renderAlerts(){
+  emptyFeed.style.display = state.activeAlerts.length ? "none" : "block";
+  alertCountEl.textContent = state.activeAlerts.length + " live";
+
+  // Reconcile DOM: remove cards for gone alerts, add cards for new ones, update timer bars.
+  const existingIds = new Set(state.activeAlerts.map(a=>a.id));
+  Array.from(alertFeed.querySelectorAll(".alert-card")).forEach(card=>{
+    const id = Number(card.dataset.id);
+    if(!existingIds.has(id)) card.remove();
+  });
+
+  state.activeAlerts.forEach(alert=>{
+    let card = alertFeed.querySelector(`.alert-card[data-id="${alert.id}"]`);
+    if(!card){
+      card = document.createElement("div");
+      card.className = "alert-card priority-" + alert.priority;
+      card.dataset.id = alert.id;
+      card.innerHTML = `
+        <div class="alert-top">
+          <div class="alert-title-row">
+            <span class="alert-icon">${alert.icon}</span>
+            <h3 class="alert-title">${alert.title}</h3>
+          </div>
+          <span class="badge priority-${alert.priority}">${PRIORITY_META[alert.priority].label}</span>
+        </div>
+        <p class="alert-desc">${alert.desc}</p>
+        <p class="alert-impact">${alert.impactHtml}</p>
+        <div class="alert-timerbar"><div class="alert-timerbar-fill" style="width:100%"></div></div>
+        <div class="action-grid"></div>
+      `;
+      const grid = card.querySelector(".action-grid");
+      ACTIONS.forEach(a=>{
+        const btn = document.createElement("button");
+        btn.className = "action-btn " + (a.extra||"");
+        btn.textContent = a.label;
+        btn.dataset.alertId = alert.id;
+        btn.dataset.actionKey = a.key;
+        grid.appendChild(btn);
+      });
+      alertFeed.prepend(card);
+    }
+    const pct = clamp((alert.timeLeft/alert.life)*100, 0, 100);
+    card.querySelector(".alert-timerbar-fill").style.width = pct + "%";
+  });
+}
+
+/* ============================================================
+   DECISION RESOLUTION
+   ============================================================ */
+alertFeed.addEventListener("click", (e)=>{
+  const btn = e.target.closest(".action-btn");
+  if(!btn || !state.running || state.paused) return;
+  const alertId = Number(btn.dataset.alertId);
+  const actionKey = btn.dataset.actionKey;
+  resolveAlert(alertId, actionKey);
+});
+
+function findAlertIndex(id){
+  return state.activeAlerts.findIndex(a=>a.id===id);
+}
+
+function removeAlert(id){
+  const idx = findAlertIndex(id);
+  if(idx>-1) state.activeAlerts.splice(idx,1);
+}
+
+function resolveAlert(alertId, actionKey){
+  const idx = findAlertIndex(alertId);
+  if(idx===-1) return;
+  const alert = state.activeAlerts[idx];
+  const mult = PRIORITY_META[alert.priority].mult;
+
+  if(actionKey === "delay"){
+    applyOutcome(OUTCOME.delayImmediate, mult, alert, "neutral",
+      `Delayed decision on ${alert.title}.`);
+    removeAlert(alertId);
+    renderAlerts();
+    const handle = setTimeout(()=>{
+      if(!state.running) return;
+      const recovers = Math.random() < 0.5;
+      const outcome = recovers ? OUTCOME.delayRecover : OUTCOME.delayWorsen;
+      applyOutcome(outcome, mult, alert, recovers?"good":"bad",
+        recovers ? `${alert.title} resolved itself favorably after delay.`
+                 : `${alert.title} escalated after being delayed.`);
+      if(recovers) state.correct++; else state.wrong++;
+      state.resolvedTotal++;
+      refreshAllDisplays();
+    }, 4000);
+    state.delayTimeouts.push(handle);
+    refreshAllDisplays();
+    return;
+  }
+
+  let tierKey, tierLabel, logClass;
+  if(actionKey === "ignore"){
+    tierKey = "ignore"; logClass="bad";
+  } else if(actionKey === alert.best){
+    tierKey = "best"; logClass="good";
+  } else if(actionKey === alert.ok){
+    tierKey = "ok"; logClass="good";
+  } else {
+    tierKey = "poor"; logClass="bad";
+  }
+
+  const actionLabel = (ACTIONS.find(a=>a.key===actionKey)||{}).label || actionKey;
+  applyOutcome(OUTCOME[tierKey], mult, alert, logClass,
+    `${actionLabel} on ${alert.title} — ${tierKey==="best"?"strong fix.":tierKey==="ok"?"acceptable fix.":tierKey==="ignore"?"ignored, consequences hit.":"poor match, backfired."}`);
+
+  if(tierKey==="best" || tierKey==="ok") state.correct++;
+  else state.wrong++;
+  state.resolvedTotal++;
+
+  removeAlert(alertId);
+  renderAlerts();
+  refreshAllDisplays();
+}
+
+function applyOutcome(outcome, mult, alert, logClass, message){
+  const prev = Object.assign({}, state.kpis);
+  state.kpis.serviceLevel = clamp(state.kpis.serviceLevel + outcome.serviceLevel*mult, 0, 100);
+  state.kpis.satisfaction = clamp(state.kpis.satisfaction + outcome.satisfaction*mult, 0, 100);
+  state.kpis.inventoryHealth = clamp(state.kpis.inventoryHealth + outcome.inventoryHealth*mult, 0, 100);
+  state.kpis.transportEfficiency = clamp(state.kpis.transportEfficiency + outcome.transportEfficiency*mult, 0, 100);
+  state.kpis.cost = Math.max(0, state.kpis.cost + outcome.cost*mult);
+  state.kpis.revenue = Math.max(0, state.kpis.revenue + Math.max(0, outcome.revenue*mult));
+  state.kpis.score = state.kpis.score + outcome.score*mult;
+
+  logEvent(message, logClass);
+  updateKpiDisplay(prev);
+}
+
+function autoFailAlert(alert){
+  const mult = PRIORITY_META[alert.priority].mult;
+  applyOutcome(OUTCOME.fail, mult, alert, "bad", `${alert.title} went unresolved and escalated.`);
+  state.wrong++;
+  state.resolvedTotal++;
+  removeAlert(alert.id);
+}
+
+/* ============================================================
+   EVENT LOG
+   ============================================================ */
+function logEvent(message, cls){
+  const entry = document.createElement("div");
+  entry.className = "log-entry " + cls;
+  const t = fmtTime(state.timeLeft);
+  entry.innerHTML = `<span class="log-time">${t}</span>${message}`;
+  eventLog.prepend(entry);
+  const entries = eventLog.querySelectorAll(".log-entry");
+  if(entries.length > 60) entries[entries.length-1].remove();
+  logCountEl.textContent = eventLog.querySelectorAll(".log-entry").length + " entries";
+}
+
+/* ============================================================
+   SPARKLINE (signature element)
+   ============================================================ */
+function drawSparkline(){
+  const ctx = sparkline.getContext("2d");
+  const w = sparkline.width, h = sparkline.height;
+  ctx.clearRect(0,0,w,h);
+  const hist = state.scoreHistory.slice(-60);
+  if(hist.length<2) return;
+  const min = Math.min(...hist, 0);
+  const max = Math.max(...hist, 10);
+  const range = (max-min) || 1;
+
+  ctx.beginPath();
+  hist.forEach((v,i)=>{
+    const x = (i/(hist.length-1)) * w;
+    const y = h - ((v-min)/range)*h*0.85 - 4;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.strokeStyle = "#22d3ee";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // glow fill
+  ctx.lineTo(w,h); ctx.lineTo(0,h); ctx.closePath();
+  const grad = ctx.createLinearGradient(0,0,0,h);
+  grad.addColorStop(0, "rgba(34,211,238,0.28)");
+  grad.addColorStop(1, "rgba(34,211,238,0)");
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  pulseNow.textContent = Math.round(state.kpis.score);
+}
+
+/* ============================================================
+   GAME LOOP
+   ============================================================ */
+function tick(){
+  if(!state.running || state.paused) return;
+
+  state.timeLeft -= 1;
+  state.scoreHistory.push(state.kpis.score);
+
+  // per-alert countdowns
+  state.activeAlerts.slice().forEach(alert=>{
+    alert.timeLeft -= 1;
+    if(alert.timeLeft <= 0){
+      autoFailAlert(alert);
+    }
+  });
+  renderAlerts();
+
+  // spawn logic
+  state.spawnTimer -= 1;
+  if(state.spawnTimer <= 0){
+    spawnAlert();
+    const f = difficultyFraction();
+    const base = 7 - f*4.3; // 7s -> ~2.7s
+    state.spawnTimer = Math.max(2, Math.round(base + rnd(-1,1)));
+  }
+
+  updateKpiDisplay(state.kpis);
+  drawSparkline();
+
+  if(state.timeLeft <= 0){
+    endGame();
+    return;
+  }
+}
+
+function refreshAllDisplays(){
+  updateKpiDisplay(state.kpis);
+  drawSparkline();
+}
+
+/* ============================================================
+   GAME LIFECYCLE
+   ============================================================ */
+function startGame(){
+  state = freshState();
+  renderKpiBar();
+  eventLog.innerHTML = "";
+  logCountEl.textContent = "0 entries";
+  alertFeed.innerHTML = "";
+  alertFeed.appendChild(emptyFeed);
+  state.running = true;
+  logEvent("Shift started. Tower is live.", "neutral");
+  updateKpiDisplay({});
+  drawSparkline();
+  state.tickHandle = setInterval(tick, 1000);
+  spawnAlert();
+}
+
+function endGame(){
+  state.running = false;
+  clearInterval(state.tickHandle);
+  state.delayTimeouts.forEach(h=>clearTimeout(h));
+  showResults();
+}
+
+function togglePause(){
+  if(!state.running) return;
+  state.paused = !state.paused;
+  document.getElementById("pauseBtn").setAttribute("aria-pressed", state.paused);
+  pauseOverlay.hidden = !state.paused;
+}
+
+/* ============================================================
+   RESULTS
+   ============================================================ */
+function computeGrade(score){
+  if(score >= 1400) return {letter:"A+", headline:"Flawless shift.", text:"You anticipated every disruption and kept the network ahead of every clock. Textbook operations leadership."};
+  if(score >= 1000) return {letter:"A", headline:"Excellent command of the tower.", text:"Your decisions consistently protected revenue and kept KPIs strong under pressure."};
+  if(score >= 600) return {letter:"B", headline:"Solid shift.", text:"You handled most disruptions well, with a few costly calls along the way."};
+  if(score >= 300) return {letter:"C", headline:"Rough patches, but you held the line.", text:"The network survived, but too many wrong calls drove costs up and satisfaction down."};
+  return {letter:"D", headline:"The network took a beating.", text:"Alerts piled up faster than they were resolved. Review the log to see where the queue got away from you."};
+}
+
+function showResults(){
+  const grade = computeGrade(state.kpis.score);
+  document.getElementById("gradeLetter").textContent = grade.letter;
+  document.getElementById("gradeHeadline").textContent = grade.headline;
+  document.getElementById("gradeSummary").textContent = grade.text;
+
+  const grid = document.getElementById("resultsGrid");
+  grid.innerHTML = "";
+  const rows = [
+    ["Final Score", Math.round(state.kpis.score)],
+    ["Service Level", Math.round(state.kpis.serviceLevel)+"%"],
+    ["Customer Satisfaction", Math.round(state.kpis.satisfaction)+"%"],
+    ["Inventory Health", Math.round(state.kpis.inventoryHealth)+"%"],
+    ["Transport Efficiency", Math.round(state.kpis.transportEfficiency)+"%"],
+    ["Operating Cost", "$"+Math.round(state.kpis.cost).toLocaleString()],
+    ["Revenue Protected", "$"+Math.round(state.kpis.revenue).toLocaleString()],
+    ["Alerts Resolved", state.resolvedTotal],
+    ["Correct Decisions", state.correct],
+    ["Wrong Decisions", state.wrong]
+  ];
+  rows.forEach(([label,value])=>{
+    const d = document.createElement("div");
+    d.className = "r-item";
+    d.innerHTML = `<div class="r-label">${label}</div><div class="r-value">${value}</div>`;
+    grid.appendChild(d);
+  });
+
+  endOverlay.hidden = false;
+}
+
+/* ============================================================
+   UI WIRING
+   ============================================================ */
+document.getElementById("startBtn").addEventListener("click", ()=>{
+  startOverlay.hidden = true;
+  startGame();
+});
+
+document.getElementById("pauseBtn").addEventListener("click", togglePause);
+document.getElementById("resumeBtn").addEventListener("click", togglePause);
+
+document.getElementById("soundBtn").addEventListener("click", (e)=>{
+  const pressed = e.currentTarget.getAttribute("aria-pressed") === "true";
+  e.currentTarget.setAttribute("aria-pressed", !pressed);
+  e.currentTarget.textContent = pressed ? "🔇" : "🔊";
+});
+
+function openHelp(){ helpOverlay.hidden = false; }
+function closeHelp(){ helpOverlay.hidden = true; }
+document.getElementById("helpBtn").addEventListener("click", openHelp);
+document.getElementById("helpClose").addEventListener("click", closeHelp);
+document.getElementById("helpClose2").addEventListener("click", closeHelp);
+
+document.getElementById("playAgainBtn").addEventListener("click", ()=>{
+  endOverlay.hidden = true;
+  startGame();
+});
+document.getElementById("closeEndBtn").addEventListener("click", ()=>{
+  endOverlay.hidden = true;
+});
+
+// initialize a static KPI bar behind the start overlay so it doesn't look empty
+state = freshState();
+renderKpiBar();
+drawSparkline();
+
+})();
+</script>
+</body>
+</html>
