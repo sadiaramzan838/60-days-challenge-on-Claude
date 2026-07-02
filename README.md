@@ -285,3 +285,9 @@ Day 31 – AI Supply Chain Control Tower
 * Built an interactive AI Supply Chain Control Tower using HTML, CSS, and JavaScript.
 * Simulated real-time operational alerts with decision-based gameplay and live KPI tracking.
 * Implemented a final performance dashboard with scoring, grades, operational insights, and replay functionality.
+
+Day 32 – Think Like a Marketing Strategist
+
+* Built an interactive marketing strategy simulator using React and HTML.
+* Guided users through brand-building decisions with explanations and reusable Claude prompts.
+* Generated a personalized Growth Report with platform strategy, content planning, and key marketing lessons.
