@@ -291,3 +291,9 @@ Day 32 – Think Like a Marketing Strategist
 * Built an interactive marketing strategy simulator using React and HTML.
 * Guided users through brand-building decisions with explanations and reusable Claude prompts.
 * Generated a personalized Growth Report with platform strategy, content planning, and key marketing lessons.
+
+Day 33 – Media Integrity Analyzer
+
+* Built an interactive Media Integrity Analyzer using HTML, CSS, and JavaScript.
+* Guided users through headline and emotion analysis with interactive media literacy challenges.
+* Generated a final Media Integrity Dashboard with scores, insights, practical habits, and replayable scenarios.
