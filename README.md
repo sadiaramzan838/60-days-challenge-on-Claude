@@ -297,3 +297,9 @@ Day 33 – Media Integrity Analyzer
 * Built an interactive Media Integrity Analyzer using HTML, CSS, and JavaScript.
 * Guided users through headline and emotion analysis with interactive media literacy challenges.
 * Generated a final Media Integrity Dashboard with scores, insights, practical habits, and replayable scenarios.
+
+Day 34 – Marketing Detective
+
+* Built an interactive Marketing Detective game using React and HTML.
+* Investigated fictional marketing cases through clue-based decision-making and draggable evidence.
+* Generated a final learning report with case analysis, marketing insights, and improvement recommendations.
