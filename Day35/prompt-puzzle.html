@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧩 Prompt Puzzle — Master AI Prompting Through Play</title>
+<style>
+  :root{
+    --bg1:#0b0f1a; --bg2:#121a2b; --panel:rgba(255,255,255,0.05); --panel-b:rgba(255,255,255,0.09);
+    --accent1:#22d3ee; --accent2:#a78bfa; --accent3:#f472b6;
+    --good:#34d399; --bad:#f87171; --warn:#fbbf24; --info:#60a5fa;
+    --text:#eef2ff; --text-dim:#9aa4c2; --radius:16px;
+    --shadow: 0 10px 40px rgba(0,0,0,0.45);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(34,211,238,0.12), transparent 40%),
+      radial-gradient(circle at 85% 20%, rgba(167,139,250,0.14), transparent 45%),
+      radial-gradient(circle at 50% 90%, rgba(244,114,182,0.10), transparent 45%),
+      linear-gradient(160deg, var(--bg1), var(--bg2));
+    color:var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+    padding-bottom:60px;
+  }
+  #progressbar{
+    position:sticky; top:0; left:0; width:100%; height:4px; z-index:50;
+    background:rgba(255,255,255,0.06);
+  }
+  #progressbar-fill{
+    height:100%; width:0%; border-radius:0 4px 4px 0;
+    background:linear-gradient(90deg,var(--accent1),var(--accent2),var(--accent3));
+    transition:width .5s ease;
+  }
+  header.topbar{
+    position:sticky; top:4px; z-index:40;
+    backdrop-filter:blur(14px);
+    background:rgba(10,14,26,0.75);
+    border-bottom:1px solid var(--panel-b);
+    padding:14px 22px;
+    display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px;
+  }
+  .brand{display:flex; align-items:center; gap:10px; font-weight:800; font-size:1.05rem;}
+  .brand .grad{
+    background:linear-gradient(90deg,var(--accent1),var(--accent2),var(--accent3));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .badges{display:flex; gap:8px; flex-wrap:wrap;}
+  .badge{
+    padding:4px 10px; border-radius:999px; font-size:0.72rem; font-weight:600;
+    background:var(--panel); border:1px solid var(--panel-b); color:var(--text-dim);
+    white-space:nowrap;
+  }
+  #topbar-stats{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+  .stat-chip{
+    display:flex; align-items:center; gap:5px;
+    padding:5px 10px; border-radius:10px; font-size:0.78rem; font-weight:700;
+    background:var(--panel); border:1px solid var(--panel-b);
+    transition:transform .2s;
+  }
+  .stat-chip.pulse{animation:pulse .4s ease;}
+  @keyframes pulse{0%{transform:scale(1);}50%{transform:scale(1.15);}100%{transform:scale(1);}}
+
+  main{max-width:980px; margin:0 auto; padding:26px 18px 10px;}
+
+  .card{
+    background:var(--panel); border:1px solid var(--panel-b); border-radius:var(--radius);
+    padding:22px 24px; box-shadow:var(--shadow); margin-bottom:20px;
+    animation:fadeUp .45s ease;
+  }
+  @keyframes fadeUp{from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);}}
+
+  h1{font-size:1.6rem; margin:0 0 6px;}
+  h2{margin-top:0;}
+  .subtitle{color:var(--text-dim); font-size:0.95rem; margin-bottom:18px;}
+
+  .welcome-icon{font-size:3rem;}
+  .type-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; margin:18px 0;}
+  .type-card{
+    background:rgba(255,255,255,0.04); border:1px solid var(--panel-b); border-radius:12px; padding:14px;
+    transition:.25s;
+  }
+  .type-card:hover{transform:translateY(-4px); border-color:var(--accent1);}
+  .type-card h4{margin:0 0 6px; font-size:0.95rem;}
+  .type-card p{margin:0; font-size:0.8rem; color:var(--text-dim);}
+
+  button{
+    font-family:inherit; cursor:pointer; border:none; border-radius:10px;
+    font-weight:700; transition:transform .15s, box-shadow .15s, opacity .15s;
+  }
+  .btn-primary{
+    background:linear-gradient(90deg,var(--accent1),var(--accent2));
+    color:#0b0f1a; padding:12px 24px; font-size:0.95rem;
+  }
+  .btn-primary:hover{transform:translateY(-2px); box-shadow:0 8px 22px rgba(34,211,238,0.35);}
+  .btn-secondary{
+    background:var(--panel); border:1px solid var(--panel-b); color:var(--text);
+    padding:10px 18px; font-size:0.85rem;
+  }
+  .btn-secondary:hover{border-color:var(--accent2); transform:translateY(-2px);}
+  .actions-row{display:flex; gap:12px; flex-wrap:wrap; margin-top:18px; align-items:center;}
+
+  .desired-output{
+    background:rgba(96,165,250,0.08); border:1px solid rgba(96,165,250,0.3);
+    border-left:4px solid var(--info); border-radius:10px; padding:12px 16px; margin-bottom:16px; font-size:0.92rem;
+  }
+  .instructions{
+    font-size:0.85rem; color:var(--text-dim); margin-bottom:14px; padding:8px 12px;
+    border:1px dashed var(--panel-b); border-radius:10px;
+  }
+
+  .zones{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media(max-width:720px){.zones{grid-template-columns:1fr;}}
+  .zone{
+    min-height:170px; border-radius:12px; padding:12px; border:2px dashed var(--panel-b);
+    background:rgba(255,255,255,0.02); transition:.2s;
+  }
+  .zone.drag-over{border-color:var(--accent1); background:rgba(34,211,238,0.06);}
+  .zone h4{margin:0 0 10px; font-size:0.8rem; letter-spacing:0.03em; text-transform:uppercase; color:var(--text-dim);}
+
+  .block{
+    background:rgba(255,255,255,0.06); border:1px solid var(--panel-b); border-radius:10px;
+    padding:10px 12px; margin-bottom:8px; font-size:0.85rem; cursor:grab;
+    transition:transform .15s, border-color .15s, background .15s;
+  }
+  .block:hover{transform:translateX(3px); border-color:var(--accent2); background:rgba(255,255,255,0.09);}
+  .block.chosen{border-left:3px solid var(--accent1);}
+  .block.hint-glow{
+    border-color:var(--warn); box-shadow:0 0 0 3px rgba(251,191,36,0.25);
+    animation:glow 1s infinite alternate;
+  }
+  @keyframes glow{from{box-shadow:0 0 0 2px rgba(251,191,36,0.15);} to{box-shadow:0 0 0 6px rgba(251,191,36,0.35);}}
+
+  .chunk{
+    background:rgba(255,255,255,0.05); border:1px solid var(--panel-b); border-radius:10px;
+    padding:10px 12px; margin-bottom:8px; font-size:0.84rem; cursor:grab; transition:.15s;
+  }
+  .chunk:hover{transform:translateX(3px); border-color:var(--accent2);}
+  .chunk.hint-glow{border-color:var(--warn); box-shadow:0 0 0 3px rgba(251,191,36,0.25); animation:glow 1s infinite alternate;}
+
+  .options-grid{display:grid; gap:14px; margin-top:10px;}
+  .option-card{
+    background:rgba(255,255,255,0.04); border:2px solid var(--panel-b); border-radius:12px;
+    padding:14px 16px; cursor:pointer; transition:.2s; position:relative;
+  }
+  .option-card:hover{border-color:var(--accent2); transform:translateY(-2px);}
+  .option-card.selected{border-color:var(--accent1); background:rgba(34,211,238,0.08);}
+  .option-card.disabled{opacity:0.35; pointer-events:none;}
+  .option-tag{
+    display:inline-block; font-size:0.7rem; font-weight:800; padding:2px 8px; border-radius:6px;
+    background:rgba(255,255,255,0.08); margin-bottom:6px;
+  }
+  .option-text{font-size:0.86rem; white-space:pre-wrap; line-height:1.5;}
+
+  .score-breakdown{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; margin:16px 0;}
+  .score-item{
+    background:rgba(255,255,255,0.04); border:1px solid var(--panel-b); border-radius:10px;
+    padding:10px 12px; text-align:center;
+  }
+  .score-item .val{font-size:1.3rem; font-weight:800;}
+  .score-item .lbl{font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:.04em;}
+  .score-total{
+    text-align:center; margin:14px 0; padding:18px; border-radius:14px;
+    background:linear-gradient(135deg, rgba(34,211,238,0.12), rgba(167,139,250,0.12));
+    border:1px solid var(--panel-b);
+  }
+  .score-total .big{font-size:2.4rem; font-weight:900;}
+  .principle-box{
+    background:rgba(52,211,153,0.08); border:1px solid rgba(52,211,153,0.3); border-left:4px solid var(--good);
+    border-radius:10px; padding:12px 16px; margin:14px 0; font-size:0.9rem;
+  }
+  .principle-box strong{color:var(--good);}
+
+  .compare-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px;}
+  @media(max-width:720px){.compare-grid{grid-template-columns:1fr;}}
+  .compare-col{border-radius:12px; padding:14px; border:1px solid var(--panel-b);}
+  .compare-col.weak{background:rgba(248,113,113,0.06); border-color:rgba(248,113,113,0.3);}
+  .compare-col.optimized{background:rgba(52,211,153,0.06); border-color:rgba(52,211,153,0.3);}
+  .compare-col h4{margin:0 0 8px; font-size:0.8rem; text-transform:uppercase; letter-spacing:.03em;}
+  .compare-col.weak h4{color:var(--bad);}
+  .compare-col.optimized h4{color:var(--good);}
+  .compare-col pre{white-space:pre-wrap; font-family:inherit; font-size:0.82rem; margin:0 0 10px; line-height:1.5;}
+  .compare-col h5{margin:8px 0 4px; font-size:0.72rem; text-transform:uppercase; color:var(--text-dim);}
+
+  details{margin-top:14px; border:1px solid var(--panel-b); border-radius:10px; padding:10px 14px; background:rgba(255,255,255,0.03);}
+  details summary{cursor:pointer; font-size:0.85rem; font-weight:700; color:var(--warn);}
+  details pre{white-space:pre-wrap; font-family:inherit; font-size:0.82rem; margin-top:10px; line-height:1.5; color:var(--text-dim);}
+
+  .blueprint-list{margin:10px 0 0; padding-left:18px; font-size:0.82rem; color:var(--text-dim); line-height:1.6;}
+
+  #toasts{position:fixed; top:70px; right:18px; z-index:100; display:flex; flex-direction:column; gap:8px; max-width:280px;}
+  .toast{
+    padding:10px 14px; border-radius:10px; font-size:0.82rem; font-weight:600;
+    background:rgba(20,25,40,0.95); border:1px solid var(--panel-b); box-shadow:var(--shadow);
+    animation:slideIn .3s ease, fadeOut .3s ease 2.2s forwards;
+  }
+  .toast.good{border-left:4px solid var(--good);}
+  .toast.warn{border-left:4px solid var(--warn);}
+  .toast.info{border-left:4px solid var(--info);}
+  @keyframes slideIn{from{opacity:0; transform:translateX(40px);} to{opacity:1; transform:translateX(0);}}
+  @keyframes fadeOut{to{opacity:0; transform:translateX(40px);}}
+
+  .report-grid{display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+  @media(max-width:800px){.report-grid{grid-template-columns:1fr;}}
+  .rank-hero{text-align:center; padding:20px;}
+  .rank-hero .score-num{font-size:3.4rem; font-weight:900; background:linear-gradient(90deg,var(--accent1),var(--accent2),var(--accent3)); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .rank-hero .rating{font-size:1.2rem; font-weight:800; margin-top:4px;}
+  .rank-hero .rank-tag{display:inline-block; margin-top:8px; padding:5px 14px; border-radius:999px; background:var(--panel); border:1px solid var(--panel-b); font-size:0.8rem;}
+  svg.dna text{fill:var(--text-dim); font-size:9px;}
+  .milestone-box{background:rgba(167,139,250,0.08); border:1px solid rgba(167,139,250,0.3); border-left:4px solid var(--accent2); border-radius:10px; padding:12px 16px; margin-top:12px; font-size:0.88rem;}
+  .feedback-text{font-size:0.9rem; line-height:1.6; color:var(--text-dim);}
+
+  ::-webkit-scrollbar{width:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--panel-b); border-radius:4px;}
+</style>
+</head>
+<body>
+
+<div id="progressbar"><div id="progressbar-fill"></div></div>
+
+<header class="topbar">
+  <div class="brand">🧩 <span class="grad">Prompt Puzzle</span></div>
+  <div class="badges">
+    <span class="badge" id="badge-domain"></span>
+    <span class="badge" id="badge-diff"></span>
+    <span class="badge" id="badge-progress"></span>
+  </div>
+  <div id="topbar-stats"></div>
+</header>
+
+<main id="main"></main>
+<div id="toasts"></div>
+
+<script>
+(function(){
+"use strict";
+
+const DOMAIN = "Marketing & Copywriting";
+const DIFFICULTY = "Intermediate";
+
+document.getElementById('badge-domain').textContent = "🎯 " + DOMAIN;
+document.getElementById('badge-diff').textContent = "⚡ " + DIFFICULTY;
+
+/* ================= SCENARIO DATA ================= */
+const scenarios = [
+{
+  id:1, icon:"💧", title:"EcoFlow Water Bottle — Launch Email",
+  desiredOutput:"A short, mobile-friendly launch email for the EcoFlow insulated water bottle that feels warm and optimistic, aimed at eco-conscious millennials, with one clear call-to-action.",
+  correctBlocks:[
+    "Act as a senior email marketing copywriter for a sustainability-focused DTC brand.",
+    "Task: Write a launch-announcement email for the new EcoFlow insulated water bottle.",
+    "Audience: environmentally conscious millennials (25–40) who already follow the brand on Instagram.",
+    "Tone: warm, optimistic, and conversational — never preachy about sustainability.",
+    'Format: one subject line, one benefit-driven headline, three short paragraphs, and a single CTA button labeled "Shop the Launch."',
+    "Constraint: keep total body copy under 150 words so it reads well on mobile."
+  ],
+  distractorBlocks:[
+    "Make sure it goes viral on TikTok within 24 hours.",
+    "Use at least one emoji in every single sentence.",
+    "Trash-talk competitor water bottle brands by name.",
+    "Write the entire email in formal legal language."
+  ],
+  cleanChunks:[
+    {text:"Act as a senior email copywriter for a sustainability DTC brand.", keep:true},
+    {text:"Write a launch email for the EcoFlow insulated water bottle.", keep:true},
+    {text:"Also write four extra versions in different languages and tones.", keep:false},
+    {text:"Audience: eco-conscious millennials aged 25–40 who follow us on Instagram.", keep:true},
+    {text:"Audience: literally everyone who has ever purchased a water bottle.", keep:false},
+    {text:"Tone: warm, optimistic, and conversational.", keep:true},
+    {text:"Tone: also urgent, also luxurious, also comedic, all at once.", keep:false},
+    {text:"Format: one subject line, one headline, three short paragraphs, one CTA button.", keep:true},
+    {text:"Format: include a 20-item feature list and a poem about the ocean.", keep:false},
+    {text:"Keep total body copy under 150 words.", keep:true}
+  ],
+  weakPrompt:"Write an email about our new water bottle.",
+  optimizedPrompt:"Act as a senior email marketing copywriter for a sustainability-focused DTC brand. Write a launch-announcement email for the new EcoFlow insulated water bottle. Audience: environmentally conscious millennials (25–40) who already follow the brand on Instagram. Tone: warm, optimistic, and conversational — never preachy about sustainability. Format: one subject line, one benefit-driven headline, three short paragraphs, and a single CTA button labeled \"Shop the Launch.\" Constraint: keep total body copy under 150 words.",
+  overEngineeredPrompt:"Act as the world's greatest email marketing copywriter with 30 years of experience across every industry. Write a launch email for the EcoFlow water bottle. Also write a second version for Gen Z, a third for Gen X, and a fourth in French. Audience: everyone who has ever bought a water bottle in history. Tone: warm but also urgent but also luxurious but also funny. Format: include a subject line, five headlines, ten paragraphs, a numbered list of 20 features, a poem about the ocean, and three CTA buttons. Constraint: keep it under 150 words.",
+  weakOutput:"Hey! We have a new water bottle. It is good for the environment. Buy it today! Thanks.",
+  optimizedOutput:"Subject: Meet EcoFlow — Your Planet-Friendly Refill Partner\n\nHeadline: Hydration, Reimagined for a Better Tomorrow\n\nHi there,\nWe built EcoFlow because staying hydrated shouldn't cost the planet. Double-walled insulation keeps drinks cold for 24 hours, in a bottle made from 100% recycled steel.\nJoin thousands already making the switch — no lectures, just better mornings.\n\n[Shop the Launch]",
+  principle:{name:"Role + Audience + Format Specificity", desc:"Pairing a defined role with a precise audience and explicit format constraints gives the model a clear, executable brief instead of an open-ended guess."}
+},
+{
+  id:2, icon:"☕", title:"MorningRitual Coffee — Instagram Caption",
+  desiredOutput:"A short, sensory Instagram caption announcing a new single-origin coffee, aimed at coffee enthusiasts, ending with a soft link-in-bio CTA.",
+  correctBlocks:[
+    "Act as a social media copywriter for a specialty coffee subscription brand.",
+    "Task: Write an Instagram caption announcing a new single-origin Ethiopian coffee.",
+    "Audience: coffee enthusiasts aged 22–35 who care about origin stories and sustainability.",
+    "Tone: friendly, sensory, and a little poetic — like a knowledgeable barista friend.",
+    "Format: a 2–3 sentence caption, followed by 5 relevant hashtags, under 60 words total.",
+    "Include a soft call-to-action inviting people to the link in bio."
+  ],
+  distractorBlocks:[
+    "Add 15 hashtags minimum to maximize reach.",
+    "Mention that other coffee brands are overpriced garbage.",
+    "Write it entirely in ALL CAPS for emphasis.",
+    "Include our full nutritional information panel."
+  ],
+  cleanChunks:[
+    {text:"Act as a social copywriter for a specialty coffee subscription brand.", keep:true},
+    {text:"Announce our new single-origin Ethiopian coffee.", keep:true},
+    {text:"Also announce two other unrelated products in the same caption.", keep:false},
+    {text:"Audience: coffee enthusiasts aged 22–35 who value origin stories.", keep:true},
+    {text:"Audience: anyone who has ever consumed a beverage.", keep:false},
+    {text:"Tone: friendly, sensory, like a knowledgeable barista.", keep:true},
+    {text:"Tone: aggressive and sales-heavy, like a clearance ad.", keep:false},
+    {text:"Format: 2–3 sentences, 5 hashtags, under 60 words.", keep:true},
+    {text:"Format: include 30 hashtags and a full farm history.", keep:false},
+    {text:"Add a soft CTA pointing to the link in bio.", keep:true}
+  ],
+  weakPrompt:"Write an instagram post about new coffee.",
+  optimizedPrompt:"Act as a social media copywriter for a specialty coffee subscription brand. Write an Instagram caption announcing a new single-origin Ethiopian coffee. Audience: coffee enthusiasts aged 22–35 who care about origin stories and sustainability. Tone: friendly, sensory, and a little poetic — like a knowledgeable barista friend. Format: a 2–3 sentence caption, followed by 5 relevant hashtags, under 60 words total. Include a soft call-to-action inviting people to the link in bio.",
+  overEngineeredPrompt:"Act as a legendary global coffee marketing icon. Write an Instagram caption, a TikTok script, a tweet, and a blog post about the new Ethiopian coffee, all in one response. Audience: everyone on Earth who drinks any beverage. Tone: poetic but also urgent but also corporate. Format: unlimited length, 30 hashtags, full sourcing documentation, and a haiku. Include five CTAs.",
+  weakOutput:"New coffee is here! Buy now! #coffee #new",
+  optimizedOutput:"Meet our newest discovery: a bright, floral Ethiopian single-origin with notes of jasmine and stone fruit, picked at peak ripeness at 1,900m. This is the cup we've been chasing all year. Link in bio to grab a bag. #specialtycoffee #ethiopiancoffee #singleorigin #coffeelovers #morningritual",
+  principle:{name:"Sensory Tone + Length Constraint", desc:"Giving a concrete voice reference and a hard word/hashtag limit prevents generic filler and keeps output on-brand and platform-appropriate."}
+},
+{
+  id:3, icon:"🧠", title:"FocusFlow — Landing Page Hero",
+  desiredOutput:"A punchy hero headline and one-sentence subheadline for a distraction-blocking productivity app, targeting remote knowledge workers.",
+  correctBlocks:[
+    "Act as a conversion-focused landing page copywriter for a B2B SaaS product.",
+    "Task: Write a hero headline and one-sentence subheadline for FocusFlow, a productivity app that blocks distractions.",
+    "Audience: remote knowledge workers who struggle with context-switching and app overload.",
+    "Tone: confident and clear, no corporate jargon.",
+    "Format: headline under 8 words, subheadline under 20 words.",
+    "The headline should lead with the core outcome, not the feature."
+  ],
+  distractorBlocks:[
+    "Make the headline exactly 50 words long for SEO.",
+    "Include three different taglines the user must choose from randomly.",
+    'Use technical engineering terms like "API middleware" in the headline.',
+    "Add a 500-word origin story of the founders above the headline."
+  ],
+  cleanChunks:[
+    {text:"Act as a conversion-focused landing page copywriter.", keep:true},
+    {text:"Write a hero headline and subheadline for FocusFlow.", keep:true},
+    {text:"Also write full page body copy including pricing and FAQ.", keep:false},
+    {text:"Audience: remote knowledge workers overwhelmed by context-switching.", keep:true},
+    {text:"Audience: children under age 10.", keep:false},
+    {text:"Tone: confident and clear, no jargon.", keep:true},
+    {text:"Tone: use as much technical jargon as possible.", keep:false},
+    {text:"Format: headline under 8 words, subheadline under 20 words.", keep:true},
+    {text:"Format: headline must be exactly 50 words.", keep:false},
+    {text:"Lead with the outcome, not the feature.", keep:true}
+  ],
+  weakPrompt:"Write a headline for our productivity app.",
+  optimizedPrompt:"Act as a conversion-focused landing page copywriter for a B2B SaaS product. Write a hero headline and one-sentence subheadline for FocusFlow, a productivity app that blocks distractions. Audience: remote knowledge workers who struggle with context-switching and app overload. Tone: confident and clear, no corporate jargon. Format: headline under 8 words, subheadline under 20 words. The headline should lead with the core outcome, not the feature.",
+  overEngineeredPrompt:"Act as the greatest copywriter in advertising history. Write 10 different headline options, 10 subheadlines, a full hero section, and a landing page wireframe description. Audience: every professional in every industry worldwide. Tone: confident, playful, luxurious, technical, and minimalist simultaneously. Format: no length limit, must include statistics, must include a customer quote, must rhyme.",
+  weakOutput:"FocusFlow - The Best App For Productivity And Focus And Getting Things Done",
+  optimizedOutput:"Headline: Deep Work, On Demand\nSubheadline: FocusFlow silences distractions so your best work happens on schedule, not by accident.",
+  principle:{name:"Outcome-First Framing", desc:"Short prompts that specify outcome over feature, plus hard length caps, push the model toward punchy, benefit-led copy instead of feature lists."}
+},
+{
+  id:4, icon:"🏃", title:"PulseFit — Google Search Ad",
+  desiredOutput:"A Google Search ad (two headlines + one description, within platform character limits) for a fitness app targeting time-strapped professionals.",
+  correctBlocks:[
+    "Act as a performance marketing copywriter specializing in Google Search Ads.",
+    "Task: Write one search ad for PulseFit, a fitness app for busy professionals.",
+    "Audience: professionals aged 28–45 with under 30 minutes a day for exercise.",
+    "Tone: motivating and time-conscious, not shouty.",
+    "Format: headline 1 (max 30 characters), headline 2 (max 30 characters), description (max 90 characters).",
+    'Include the specific benefit of "20-minute workouts" somewhere in the ad.'
+  ],
+  distractorBlocks:[
+    "Headlines can be any length since Google will trim them.",
+    "Add a discount code even though we have none right now.",
+    "Use exclamation marks in every headline.",
+    "Mention it works on all fitness trackers even though we haven't verified this."
+  ],
+  cleanChunks:[
+    {text:"Act as a Google Search Ads copywriter.", keep:true},
+    {text:"Write one search ad for PulseFit, a fitness app.", keep:true},
+    {text:"Also write ads for Facebook, LinkedIn, and Snapchat in the same response.", keep:false},
+    {text:"Audience: busy professionals 28–45 with under 30 minutes a day.", keep:true},
+    {text:"Audience: professional athletes training full-time.", keep:false},
+    {text:"Tone: motivating, time-conscious, not shouty.", keep:true},
+    {text:"Tone: use fear-based urgency and shouting.", keep:false},
+    {text:"Format: headlines max 30 characters, description max 90 characters.", keep:true},
+    {text:"Format: ignore character limits, write as long as needed.", keep:false},
+    {text:'Mention the "20-minute workouts" benefit.', keep:true}
+  ],
+  weakPrompt:"Write a google ad for our fitness app.",
+  optimizedPrompt:"Act as a performance marketing copywriter specializing in Google Search Ads. Write one search ad for PulseFit, a fitness app for busy professionals. Audience: professionals aged 28–45 with under 30 minutes a day for exercise. Tone: motivating and time-conscious, not shouty. Format: headline 1 (max 30 characters), headline 2 (max 30 characters), description (max 90 characters). Include the specific benefit of \"20-minute workouts\" somewhere in the ad.",
+  overEngineeredPrompt:"Act as a world-class performance marketer with expertise in every ad platform ever created. Write 15 headline variations, 15 descriptions, and full A/B test hypotheses for PulseFit. Audience: literally anyone with a smartphone. Tone: urgent, luxurious, funny, and clinical all at once. Format: ignore character limits, include fabricated discount codes and unverified claims about device compatibility.",
+  weakOutput:"PulseFit - Get Fit Now! Download our amazing app today for great workouts!",
+  optimizedOutput:"Headline 1: 20-Min Workouts, Real Results\nHeadline 2: Fitness That Fits Your Day\nDescription: Busy schedule? PulseFit builds workouts around your time, not the other way around.",
+  principle:{name:"Hard Character Limits as Guardrails", desc:"Explicit character/length constraints matched to the real platform prevent unusable output and force the model to prioritize the strongest benefit."}
+},
+{
+  id:5, icon:"🛍️", title:"Lumen Apparel — Black Friday Subject Line",
+  desiredOutput:"An elevated, non-screamy Black Friday email subject line and preview text for loyal, full-price customers, stating the specific discount.",
+  correctBlocks:[
+    "Act as an email marketing copywriter for a contemporary fashion brand.",
+    "Task: Write a subject line and preview text for a Black Friday sale email.",
+    "Audience: existing customers who have purchased at full price before (not deal-only shoppers).",
+    "Tone: exciting but still on-brand and elevated, not screamy discount-speak.",
+    "Format: subject line under 45 characters, preview text under 90 characters, no emojis.",
+    "State the specific discount: up to 40% off."
+  ],
+  distractorBlocks:[
+    "Use 5+ emojis in the subject line to stand out.",
+    'Write "LAST CHANCE!!!" in all caps at the start.',
+    "Do not mention any specific discount amount, keep it vague.",
+    "Make the subject line 120 characters to include all details."
+  ],
+  cleanChunks:[
+    {text:"Act as an email copywriter for a contemporary fashion brand.", keep:true},
+    {text:"Write a subject line and preview text for Black Friday.", keep:true},
+    {text:"Also write the full email body with 10 product features.", keep:false},
+    {text:"Audience: existing full-price customers, not deal-only shoppers.", keep:true},
+    {text:"Audience: people who have never visited our site.", keep:false},
+    {text:"Tone: exciting but elevated, not screamy.", keep:true},
+    {text:"Tone: use maximum urgency with all-caps and emojis.", keep:false},
+    {text:"Format: subject under 45 characters, preview under 90, no emojis.", keep:true},
+    {text:"Format: subject line should be 120 characters minimum.", keep:false},
+    {text:"State the specific discount: up to 40% off.", keep:true}
+  ],
+  weakPrompt:"Write a black friday email subject line.",
+  optimizedPrompt:"Act as an email marketing copywriter for a contemporary fashion brand. Write a subject line and preview text for a Black Friday sale email. Audience: existing customers who have purchased at full price before (not deal-only shoppers). Tone: exciting but still on-brand and elevated, not screamy discount-speak. Format: subject line under 45 characters, preview text under 90 characters, no emojis. State the specific discount: up to 40% off.",
+  overEngineeredPrompt:"Act as the most aggressive discount copywriter alive. Write 20 subject line variations, 20 preview texts, and a full send-time strategy. Audience: absolutely everyone on the internet. Tone: screamy urgency, luxury elegance, and humor combined. Format: no character limit, use as many emojis and exclamation marks as physically possible, and avoid stating any real discount number.",
+  weakOutput:"BLACK FRIDAY SALE!!! DONT MISS OUT!!!",
+  optimizedOutput:"Subject: Up to 40% Off, For You First\nPreview: Early access before the rest of the world sees it.",
+  principle:{name:"Audience-Aware Restraint", desc:"Naming who the email is really for (loyal full-price buyers) keeps tone premium instead of defaulting to generic discount shouting."}
+},
+{
+  id:6, icon:"👟", title:"Terra Step — Sneaker Product Description",
+  desiredOutput:"A concise, credible product description for a sustainable sneaker, with a hook, three feature bullets, and one concrete material fact.",
+  correctBlocks:[
+    "Act as an e-commerce copywriter for a sustainable footwear brand.",
+    "Task: Write a product description for the Terra Step sneaker.",
+    "Audience: shoppers browsing the product page who already clicked in from a sustainability-focused ad.",
+    'Tone: confident, tactile, and specific about materials — avoid vague "eco-friendly" claims.',
+    "Format: one 2-sentence opening hook, followed by 3 bullet points for key features, under 90 words total.",
+    "Name at least one concrete material fact (e.g., recycled ocean plastic, natural rubber sole)."
+  ],
+  distractorBlocks:[
+    'Just say "eco-friendly" and "sustainable" as many times as possible.',
+    "Include the full manufacturing supply chain audit in the description.",
+    "Write 10 paragraphs covering every possible use case.",
+    "Compare it directly to a specific competitor brand by name."
+  ],
+  cleanChunks:[
+    {text:"Act as an e-commerce copywriter for a sustainable footwear brand.", keep:true},
+    {text:"Write a product description for the Terra Step sneaker.", keep:true},
+    {text:"Also include a full competitor comparison table.", keep:false},
+    {text:"Audience: shoppers who clicked from a sustainability-focused ad.", keep:true},
+    {text:"Audience: industrial footwear wholesale buyers only.", keep:false},
+    {text:"Tone: confident, tactile, specific about materials.", keep:true},
+    {text:'Tone: repeat "eco-friendly" as many times as possible.', keep:false},
+    {text:"Format: 2-sentence hook, 3 bullets, under 90 words.", keep:true},
+    {text:"Format: 10 paragraphs covering every use case.", keep:false},
+    {text:"Name one concrete material fact.", keep:true}
+  ],
+  weakPrompt:"Write a product description for our sneakers.",
+  optimizedPrompt:"Act as an e-commerce copywriter for a sustainable footwear brand. Write a product description for the Terra Step sneaker. Audience: shoppers browsing the product page who already clicked in from a sustainability-focused ad. Tone: confident, tactile, and specific about materials — avoid vague \"eco-friendly\" claims. Format: one 2-sentence opening hook, followed by 3 bullet points for key features, under 90 words total. Name at least one concrete material fact (e.g., recycled ocean plastic, natural rubber sole).",
+  overEngineeredPrompt:"Act as the greatest footwear copywriter of all time. Write a 500-word description, a poem, a size-fit guide, and a full sustainability audit all in one response. Audience: every human who has ever worn shoes. Tone: use 'eco-friendly' and 'sustainable' at least 15 times each. Format: no word limit, include a direct comparison to a named competitor brand and unverifiable durability statistics.",
+  weakOutput:"These sneakers are eco-friendly and sustainable and great. Buy them now, they are very good for the environment and comfortable too.",
+  optimizedOutput:"Step lighter, literally. Terra Step is built from 12 recycled plastic bottles and a natural rubber sole that biodegrades faster than standard foam.\n• Upper knit from ocean-recycled polyester\n• Natural rubber outsole for grip and give\n• Machine-washable, no glue seams to break down",
+  principle:{name:"Concrete Detail Over Buzzwords", desc:"Requiring one specific, verifiable fact eliminates vague marketing buzzwords and produces more credible, differentiated copy."}
+}
+];
+
+/* ================= HELPERS ================= */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function esc(str){
+  return String(str).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+}
+function clamp(n,lo,hi){ return Math.max(lo,Math.min(hi,n)); }
+
+const mainEl = document.getElementById('main');
+const topbarStats = document.getElementById('topbar-stats');
+const toastsEl = document.getElementById('toasts');
+const progressFill = document.getElementById('progressbar-fill');
+const badgeProgress = document.getElementById('badge-progress');
+
+let session = null;
+
+/* ================= TOASTS ================= */
+function toast(msg, type){
+  const el = document.createElement('div');
+  el.className = 'toast ' + (type||'info');
+  el.textContent = msg;
+  toastsEl.appendChild(el);
+  setTimeout(()=>{ el.remove(); }, 2600);
+}
+
+/* ================= TOPBAR ================= */
+function updateTopbar(){
+  if(!session){ topbarStats.innerHTML=''; badgeProgress.textContent=''; progressFill.style.width='0%'; return; }
+  const doneCount = session.results.length;
+  const totalCount = session.order.length;
+  badgeProgress.textContent = "📍 Scenario " + Math.min(session.idx+1,totalCount) + " / " + totalCount;
+  progressFill.style.width = (doneCount/totalCount*100) + '%';
+
+  const cur = session.cur;
+  let timeStr = '0:00', moves=0, wrong=0, hints=0;
+  if(cur){
+    const sec = Math.floor((Date.now()-cur.startTime)/1000);
+    timeStr = Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0');
+    moves = cur.moves||0; hints = cur.hints||0;
+    wrong = liveWrongCount(cur);
+  }
+  const liveScore = session.results.reduce((s,r)=>s+r.score,0);
+  topbarStats.innerHTML = `
+    <span class="stat-chip">🏆 ${liveScore}</span>
+    <span class="stat-chip">⏱ ${timeStr}</span>
+    <span class="stat-chip">🧩 ${moves}</span>
+    <span class="stat-chip">⚠️ ${wrong}</span>
+    <span class="stat-chip">💡 ${hints}</span>
+  `;
+}
+
+function liveWrongCount(cur){
+  if(!cur) return 0;
+  if(cur.type==='build'){
+    return cur.chosenIds.filter(id=>id.startsWith('d')).length;
+  }
+  if(cur.type==='clean'){
+    let wrong=0;
+    cur.allChunks.forEach(c=>{
+      const isKept = cur.keptIds.includes(c.id);
+      if(!((c.keep && isKept) || (!c.keep && !isKept))) wrong++;
+    });
+    return wrong;
+  }
+  if(cur.type==='choose'){
+    return (cur.selected && cur.selected!=='optimized') ? 1 : 0;
+  }
+  return 0;
+}
+
+/* ================= WELCOME ================= */
+function renderWelcome(){
+  session = null;
+  updateTopbar();
+  mainEl.innerHTML = `
+    <div class="card" style="text-align:center;">
+      <div class="welcome-icon">🧩</div>
+      <h1>Prompt Puzzle</h1>
+      <p class="subtitle">Domain: <strong>${esc(DOMAIN)}</strong> &nbsp;·&nbsp; Difficulty: <strong>${esc(DIFFICULTY)}</strong></p>
+      <p class="subtitle">Sharpen your prompt engineering across 6 real marketing scenarios. Every round mixes three challenge types:</p>
+      <div class="type-grid">
+        <div class="type-card"><h4>🧱 Build the Prompt</h4><p>Drag the right building blocks into place — and leave the distractors behind.</p></div>
+        <div class="type-card"><h4>🧹 Clean the Prompt</h4><p>A messy, over-stuffed prompt needs trimming. Keep what matters, drop the noise.</p></div>
+        <div class="type-card"><h4>⚖️ Choose the Best Prompt</h4><p>Three prompts, one winner. Spot the optimized version among the weak and the bloated.</p></div>
+      </div>
+      <button class="btn-primary" data-action="start">Start Challenge →</button>
+    </div>
+  `;
+}
+
+/* ================= SESSION FLOW ================= */
+function startSession(){
+  const order = shuffle(scenarios.map((s,i)=>i));
+  const typeCycle = ['build','clean','choose'];
+  session = {
+    order,
+    types: order.map((_,i)=> typeCycle[i%3]),
+    idx: 0,
+    results: []
+  };
+  goToScenario();
+}
+
+function goToScenario(){
+  const sIdx = session.order[session.idx];
+  const scenario = scenarios[sIdx];
+  const type = session.types[session.idx];
+  const cur = { scenario, type, moves:0, hints:0, startTime:Date.now(), hintTarget:null };
+
+  if(type==='build'){
+    cur.allBlocks = shuffle([
+      ...scenario.correctBlocks.map((t,i)=>({id:'c'+i, text:t, correct:true})),
+      ...scenario.distractorBlocks.map((t,i)=>({id:'d'+i, text:t, correct:false}))
+    ]);
+    cur.chosenIds = [];
+  } else if(type==='clean'){
+    cur.allChunks = shuffle(scenario.cleanChunks.map((c,i)=>({id:'k'+i, text:c.text, keep:c.keep})));
+    cur.keptIds = [];
+  } else if(type==='choose'){
+    cur.options = shuffle([
+      {key:'weak', text:scenario.weakPrompt},
+      {key:'optimized', text:scenario.optimizedPrompt},
+      {key:'over', text:scenario.overEngineeredPrompt}
+    ]);
+    cur.selected = null;
+    cur.disabled = [];
+  }
+
+  session.cur = cur;
+  if(session.timerId) clearInterval(session.timerId);
+  session.timerId = setInterval(updateTopbar, 1000);
+  renderScenario();
+  updateTopbar();
+}
+
+/* ================= RENDER SCENARIO ================= */
+function renderScenario(){
+  const cur = session.cur;
+  const scenario = cur.scenario;
+  let instructions = '', body = '';
+
+  if(cur.type==='build'){
+    instructions = "Drag (or click) the correct blocks into <strong>Your Prompt</strong>. Avoid distractor blocks that would weaken the result.";
+    body = renderBuild(cur);
+  } else if(cur.type==='clean'){
+    instructions = "This prompt got bloated. Drag (or click) only the useful lines into <strong>Your Clean Prompt</strong> — leave the fluff, redundancy and contradictions behind.";
+    body = renderClean(cur);
+  } else if(cur.type==='choose'){
+    instructions = "Three prompt versions were written for this task. Click the one you believe will produce the best result.";
+    body = renderChoose(cur);
+  }
+
+  mainEl.innerHTML = `
+    <div class="card">
+      <h2>${scenario.icon} ${esc(scenario.title)}</h2>
+      <div class="desired-output"><strong>🎯 Desired Output:</strong> ${esc(scenario.desiredOutput)}</div>
+      <div class="instructions">${instructions}</div>
+      <div id="challenge-area">${body}</div>
+      <div class="actions-row">
+        <button class="btn-secondary" data-action="hint">💡 Hint (${cur.hints} used)</button>
+        <button class="btn-primary" data-action="check">✅ Check Prompt</button>
+      </div>
+    </div>
+  `;
+}
+
+function rerenderChallenge(){
+  const cur = session.cur;
+  let body = '';
+  if(cur.type==='build') body = renderBuild(cur);
+  else if(cur.type==='clean') body = renderClean(cur);
+  else if(cur.type==='choose') body = renderChoose(cur);
+  document.getElementById('challenge-area').innerHTML = body;
+  const hintBtn = document.querySelector('[data-action="hint"]');
+  if(hintBtn) hintBtn.textContent = `💡 Hint (${cur.hints} used)`;
+  updateTopbar();
+}
+
+function renderBuild(cur){
+  const pool = cur.allBlocks.filter(b=>!cur.chosenIds.includes(b.id));
+  const chosen = cur.chosenIds.map(id=>cur.allBlocks.find(b=>b.id===id));
+  const poolHtml = pool.map(b => `
+    <div class="block ${b.id===cur.hintTarget?'hint-glow':''}" draggable="true" data-block-id="${b.id}" data-zone="pool">${esc(b.text)}</div>
+  `).join('') || '<p style="color:var(--text-dim); font-size:0.82rem;">All blocks placed.</p>';
+  const chosenHtml = chosen.map(b => `
+    <div class="block chosen" draggable="true" data-block-id="${b.id}" data-zone="chosen">${esc(b.text)}</div>
+  `).join('') || '<p style="color:var(--text-dim); font-size:0.82rem;">Drag blocks here.</p>';
+
+  return `
+    <div class="zones">
+      <div class="zone" data-dropzone="pool"><h4>Block Pool</h4>${poolHtml}</div>
+      <div class="zone" data-dropzone="chosen"><h4>Your Prompt</h4>${chosenHtml}</div>
+    </div>
+  `;
+}
+
+function renderClean(cur){
+  const pool = cur.allChunks.filter(c=>!cur.keptIds.includes(c.id));
+  const kept = cur.keptIds.map(id=>cur.allChunks.find(c=>c.id===id));
+  const poolHtml = pool.map(c => `
+    <div class="chunk ${c.id===cur.hintTarget?'hint-glow':''}" draggable="true" data-chunk-id="${c.id}" data-zone="pool">${esc(c.text)}</div>
+  `).join('') || '<p style="color:var(--text-dim); font-size:0.82rem;">Nothing left in the pool.</p>';
+  const keptHtml = kept.map(c => `
+    <div class="chunk ${c.id===cur.hintTarget?'hint-glow':''}" draggable="true" data-chunk-id="${c.id}" data-zone="kept">${esc(c.text)}</div>
+  `).join('') || '<p style="color:var(--text-dim); font-size:0.82rem;">Drag lines you want to keep here.</p>';
+
+  return `
+    <div class="zones">
+      <div class="zone" data-dropzone="pool"><h4>Messy Prompt Pool</h4>${poolHtml}</div>
+      <div class="zone" data-dropzone="kept"><h4>Your Clean Prompt</h4>${keptHtml}</div>
+    </div>
+  `;
+}
+
+function renderChoose(cur){
+  const letters = ['A','B','C'];
+  return `
+    <div class="options-grid">
+      ${cur.options.map((o,i)=>`
+        <div class="option-card ${cur.selected===o.key?'selected':''} ${cur.disabled.includes(o.key)?'disabled':''}" data-option-key="${o.key}">
+          <span class="option-tag">${letters[i]}</span>
+          <div class="option-text">${esc(o.text)}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+/* ================= INTERACTIONS ================= */
+function addMove(){ session.cur.moves++; }
+
+function toggleBlock(id, currentZone, forceZone){
+  const cur = session.cur;
+  const targetZone = forceZone || (currentZone==='pool' ? 'chosen' : 'pool');
+  const inChosen = cur.chosenIds.includes(id);
+  if(targetZone==='chosen' && !inChosen){
+    cur.chosenIds.push(id);
+    addMove();
+    const block = cur.allBlocks.find(b=>b.id===id);
+    toast(block.correct ? 'Good addition!' : "That looks like a distractor — reconsider.", block.correct ? 'good' : 'warn');
+  } else if(targetZone==='pool' && inChosen){
+    cur.chosenIds = cur.chosenIds.filter(x=>x!==id);
+    addMove();
+  }
+  rerenderChallenge();
+}
+
+function toggleChunk(id, currentZone, forceZone){
+  const cur = session.cur;
+  const targetZone = forceZone || (currentZone==='pool' ? 'kept' : 'pool');
+  const inKept = cur.keptIds.includes(id);
+  if(targetZone==='kept' && !inKept){
+    cur.keptIds.push(id);
+    addMove();
+    const chunk = cur.allChunks.find(c=>c.id===id);
+    toast(chunk.keep ? 'Kept a strong line!' : 'That line adds noise — reconsider.', chunk.keep ? 'good' : 'warn');
+  } else if(targetZone==='pool' && inKept){
+    cur.keptIds = cur.keptIds.filter(x=>x!==id);
+    addMove();
+  }
+  rerenderChallenge();
+}
+
+function selectOption(key){
+  const cur = session.cur;
+  if(cur.disabled.includes(key)) return;
+  cur.selected = key;
+  addMove();
+  rerenderChallenge();
+}
+
+function useHint(){
+  const cur = session.cur;
+  cur.hints++;
+  if(cur.type==='build'){
+    const missing = cur.allBlocks.find(b=>b.correct && !cur.chosenIds.includes(b.id));
+    if(missing){ cur.hintTarget = missing.id; }
+  } else if(cur.type==='clean'){
+    const wrongOne = cur.allChunks.find(c=>{
+      const isKept = cur.keptIds.includes(c.id);
+      return !((c.keep && isKept) || (!c.keep && !isKept));
+    });
+    if(wrongOne){ cur.hintTarget = wrongOne.id; }
+  } else if(cur.type==='choose'){
+    const wrongOpt = cur.options.find(o=>o.key!=='optimized' && !cur.disabled.includes(o.key));
+    if(wrongOpt){ cur.disabled.push(wrongOpt.key); }
+  }
+  toast('Hint used','info');
+  rerenderChallenge();
+  if(cur.hintTarget){
+    setTimeout(()=>{ if(session && session.cur===cur){ cur.hintTarget=null; rerenderChallenge(); } }, 2600);
+  }
+}
+
+/* ================= SCORING ================= */
+function computeScenarioScore(type, {correctCount, totalCorrect, wrongPlacements, hints, timeSec}){
+  let accuracyPct;
+  if(type==='choose'){
+    accuracyPct = correctCount ? 100 : 45;
+  } else {
+    accuracyPct = clamp(Math.round((correctCount/totalCorrect)*100) - wrongPlacements*10, 0, 100);
+  }
+  const timeBonus = timeSec < 40 ? 10 : (timeSec > 100 ? -10 : 0);
+  const hintPenalty = hints * 8;
+  const optimizationBonus = (hints===0 && wrongPlacements===0) ? 15 : 0;
+  let raw = accuracyPct + timeBonus - hintPenalty + optimizationBonus;
+  raw = clamp(raw, 0, 100);
+  return { accuracyPct, timeBonus, hintPenalty, optimizationBonus, score: raw };
+}
+
+function checkScenario(){
+  const cur = session.cur;
+  const scenario = cur.scenario;
+  clearInterval(session.timerId);
+  const timeSec = Math.floor((Date.now()-cur.startTime)/1000);
+  let correctCount=0, totalCorrect=0, wrongPlacements=0;
+
+  if(cur.type==='build'){
+    totalCorrect = scenario.correctBlocks.length;
+    correctCount = cur.chosenIds.filter(id=>id.startsWith('c')).length;
+    wrongPlacements = cur.chosenIds.filter(id=>id.startsWith('d')).length;
+  } else if(cur.type==='clean'){
+    totalCorrect = cur.allChunks.length;
+    let right = 0;
+    cur.allChunks.forEach(c=>{
+      const isKept = cur.keptIds.includes(c.id);
+      if((c.keep && isKept) || (!c.keep && !isKept)) right++;
+    });
+    correctCount = right;
+    wrongPlacements = totalCorrect - right;
+  } else if(cur.type==='choose'){
+    totalCorrect = 1;
+    correctCount = cur.selected === 'optimized' ? 1 : 0;
+    wrongPlacements = (cur.selected && cur.selected!=='optimized') ? 1 : 0;
+  }
+
+  const scoreObj = computeScenarioScore(cur.type, { correctCount, totalCorrect, wrongPlacements, hints:cur.hints, timeSec });
+  session.results.push({
+    ...scoreObj, type:cur.type, scenarioId:scenario.id, moves:cur.moves,
+    timeSec, hints:cur.hints, wrongPlacements, correctCount, totalCorrect
+  });
+  renderFeedback(scoreObj, scenario, cur.type);
+}
+
+/* ================= FEEDBACK SCREEN ================= */
+function renderFeedback(scoreObj, scenario, type){
+  const isLast = session.idx + 1 >= session.order.length;
+  mainEl.innerHTML = `
+    <div class="card">
+      <h2>${scoreObj.score>=80?'🎉':scoreObj.score>=50?'👍':'🔧'} Scenario Complete</h2>
+      <div class="score-breakdown">
+        <div class="score-item"><div class="val">${scoreObj.accuracyPct}%</div><div class="lbl">Accuracy</div></div>
+        <div class="score-item"><div class="val">${scoreObj.timeBonus>=0?'+':''}${scoreObj.timeBonus}</div><div class="lbl">Time Bonus</div></div>
+        <div class="score-item"><div class="val">-${scoreObj.hintPenalty}</div><div class="lbl">Hint Penalty</div></div>
+        <div class="score-item"><div class="val">+${scoreObj.optimizationBonus}</div><div class="lbl">Optimization Bonus</div></div>
+      </div>
+      <div class="score-total"><div class="lbl">Scenario Score</div><div class="big" id="animatedScore">0</div><div>/ 100</div></div>
+
+      <div class="principle-box"><strong>${esc(scenario.principle.name)}</strong><p>${esc(scenario.principle.desc)}</p></div>
+
+      <p style="font-size:0.85rem; color:var(--text-dim); margin-bottom:6px;">Optimized Prompt Blueprint:</p>
+      <ul class="blueprint-list">
+        ${scenario.correctBlocks.map(b=>'<li>'+esc(b)+'</li>').join('')}
+      </ul>
+
+      <div class="compare-grid">
+        <div class="compare-col weak">
+          <h4>Weak Prompt</h4><pre>${esc(scenario.weakPrompt)}</pre>
+          <h5>Weak Output</h5><pre>${esc(scenario.weakOutput)}</pre>
+        </div>
+        <div class="compare-col optimized">
+          <h4>Optimized Prompt</h4><pre>${esc(scenario.optimizedPrompt)}</pre>
+          <h5>Optimized Output</h5><pre>${esc(scenario.optimizedOutput)}</pre>
+        </div>
+      </div>
+
+      <details>
+        <summary>⚠️ Why "more instructions" isn't always better</summary>
+        <pre>${esc(scenario.overEngineeredPrompt)}</pre>
+      </details>
+
+      <div class="actions-row">
+        <button class="btn-primary" data-action="next">${isLast ? 'View Report →' : 'Next Scenario →'}</button>
+      </div>
+    </div>
+  `;
+  updateTopbar();
+  animateNumber(document.getElementById('animatedScore'), scoreObj.score);
+}
+
+function animateNumber(el, target){
+  if(!el) return;
+  let cur = 0;
+  const step = Math.max(1, Math.ceil(target/24));
+  const iv = setInterval(()=>{
+    cur += step;
+    if(cur>=target){ cur = target; clearInterval(iv); }
+    el.textContent = cur;
+  }, 20);
+}
+
+function nextScenario(){
+  session.idx++;
+  if(session.idx >= session.order.length){
+    renderReport();
+  } else {
+    goToScenario();
+  }
+}
+
+/* ================= REPORT ================= */
+function drawRadar(values){
+  const labels = Object.keys(values);
+  const n = labels.length;
+  const cx=160, cy=150, maxR=105;
+  const pts = labels.map((k,i)=>{
+    const angle = (-90 + i*(360/n)) * Math.PI/180;
+    const r = maxR * (clamp(values[k],0,100)/100);
+    return [cx + r*Math.cos(angle), cy + r*Math.sin(angle)];
+  });
+  const polyStr = pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+
+  let grid = '';
+  [0.25,0.5,0.75,1].forEach(f=>{
+    const gp = labels.map((k,i)=>{
+      const angle = (-90 + i*(360/n)) * Math.PI/180;
+      const r = maxR*f;
+      return (cx+r*Math.cos(angle)).toFixed(1)+','+(cy+r*Math.sin(angle)).toFixed(1);
+    }).join(' ');
+    grid += `<polygon points="${gp}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>`;
+  });
+
+  let axes = '', labelsHtml = '';
+  labels.forEach((k,i)=>{
+    const angle = (-90 + i*(360/n)) * Math.PI/180;
+    const x = cx + maxR*Math.cos(angle), y = cy + maxR*Math.sin(angle);
+    axes += `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>`;
+    const lx = cx + (maxR+22)*Math.cos(angle), ly = cy + (maxR+22)*Math.sin(angle);
+    labelsHtml += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" dominant-baseline="middle">${k}</text>`;
+  });
+
+  return `
+    <svg class="dna" viewBox="0 0 320 300" width="100%" height="280">
+      ${grid}${axes}
+      <polygon points="${polyStr}" fill="url(#dnaGrad)" fill-opacity="0.35" stroke="#22d3ee" stroke-width="2"/>
+      <defs>
+        <linearGradient id="dnaGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#22d3ee"/>
+          <stop offset="100%" stop-color="#a78bfa"/>
+        </linearGradient>
+      </defs>
+      ${labelsHtml}
+    </svg>
+  `;
+}
+
+function renderReport(){
+  clearInterval(session.timerId);
+  const results = session.results;
+  const total = results.reduce((s,r)=>s+r.score,0);
+  const avg = total / results.length;
+  const totalScore1000 = Math.round(avg*10);
+
+  let rating, rank;
+  if(totalScore1000>=900){ rating='Prompt Grandmaster 🏆'; rank='S-Tier'; }
+  else if(totalScore1000>=750){ rating='Prompt Master 🥇'; rank='A-Tier'; }
+  else if(totalScore1000>=600){ rating='Skilled Prompter 🥈'; rank='B-Tier'; }
+  else if(totalScore1000>=400){ rating='Developing Prompter 🥉'; rank='C-Tier'; }
+  else { rating='Prompt Novice 🌱'; rank='D-Tier'; }
+
+  function avgOf(arr, fn){ return arr.length ? arr.reduce((s,r)=>s+fn(r),0)/arr.length : 70; }
+
+  const buildRes = results.filter(r=>r.type==='build');
+  const cleanRes = results.filter(r=>r.type==='clean');
+  const chooseRes = results.filter(r=>r.type==='choose');
+
+  const clarity = Math.round(avgOf(buildRes, r=>r.score));
+  const precision = Math.round(avgOf(cleanRes, r=>r.score));
+  const judgment = Math.round(avgOf(chooseRes, r=>r.score));
+  const efficiency = Math.round(clamp(100 - avgOf(results, r=>r.hints*10 + r.wrongPlacements*6), 0, 100));
+  const speed = Math.round(clamp(100 - avgOf(results, r=>Math.max(0,(r.timeSec-40)*1.1)), 0, 100));
+  const scoresOnly = results.map(r=>r.score);
+  const consistency = Math.round(clamp(100 - (Math.max(...scoresOnly) - Math.min(...scoresOnly)), 0, 100));
+
+  const traits = { Clarity:clarity, Precision:precision, Judgment:judgment, Efficiency:efficiency, Speed:speed, Consistency:consistency };
+
+  const traitEntries = Object.entries(traits).sort((a,b)=>a[1]-b[1]);
+  const weakest = traitEntries[0];
+  const strongest = traitEntries[traitEntries.length-1];
+
+  const tips = {
+    Clarity:"Focus on nailing Role, Task, and Format blocks together — that combo drives most of the clarity score.",
+    Precision:"When cleaning prompts, watch for contradictory instructions (like conflicting tone or length demands) — those are the biggest red flags.",
+    Judgment:"Before choosing a prompt, check for hard constraints (character limits, word counts) — the optimized version always respects them.",
+    Efficiency:"Try relying less on hints and double-checking your placement before committing.",
+    Speed:"Skim the Desired Output first, then move quickly — hesitation costs more than a wrong guess you can fix.",
+    Consistency:"Aim for a steady process each round: read brief → identify constraints → build → verify."
+  };
+
+  const bestResult = results.reduce((a,b)=> b.score>a.score ? b : a, results[0]);
+  const bestScenario = scenarios.find(s=>s.id===bestResult.scenarioId);
+
+  let milestone;
+  if(totalScore1000<400) milestone = "Reach 400+ to hit Developing Prompter — focus on completing every Build challenge with zero distractors.";
+  else if(totalScore1000<600) milestone = "Reach 600+ to become a Skilled Prompter — try finishing a round with zero hints used.";
+  else if(totalScore1000<750) milestone = "Reach 750+ to unlock Prompt Master — tighten up your " + weakest[0] + " score.";
+  else if(totalScore1000<900) milestone = "Reach 900+ to become a Prompt Grandmaster — near-perfect accuracy with zero wrong placements across all 6 scenarios.";
+  else milestone = "You've hit the top rank — replay with a fresh shuffle to prove it wasn't luck!";
+
+  mainEl.innerHTML = `
+    <div class="card rank-hero">
+      <div class="score-num">${totalScore1000}</div>
+      <div class="rating">${rating}</div>
+      <div class="rank-tag">Rank: ${rank}</div>
+    </div>
+    <div class="card report-grid">
+      <div>
+        <h3>🧬 Prompt DNA</h3>
+        ${drawRadar(traits)}
+      </div>
+      <div>
+        <h3>📋 Personalized Feedback</h3>
+        <p class="feedback-text">Your strongest trait is <strong>${strongest[0]}</strong> (${strongest[1]}). Your growth area is <strong>${weakest[0]}</strong> (${weakest[1]}): ${tips[weakest[0]]}</p>
+        <div class="milestone-box"><strong>🎯 Next Milestone:</strong> ${milestone}</div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>✨ Your Strongest Prompt This Round</h3>
+      <p class="subtitle">${esc(bestScenario.icon)} ${esc(bestScenario.title)} — scored ${bestResult.score}/100</p>
+      <div class="compare-col optimized">
+        <h4>Final Optimized Prompt</h4>
+        <pre>${esc(bestScenario.optimizedPrompt)}</pre>
+      </div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <button class="btn-primary" data-action="replay">🔁 Replay with New Scenarios</button>
+    </div>
+  `;
+  updateTopbar();
+}
+
+/* ================= EVENT DELEGATION ================= */
+mainEl.addEventListener('click', (e)=>{
+  const actionBtn = e.target.closest('[data-action]');
+  if(actionBtn){
+    const action = actionBtn.dataset.action;
+    if(action==='start') startSession();
+    else if(action==='hint') useHint();
+    else if(action==='check') checkScenario();
+    else if(action==='next') nextScenario();
+    else if(action==='replay') startSession();
+    return;
+  }
+  const block = e.target.closest('[data-block-id]');
+  if(block){ toggleBlock(block.dataset.blockId, block.dataset.zone); return; }
+  const chunk = e.target.closest('[data-chunk-id]');
+  if(chunk){ toggleChunk(chunk.dataset.chunkId, chunk.dataset.zone); return; }
+  const opt = e.target.closest('[data-option-key]');
+  if(opt){ selectOption(opt.dataset.optionKey); return; }
+});
+
+mainEl.addEventListener('dragstart', (e)=>{
+  const block = e.target.closest('[data-block-id]');
+  if(block){ e.dataTransfer.setData('text/plain', JSON.stringify({kind:'block', id:block.dataset.blockId, zone:block.dataset.zone})); return; }
+  const chunk = e.target.closest('[data-chunk-id]');
+  if(chunk){ e.dataTransfer.setData('text/plain', JSON.stringify({kind:'chunk', id:chunk.dataset.chunkId, zone:chunk.dataset.zone})); }
+});
+
+mainEl.addEventListener('dragover', (e)=>{
+  const dz = e.target.closest('[data-dropzone]');
+  if(dz){ e.preventDefault(); dz.classList.add('drag-over'); }
+});
+mainEl.addEventListener('dragleave', (e)=>{
+  const dz = e.target.closest('[data-dropzone]');
+  if(dz){ dz.classList.remove('drag-over'); }
+});
+mainEl.addEventListener('drop', (e)=>{
+  const dz = e.target.closest('[data-dropzone]');
+  if(!dz) return;
+  e.preventDefault();
+  dz.classList.remove('drag-over');
+  let data;
+  try{ data = JSON.parse(e.dataTransfer.getData('text/plain')||'{}'); } catch(err){ return; }
+  if(data.kind==='block') toggleBlock(data.id, data.zone, dz.dataset.dropzone);
+  if(data.kind==='chunk') toggleChunk(data.id, data.zone, dz.dataset.dropzone);
+});
+
+/* ================= INIT ================= */
+renderWelcome();
+
+})();
+</script>
+</body>
+</html>
