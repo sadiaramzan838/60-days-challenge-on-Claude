@@ -303,3 +303,9 @@ Day 34 – Marketing Detective
 * Built an interactive Marketing Detective game using React and HTML.
 * Investigated fictional marketing cases through clue-based decision-making and draggable evidence.
 * Generated a final learning report with case analysis, marketing insights, and improvement recommendations.
+
+Day 35 – Prompt Puzzle
+
+* Built an interactive Prompt Puzzle game for learning AI prompting through hands-on challenges.
+* Implemented drag-and-drop prompt-building activities with live scoring and performance tracking.
+* Generated a personalized Prompt Performance Report with feedback, rankings, and optimized prompts.
