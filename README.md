@@ -309,3 +309,9 @@ Day 35 – Prompt Puzzle
 * Built an interactive Prompt Puzzle game for learning AI prompting through hands-on challenges.
 * Implemented drag-and-drop prompt-building activities with live scoring and performance tracking.
 * Generated a personalized Prompt Performance Report with feedback, rankings, and optimized prompts.
+
+Day 36 – Cognitive Pattern Explorer
+
+* Built an interactive Cognitive Pattern Explorer using HTML, CSS, and JavaScript.
+* Explored thinking patterns through draggable activities, interactive scenarios, and guided self-reflection.
+* Generated a personalized Reflection Journal with thinking insights, percentage breakdown, and progress tracking.
