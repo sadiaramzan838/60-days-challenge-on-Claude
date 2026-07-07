@@ -315,3 +315,9 @@ Day 36 – Cognitive Pattern Explorer
 * Built an interactive Cognitive Pattern Explorer using HTML, CSS, and JavaScript.
 * Explored thinking patterns through draggable activities, interactive scenarios, and guided self-reflection.
 * Generated a personalized Reflection Journal with thinking insights, percentage breakdown, and progress tracking.
+
+Day 37 – Task Compass
+
+* Built an interactive Task Compass workplace simulation using HTML, CSS, and JavaScript.
+* Explored task ownership, workflow routing, and team collaboration through drag-and-drop challenges.
+* Generated a personalized workplace reflection with collaboration insights and workflow understanding.
