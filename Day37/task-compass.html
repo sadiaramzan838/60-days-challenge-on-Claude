@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Task Compass — Café &amp; Restaurant</title>
+<style>
+  :root{
+    --bg-1:#160e09;
+    --bg-2:#2b1508;
+    --bg-3:#1d1109;
+    --glass: rgba(244,233,216,0.055);
+    --glass-strong: rgba(244,233,216,0.09);
+    --glass-border: rgba(244,233,216,0.14);
+    --cream:#f4e9d8;
+    --muted:#b9a690;
+    --gold:#d9b24c;
+    --line: rgba(244,233,216,0.10);
+
+    --c-server:#e8a94c;
+    --c-barista:#c17a4d;
+    --c-chef:#e0584c;
+    --c-kitchen:#f0954a;
+    --c-manager:#4fa9c2;
+    --c-host:#a377d9;
+    --c-cashier:#6ec18a;
+    --c-owner:#d9b24c;
+
+    --radius:18px;
+    --radius-sm:12px;
+    --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    font-family:var(--sans);
+    color:var(--cream);
+    background:
+      radial-gradient(circle at 15% 10%, rgba(217,178,76,0.10), transparent 45%),
+      radial-gradient(circle at 85% 90%, rgba(224,88,76,0.10), transparent 45%),
+      linear-gradient(160deg, var(--bg-1), var(--bg-2) 45%, var(--bg-3) 100%);
+    background-size:200% 200%, 200% 200%, 300% 300%;
+    animation: bgShift 22s ease-in-out infinite;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  @keyframes bgShift{
+    0%{ background-position: 0% 0%, 100% 100%, 0% 50%; }
+    50%{ background-position: 30% 20%, 70% 80%, 100% 50%; }
+    100%{ background-position: 0% 0%, 100% 100%, 0% 50%; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important;}
+  }
+
+  .app{ max-width:920px; margin:0 auto; padding:28px 20px 80px; position:relative; }
+
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:20px; margin-bottom:34px; flex-wrap:wrap; }
+  .brand{ display:flex; align-items:center; gap:14px; }
+  .brand-mark{
+    font-size:30px; width:52px; height:52px; display:flex; align-items:center; justify-content:center;
+    background: var(--glass); border:1px solid var(--glass-border); border-radius:16px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+  }
+  .brand h1{ font-family:var(--serif); font-size:26px; margin:0; letter-spacing:0.3px; }
+  .brand p{ margin:2px 0 0; font-size:13px; color:var(--muted); }
+
+  .progress-wrap{ display:flex; flex-direction:column; align-items:flex-end; gap:6px; min-width:220px; }
+  .progress-track{ width:220px; height:8px; border-radius:6px; background:rgba(244,233,216,0.08); overflow:hidden; border:1px solid var(--glass-border); }
+  .progress-fill{ height:100%; width:0%; background:linear-gradient(90deg, var(--c-server), var(--gold)); transition: width 0.6s cubic-bezier(.4,0,.2,1); border-radius:6px; }
+  #progressLabel{ font-size:12px; color:var(--muted); letter-spacing:0.3px; }
+  .sound-toggle{
+    background:var(--glass); border:1px solid var(--glass-border); color:var(--cream);
+    border-radius:10px; width:34px;height:34px; cursor:pointer; font-size:15px;
+  }
+
+  .glass{
+    background:var(--glass);
+    border:1px solid var(--glass-border);
+    border-radius:var(--radius);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  /* ---------- Intro ---------- */
+  .intro-card{ padding:40px 36px; text-align:center; animation: fadeUp 0.6s ease; }
+  @keyframes fadeUp{ from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);} }
+  .intro-emoji{ font-size:44px; display:block; margin-bottom:10px; }
+  .intro-card h2{ font-family:var(--serif); font-size:28px; margin:0 0 6px; }
+  .intro-sub{ color:var(--gold); font-size:14px; margin:0 0 18px; letter-spacing:0.3px; }
+  .intro-card > p{ color:var(--muted); line-height:1.6; max-width:560px; margin:0 auto 26px; font-size:15px; }
+  .role-roster{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:30px; }
+  .roster-chip{
+    display:flex; align-items:center; gap:6px; padding:7px 12px; border-radius:100px;
+    background:rgba(244,233,216,0.05); border:1px solid var(--glass-border); font-size:12.5px;
+    border-left:3px solid var(--chip-color, var(--gold));
+  }
+
+  .btn-primary{
+    background:linear-gradient(135deg, var(--gold), var(--c-server));
+    color:#221407; border:none; font-weight:700; font-size:14.5px;
+    padding:13px 26px; border-radius:100px; cursor:pointer;
+    box-shadow: 0 8px 20px rgba(217,178,76,0.25);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  }
+  .btn-primary:hover:not(:disabled){ transform:translateY(-2px); box-shadow:0 12px 26px rgba(217,178,76,0.35); }
+  .btn-primary:active:not(:disabled){ transform:translateY(0px) scale(0.98); }
+  .btn-primary:disabled{ opacity:0.35; cursor:not-allowed; box-shadow:none; }
+
+  .btn-ghost{
+    background:transparent; border:1px solid var(--glass-border); color:var(--cream);
+    padding:11px 22px; border-radius:100px; cursor:pointer; font-size:13.5px;
+  }
+
+  /* ---------- Stage shared ---------- */
+  .stage{ animation: fadeUp 0.5s ease; }
+  .stage-header{ margin-bottom:18px; }
+  .stage-badge{
+    display:inline-block; font-size:11.5px; letter-spacing:1px; text-transform:uppercase;
+    color:var(--gold); background:rgba(217,178,76,0.10); border:1px solid rgba(217,178,76,0.25);
+    padding:4px 12px; border-radius:100px; margin-bottom:10px;
+  }
+  .stage-header h2{ font-family:var(--serif); font-size:22px; margin:0; }
+
+  .ticket-card{ padding:22px 24px; margin-bottom:24px; position:relative; }
+  .ticket-tab{
+    position:absolute; top:-11px; left:22px; background:var(--bg-2); border:1px solid var(--glass-border);
+    font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--muted);
+    padding:3px 12px; border-radius:100px;
+  }
+  .ticket-text{ font-family:var(--serif); font-size:19px; line-height:1.5; margin:8px 0 0; color:var(--cream); }
+
+  .drop-zone{
+    min-height:64px; border:2px dashed var(--glass-border); border-radius:var(--radius-sm);
+    display:flex; align-items:center; justify-content:center; gap:10px; padding:10px 16px;
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease; margin-bottom:20px;
+    background:rgba(244,233,216,0.02);
+  }
+  .drop-zone.zone-hover{ border-color:var(--gold); background:rgba(217,178,76,0.08); transform:scale(1.01); }
+  .drop-zone.filled{ border-style:solid; }
+  .zone-placeholder{ color:var(--muted); font-size:13.5px; }
+
+  .role-grid{ display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:8px; }
+  @media (max-width:640px){ .role-grid{ grid-template-columns:repeat(2, 1fr); } }
+
+  .role-card{
+    --rc: var(--gold);
+    background:var(--glass); border:1px solid var(--glass-border); border-left:4px solid var(--rc);
+    border-radius:var(--radius-sm); padding:14px 12px; text-align:center; cursor:grab; user-select:none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
+    touch-action:none;
+  }
+  .role-card:hover{ transform:translateY(-3px); box-shadow:0 10px 22px rgba(0,0,0,0.28); }
+  .role-card:active{ cursor:grabbing; }
+  .role-card .rc-emoji{ font-size:22px; display:block; margin-bottom:6px; }
+  .role-card .rc-name{ font-size:12.5px; font-weight:600; }
+  .role-card.placed{ opacity:0.3; pointer-events:none; transform:none; }
+  .role-card.dragging-clone{ box-shadow:0 18px 34px rgba(0,0,0,0.4); opacity:0.95; }
+
+  .zone-chip{
+    display:flex; align-items:center; gap:8px; padding:8px 16px; border-radius:100px;
+    background:rgba(244,233,216,0.07); border:1px solid var(--glass-border); border-left:4px solid var(--rc, var(--gold));
+    font-weight:600; font-size:14px;
+  }
+  .zone-chip button{ background:none; border:none; color:var(--muted); cursor:pointer; font-size:13px; margin-left:4px; }
+
+  .assist-section{ margin:18px 0; animation: fadeUp 0.4s ease; }
+  .assist-prompt{ font-size:13.5px; color:var(--cream); margin:0 0 10px; }
+  .assist-sub{ color:var(--muted); font-weight:400; }
+  .assist-chips{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chip-toggle{
+    padding:8px 14px; border-radius:100px; background:rgba(244,233,216,0.04);
+    border:1px solid var(--glass-border); border-left:3px solid var(--rc, var(--gold));
+    font-size:12.5px; cursor:pointer; display:flex; align-items:center; gap:6px;
+    transition: all 0.15s ease;
+  }
+  .chip-toggle.active{ background:rgba(217,178,76,0.16); border-color:var(--gold); }
+  .chip-toggle.disabled{ opacity:0.3; pointer-events:none; }
+
+  /* ---------- Stage 2 slots ---------- */
+  .slot-row{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:22px; }
+  .slot{
+    flex:1; min-width:90px; min-height:78px; border:2px dashed var(--glass-border); border-radius:var(--radius-sm);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+    position:relative; padding:8px; transition: all 0.2s ease; background:rgba(244,233,216,0.02);
+  }
+  .slot .slot-num{ position:absolute; top:-9px; left:8px; font-size:10.5px; background:var(--bg-2); color:var(--muted); padding:1px 7px; border-radius:100px; border:1px solid var(--glass-border); }
+  .slot.zone-hover{ border-color:var(--gold); background:rgba(217,178,76,0.08); }
+  .slot.filled{ border-style:solid; cursor:pointer; }
+  .slot .slot-emoji{ font-size:20px; }
+  .slot .slot-name{ font-size:11px; font-weight:600; text-align:center; }
+  .slot-arrow{ align-self:center; color:var(--muted); font-size:16px; }
+
+  .pool-row{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:10px; }
+  .pool-row .role-card{ flex:0 0 110px; }
+
+  .ticket-anim{ position:relative; height:6px; background:rgba(244,233,216,0.08); border-radius:6px; margin:6px 0 22px; overflow:visible; }
+  .ticket-anim .traveler{ position:absolute; top:50%; transform:translate(-50%,-50%); font-size:18px; transition: left 0.55s cubic-bezier(.4,0,.2,1); }
+
+  /* ---------- Stage 3 ---------- */
+  .role-select-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:22px; }
+  @media (max-width:640px){ .role-select-grid{ grid-template-columns:repeat(2,1fr); } }
+  .select-card{
+    border:1px solid var(--glass-border); border-left:4px solid var(--rc, var(--gold));
+    background:var(--glass); border-radius:var(--radius-sm); padding:14px 10px; text-align:center; cursor:pointer;
+    transition: all 0.15s ease; position:relative;
+  }
+  .select-card.active{ background:rgba(217,178,76,0.14); border-color:var(--gold); transform:translateY(-2px); }
+  .select-card .sc-check{ position:absolute; top:6px; right:8px; font-size:12px; opacity:0; }
+  .select-card.active .sc-check{ opacity:1; }
+  .select-card.disabled{ opacity:0.35; pointer-events:none; }
+  .select-hint{ font-size:12.5px; color:var(--muted); margin:0 0 12px; }
+
+  /* ---------- Reveal ---------- */
+  .reveal-overlay{
+    position:fixed; inset:0; background:rgba(10,6,3,0.72); display:flex; align-items:center; justify-content:center;
+    padding:20px; z-index:200; animation: fadeIn 0.25s ease;
+  }
+  @keyframes fadeIn{ from{opacity:0;} to{opacity:1;} }
+  .reveal-card{
+    max-width:540px; width:100%; padding:30px 28px; animation: popIn 0.35s cubic-bezier(.34,1.56,.64,1);
+    max-height:86vh; overflow-y:auto;
+  }
+  @keyframes popIn{ from{opacity:0; transform:scale(0.92) translateY(10px);} to{opacity:1; transform:scale(1) translateY(0);} }
+  .reveal-badge{
+    display:inline-block; font-size:11.5px; letter-spacing:0.4px; padding:5px 13px; border-radius:100px;
+    margin-bottom:14px; border:1px solid;
+  }
+  .badge-match{ color:#8fd6a8; background:rgba(110,193,138,0.12); border-color:rgba(110,193,138,0.35); }
+  .badge-diff{ color:#e8b06c; background:rgba(224,88,76,0.10); border-color:rgba(224,88,76,0.30); }
+  .reveal-card h3{ font-family:var(--serif); font-size:19px; margin:0 0 10px; }
+  .reveal-card p{ font-size:14px; line-height:1.65; color:var(--cream); margin:0 0 14px; }
+  .reveal-card .label{ font-size:11px; text-transform:uppercase; letter-spacing:0.6px; color:var(--muted); margin:14px 0 8px; }
+  .reveal-chips{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:6px; }
+  .reveal-feedback{ font-size:13px; color:var(--muted); background:rgba(244,233,216,0.04); border-radius:10px; padding:10px 14px; margin:14px 0 20px; border-left:3px solid var(--gold); }
+
+  /* ---------- Final ---------- */
+  .final-wrap{ text-align:center; }
+  .final-wrap h2{ font-family:var(--serif); font-size:30px; margin:6px 0 4px; }
+  .final-sub{ color:var(--muted); font-size:14px; margin:0 0 30px; }
+  .chart-card{ padding:26px; margin-bottom:22px; }
+  .reflect-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; text-align:left; margin-bottom:16px; }
+  @media (max-width:640px){ .reflect-grid{ grid-template-columns:1fr; } }
+  .reflect-card{ padding:18px 20px; }
+  .reflect-card h4{ font-size:12.5px; text-transform:uppercase; letter-spacing:0.5px; color:var(--gold); margin:0 0 10px; }
+  .reflect-card p{ font-size:13.5px; line-height:1.6; color:var(--cream); margin:0; }
+  .insight-card{ padding:22px 26px; text-align:left; border-left:4px solid var(--gold); margin-bottom:26px; }
+  .insight-card h4{ margin:0 0 8px; font-size:12.5px; text-transform:uppercase; letter-spacing:0.5px; color:var(--gold); }
+  .insight-card p{ margin:0; font-family:var(--serif); font-size:16px; line-height:1.55; font-style:italic; }
+
+  .confetti{ position:fixed; top:-20px; width:8px; height:14px; border-radius:2px; opacity:0.9; animation: fall linear forwards; z-index:5; }
+  @keyframes fall{ to{ transform:translateY(105vh) rotate(360deg); opacity:0; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">☕</span>
+      <div>
+        <h1>Task Compass</h1>
+        <p>Learn how work flows through real organizations.</p>
+      </div>
+    </div>
+    <div class="progress-wrap">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        <button class="sound-toggle" id="soundToggle" title="Toggle sound">🔊</button>
+      </div>
+      <span id="progressLabel">Getting started</span>
+    </div>
+  </header>
+  <main id="appMain"></main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============== DATA ============== */
+  var ROLES = [
+    { id:'server',   name:'Server',             emoji:'🍽️', color:'var(--c-server)' },
+    { id:'barista',  name:'Barista',            emoji:'☕', color:'var(--c-barista)' },
+    { id:'chef',     name:'Head Chef',          emoji:'👨‍🍳', color:'var(--c-chef)' },
+    { id:'kitchen',  name:'Kitchen Staff',      emoji:'🔪', color:'var(--c-kitchen)' },
+    { id:'manager',  name:'Restaurant Manager', emoji:'📋', color:'var(--c-manager)' },
+    { id:'host',     name:'Host / Hostess',     emoji:'🚪', color:'var(--c-host)' },
+    { id:'cashier',  name:'Cashier',            emoji:'💳', color:'var(--c-cashier)' },
+    { id:'owner',    name:'Owner',              emoji:'👑', color:'var(--c-owner)' }
+  ];
+  function roleById(id){ for(var i=0;i<ROLES.length;i++){ if(ROLES[i].id===id) return ROLES[i]; } return null; }
+
+  var STAGE1 = [
+    {
+      text:"A customer sends back a bowl of soup, saying it arrived lukewarm instead of hot.",
+      owner:'chef',
+      why:"Food temperature and quality at the point of plating fall under the kitchen's standards, and the Head Chef is the one accountable for every dish that leaves the pass.",
+      assist:['kitchen','server']
+    },
+    {
+      text:"A guest calls to book a table for 20 people next Saturday and asks about a custom set menu.",
+      owner:'manager',
+      why:"A booking this size affects staffing, seating layout, and planning — decisions that sit with whoever runs day-to-day operations, which is the Restaurant Manager.",
+      assist:['chef','host']
+    },
+    {
+      text:"A customer notices they were charged twice for the same bill after paying by card.",
+      owner:'cashier',
+      why:"The Cashier operates the point-of-sale system directly, so a billing error is first checked and corrected at that source before anyone else needs to step in.",
+      assist:['manager','owner']
+    }
+  ];
+
+  var STAGE2 = [
+    {
+      text:"A guest orders a custom dish because of a severe nut allergy.",
+      route:['server','chef','kitchen','server'],
+      explanation:"The Server captures the allergy detail first, the Head Chef signs off on a safe recipe swap, Kitchen Staff prepares it under that guidance, and the Server confirms and delivers it — safety information has to travel through the same hands that touch the food, not skip a link."
+    },
+    {
+      text:"A walk-in guest wants a table, but the restaurant is fully booked for the evening.",
+      route:['host','manager','host'],
+      explanation:"The Host checks the floor and waitlist first, the Manager decides whether to accommodate, offer a wait, or turn the guest away, and the Host is the one who communicates that decision back — the person facing the guest opens and closes the loop."
+    },
+    {
+      text:"Online reviews mention slow service three nights in a row during dinner rush.",
+      route:['server','manager','chef','kitchen','manager'],
+      explanation:"Servers flag the pattern from the floor, the Manager investigates where the slowdown is really happening, the Head Chef and Kitchen Staff adjust ticket pacing if the kitchen is the bottleneck, and the Manager closes the loop by confirming the fix and watching future reviews."
+    }
+  ];
+
+  var STAGE3 = [
+    {
+      text:"Customer satisfaction scores drop noticeably this month across all reviews.",
+      primary:'manager',
+      supporting:['chef','server','owner'],
+      reasoning:"The Manager owns day-to-day guest experience and is best placed to investigate the pattern, but solving it well means checking food quality with the Head Chef, service pace with Servers, and reporting the business impact to the Owner.",
+      commFlow:"Manager gathers feedback → shares kitchen-specific notes with the Head Chef and floor notes with Servers → summarizes findings for the Owner."
+    },
+    {
+      text:"A video showing a dirty table goes viral on social media overnight.",
+      primary:'owner',
+      supporting:['manager','chef','server'],
+      reasoning:"A public reputation issue ultimately lands on the Owner to respond to, but fixing the root cause needs the Manager auditing floor procedures, the Head Chef reviewing kitchen and food-handling standards, and Servers reinforcing table-check routines.",
+      commFlow:"Owner issues a public response → Manager audits cleaning procedures → Head Chef reviews kitchen protocols → Servers get a refresher on table checks."
+    },
+    {
+      text:"A well-known food blogger's review sends a surge of new customers overnight.",
+      primary:'manager',
+      supporting:['chef','kitchen','owner'],
+      reasoning:"Handling a sudden surge is mostly an operations problem the Manager coordinates, but it also needs the Head Chef and Kitchen Staff to plan for higher volume, and the Owner to weigh in on longer-term staffing or hours.",
+      commFlow:"Manager assesses capacity → Head Chef and Kitchen Staff adjust prep quantities → Owner weighs in on hiring or hours changes."
+    }
+  ];
+
+  var INSIGHTS = {
+    ownership:"It's easy to assume the loudest team should own a problem, but ownership tends to sit with whoever is closest to the root cause.",
+    delegation:"Recognizing who owns a task is only half the job — flagging who else needs to know is often what keeps work from stalling.",
+    collaboration:"Many real workplace problems are solved by teams rather than individuals.",
+    workflow:"The order work moves through a team is rarely arbitrary — it usually mirrors who needs information before someone else can act."
+  };
+
+  /* ============== STATE ============== */
+  var state = { stage:'intro', idx:0, s1:[], s2:[], s3:[] };
+  var main = document.getElementById('appMain');
+  var progressFill = document.getElementById('progressFill');
+  var progressLabel = document.getElementById('progressLabel');
+  var soundOn = true;
+
+  /* ============== SOUND ============== */
+  var actx = null;
+  function playTone(freq, dur, type){
+    if(!soundOn) return;
+    try{
+      if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)();
+      var o = actx.createOscillator(); var g = actx.createGain();
+      o.type = type||'sine'; o.frequency.value = freq;
+      g.gain.setValueAtTime(0.06, actx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + dur);
+      o.connect(g); g.connect(actx.destination);
+      o.start(); o.stop(actx.currentTime + dur);
+    }catch(e){}
+  }
+  document.getElementById('soundToggle').addEventListener('click', function(){
+    soundOn = !soundOn;
+    this.textContent = soundOn ? '🔊' : '🔇';
+  });
+
+  /* ============== PROGRESS ============== */
+  function updateProgress(){
+    var total = 9, done = 0;
+    if(state.stage===1) done = state.idx;
+    else if(state.stage===2) done = 3 + state.idx;
+    else if(state.stage===3) done = 6 + state.idx;
+    else if(state.stage==='final') done = 9;
+    var pct = Math.round(done/total*100);
+    progressFill.style.width = pct + '%';
+    if(state.stage==='intro') progressLabel.textContent = 'Ready when you are';
+    else if(state.stage==='final') progressLabel.textContent = 'Shift complete';
+    else progressLabel.textContent = 'Stage ' + state.stage + ' · Task ' + (state.idx+1) + ' of 3';
+  }
+
+  /* ============== DRAG ENGINE (pointer-based) ============== */
+  function makeDraggable(el, onDrop){
+    el.addEventListener('pointerdown', function(e){
+      if(el.classList.contains('placed')) return;
+      e.preventDefault();
+      var rect = el.getBoundingClientRect();
+      var clone = el.cloneNode(true);
+      clone.classList.add('dragging-clone');
+      clone.style.position='fixed';
+      clone.style.width=rect.width+'px';
+      clone.style.left=rect.left+'px';
+      clone.style.top=rect.top+'px';
+      clone.style.zIndex=9999;
+      clone.style.pointerEvents='none';
+      clone.style.margin='0';
+      document.body.appendChild(clone);
+      el.style.opacity='0.25';
+
+      var zones = document.querySelectorAll('.drop-zone, .slot:not(.filled)');
+
+      function move(ev){
+        clone.style.left = (ev.clientX - rect.width/2) + 'px';
+        clone.style.top = (ev.clientY - rect.height/2) + 'px';
+        zones.forEach(function(z){
+          var zr = z.getBoundingClientRect();
+          var hover = ev.clientX>=zr.left && ev.clientX<=zr.right && ev.clientY>=zr.top && ev.clientY<=zr.bottom;
+          z.classList.toggle('zone-hover', hover);
+        });
+      }
+      function up(ev){
+        document.removeEventListener('pointermove', move);
+        document.removeEventListener('pointerup', up);
+        var dropped = false;
+        zones.forEach(function(z){
+          if(dropped) return;
+          var zr = z.getBoundingClientRect();
+          if(ev.clientX>=zr.left && ev.clientX<=zr.right && ev.clientY>=zr.top && ev.clientY<=zr.bottom){
+            dropped = true;
+            z.classList.remove('zone-hover');
+            onDrop(z);
+          }
+        });
+        clone.remove();
+        el.style.opacity = el.classList.contains('placed') ? '0.3' : '1';
+      }
+      document.addEventListener('pointermove', move);
+      document.addEventListener('pointerup', up);
+    });
+  }
+
+  function roleCardHTML(role, extraClass){
+    return '<div class="role-card ' + (extraClass||'') + '" data-role="' + role.id + '" style="--rc:' + role.color + '">' +
+      '<span class="rc-emoji">' + role.emoji + '</span><span class="rc-name">' + role.name + '</span></div>';
+  }
+
+  /* ============== CONFETTI ============== */
+  function celebrate(){
+    var colors = ['#e8a94c','#e0584c','#4fa9c2','#6ec18a','#d9b24c','#a377d9'];
+    for(var i=0;i<40;i++){
+      (function(){
+        var d = document.createElement('div');
+        d.className = 'confetti';
+        d.style.left = Math.random()*100 + 'vw';
+        d.style.background = colors[Math.floor(Math.random()*colors.length)];
+        d.style.animationDuration = (2.2 + Math.random()*1.6) + 's';
+        d.style.animationDelay = (Math.random()*0.6) + 's';
+        document.body.appendChild(d);
+        setTimeout(function(){ d.remove(); }, 4500);
+      })();
+    }
+  }
+
+  /* ============== INTRO ============== */
+  function renderIntro(){
+    state.stage='intro';
+    updateProgress();
+    var chips = ROLES.map(function(r){
+      return '<div class="roster-chip" style="--chip-color:' + r.color + '">' + r.emoji + ' ' + r.name + '</div>';
+    }).join('');
+    main.innerHTML =
+      '<section class="stage"><div class="intro-card glass">' +
+        '<span class="intro-emoji">☕</span>' +
+        '<h2>Welcome to the floor</h2>' +
+        '<p class="intro-sub">SETTING · CAFÉ &amp; RESTAURANT</p>' +
+        '<p>You are about to run a busy café-restaurant for a shift. Real situations will land in front of you — the goal isn\'t to guess a job title, but to think like someone who actually runs the place: who owns this, who else should be looped in, and how work really moves through a team.</p>' +
+        '<div class="role-roster">' + chips + '</div>' +
+        '<button class="btn-primary" id="startBtn">Start the Shift →</button>' +
+      '</div></section>';
+    document.getElementById('startBtn').addEventListener('click', function(){
+      playTone(520, 0.12);
+      state.stage=1; state.idx=0; renderStage1();
+    });
+  }
+
+  /* ============== STAGE 1 ============== */
+  function renderStage1(){
+    updateProgress();
+    var task = STAGE1[state.idx];
+    var selectedOwner = null;
+    var selectedAssist = [];
+
+    main.innerHTML =
+      '<section class="stage">' +
+        '<div class="stage-header"><span class="stage-badge">Stage 1 · Who Owns This?</span><h2>Task ' + (state.idx+1) + ' of 3</h2></div>' +
+        '<div class="ticket-card glass"><div class="ticket-tab">Incoming Ticket</div><p class="ticket-text">"' + task.text + '"</p></div>' +
+        '<div class="drop-zone" id="ownerZone"><span class="zone-placeholder">Drag (or click) the role that owns this</span></div>' +
+        '<div class="role-grid" id="roleGrid"></div>' +
+        '<div class="assist-section" id="assistSection" style="display:none;"></div>' +
+        '<button class="btn-primary" id="submitBtn" disabled>Confirm Owner</button>' +
+      '</section>';
+
+    var roleGrid = document.getElementById('roleGrid');
+    var ownerZone = document.getElementById('ownerZone');
+    var submitBtn = document.getElementById('submitBtn');
+    var assistSection = document.getElementById('assistSection');
+
+    ROLES.forEach(function(role){
+      var wrap = document.createElement('div');
+      wrap.innerHTML = roleCardHTML(role);
+      var card = wrap.firstElementChild;
+      roleGrid.appendChild(card);
+      card.addEventListener('click', function(){ placeOwner(role.id); });
+      makeDraggable(card, function(zone){
+        if(zone.id === 'ownerZone') placeOwner(role.id);
+      });
+    });
+
+    function placeOwner(roleId){
+      if(selectedOwner) return;
+      selectedOwner = roleId;
+      var role = roleById(roleId);
+      playTone(440, 0.1);
+      ownerZone.classList.add('filled');
+      ownerZone.innerHTML = '<div class="zone-chip" style="--rc:' + role.color + '">' + role.emoji + ' ' + role.name + '<button id="clearOwner">✕</button></div>';
+      document.getElementById('clearOwner').addEventListener('click', function(){
+        selectedOwner = null;
+        ownerZone.classList.remove('filled');
+        ownerZone.innerHTML = '<span class="zone-placeholder">Drag (or click) the role that owns this</span>';
+        Array.prototype.forEach.call(roleGrid.children, function(c){ c.classList.remove('placed'); });
+        assistSection.style.display='none';
+        assistSection.innerHTML='';
+        selectedAssist = [];
+        submitBtn.disabled = true;
+      });
+      Array.prototype.forEach.call(roleGrid.children, function(c){
+        if(c.getAttribute('data-role')===roleId) c.classList.add('placed');
+      });
+      buildAssist(roleId);
+      submitBtn.disabled = false;
+    }
+
+    function buildAssist(ownerId){
+      assistSection.style.display='block';
+      var chipsHTML = '<p class="assist-prompt">Who else might help? <span class="assist-sub">(optional, pick up to 2)</span></p><div class="assist-chips" id="assistChips"></div>';
+      assistSection.innerHTML = chipsHTML;
+      var chipsWrap = document.getElementById('assistChips');
+      ROLES.filter(function(r){ return r.id!==ownerId; }).forEach(function(role){
+        var chip = document.createElement('div');
+        chip.className = 'chip-toggle';
+        chip.style.setProperty('--rc', role.color);
+        chip.innerHTML = role.emoji + ' ' + role.name;
+        chip.addEventListener('click', function(){
+          var pos = selectedAssist.indexOf(role.id);
+          if(pos>-1){
+            selectedAssist.splice(pos,1);
+            chip.classList.remove('active');
+          } else {
+            if(selectedAssist.length>=2){
+              chip.style.transform='translateX(2px)';
+              setTimeout(function(){ chip.style.transform=''; }, 150);
+              return;
+            }
+            selectedAssist.push(role.id);
+            chip.classList.add('active');
+          }
+        });
+        chipsWrap.appendChild(chip);
+      });
+    }
+
+    submitBtn.addEventListener('click', function(){
+      var match = selectedOwner === task.owner;
+      var overlap = task.assist.filter(function(a){ return selectedAssist.indexOf(a) > -1; }).length;
+      var overlapRatio = overlap / task.assist.length;
+      state.s1.push({ correct: match, assistRatio: overlapRatio });
+      playTone(match ? 600 : 380, 0.15);
+      showStage1Reveal(task, selectedOwner, selectedAssist, match, overlap);
+    });
+  }
+
+  function showStage1Reveal(task, selectedOwner, selectedAssist, match, overlap){
+    var ownerRole = roleById(task.owner);
+    var assistChips = task.assist.map(function(id){
+      var r = roleById(id);
+      return '<div class="zone-chip" style="--rc:' + r.color + '">' + r.emoji + ' ' + r.name + '</div>';
+    }).join('');
+
+    var feedback;
+    if(selectedAssist.length===0){
+      feedback = "You didn't flag any supporting roles this time — worth considering who else might get pulled in as a task grows.";
+    } else if(overlap===task.assist.length){
+      feedback = "You matched all of the roles commonly looped in here — good instinct for who needs to know.";
+    } else if(overlap>0){
+      feedback = "You caught " + overlap + " of the " + task.assist.length + " roles usually involved — a partial but reasonable read on who else matters.";
+    } else {
+      feedback = "The roles you picked aren't the usual supporting cast here, but that doesn't mean your reasoning was off — different teams do lean on different people.";
+    }
+
+    var overlay = document.createElement('div');
+    overlay.className = 'reveal-overlay';
+    overlay.innerHTML =
+      '<div class="reveal-card glass">' +
+        '<div class="reveal-badge ' + (match?'badge-match':'badge-diff') + '">' + (match ? '✓ Matches common practice' : '↺ Here\'s how most teams handle it') + '</div>' +
+        '<h3>' + ownerRole.emoji + ' ' + ownerRole.name + ' typically owns this</h3>' +
+        '<p>' + task.why + '</p>' +
+        '<div class="label">May also assist</div>' +
+        '<div class="reveal-chips">' + assistChips + '</div>' +
+        '<div class="reveal-feedback">' + feedback + '</div>' +
+        '<button class="btn-primary" id="continueBtn">Continue</button>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    document.getElementById('continueBtn').addEventListener('click', function(){
+      overlay.remove();
+      state.idx++;
+      if(state.idx<3){ renderStage1(); }
+      else { state.stage=2; state.idx=0; renderStage2(); }
+    });
+  }
+
+  /* ============== STAGE 2 ============== */
+  function renderStage2(){
+    updateProgress();
+    var task = STAGE2[state.idx];
+    var n = task.route.length;
+    var slots = new Array(n).fill(null);
+
+    // build pool: route roles at required multiplicity + up to 2 distractors
+    var counts = {};
+    task.route.forEach(function(id){ counts[id] = (counts[id]||0)+1; });
+    var pool = [];
+    Object.keys(counts).forEach(function(id){
+      for(var i=0;i<counts[id];i++) pool.push(id);
+    });
+    var distractors = ROLES.map(function(r){return r.id;}).filter(function(id){ return !counts[id]; });
+    shuffle(distractors);
+    pool = pool.concat(distractors.slice(0,2));
+    shuffle(pool);
+
+    var slotsHTML = '';
+    for(var i=0;i<n;i++){
+      slotsHTML += '<div class="slot" data-slot="' + i + '"><span class="slot-num">' + (i+1) + '</span><span class="zone-placeholder" style="font-size:11.5px;">empty</span></div>';
+      if(i<n-1) slotsHTML += '<span class="slot-arrow">→</span>';
+    }
+
+    main.innerHTML =
+      '<section class="stage">' +
+        '<div class="stage-header"><span class="stage-badge">Stage 2 · Task Routing</span><h2>Task ' + (state.idx+1) + ' of 3</h2></div>' +
+        '<div class="ticket-card glass"><div class="ticket-tab">Incoming Ticket</div><p class="ticket-text">"' + task.text + '"</p></div>' +
+        '<div class="label" style="text-transform:uppercase; font-size:11px; letter-spacing:0.6px; color:var(--muted); margin-bottom:8px;">Build the workflow, in order</div>' +
+        '<div class="slot-row" id="slotRow">' + slotsHTML + '</div>' +
+        '<div class="label" style="text-transform:uppercase; font-size:11px; letter-spacing:0.6px; color:var(--muted); margin-bottom:8px;">Available roles</div>' +
+        '<div class="pool-row" id="poolRow"></div>' +
+        '<button class="btn-primary" id="submitBtn" disabled>Confirm Workflow</button>' +
+      '</section>';
+
+    var slotRow = document.getElementById('slotRow');
+    var poolRow = document.getElementById('poolRow');
+    var submitBtn = document.getElementById('submitBtn');
+    var slotEls = Array.prototype.slice.call(slotRow.querySelectorAll('.slot'));
+
+    function nextEmptySlotIndex(){
+      for(var i=0;i<slots.length;i++){ if(slots[i]===null) return i; }
+      return -1;
+    }
+
+    function renderPool(){
+      poolRow.innerHTML = '';
+      pool.forEach(function(roleId, poolIdx){
+        var used = usedPoolIdx.indexOf(poolIdx) > -1;
+        var role = roleById(roleId);
+        var wrap = document.createElement('div');
+        wrap.innerHTML = roleCardHTML(role, used ? 'placed' : '');
+        var card = wrap.firstElementChild;
+        card.setAttribute('data-pool-idx', poolIdx);
+        poolRow.appendChild(card);
+        if(!used){
+          card.addEventListener('click', function(){
+            var idx = nextEmptySlotIndex();
+            if(idx>-1) fillSlot(idx, roleId, poolIdx);
+          });
+          makeDraggable(card, function(zone){
+            var slotIdx = parseInt(zone.getAttribute('data-slot'),10);
+            if(!isNaN(slotIdx) && slots[slotIdx]===null) fillSlot(slotIdx, roleId, poolIdx);
+          });
+        }
+      });
+    }
+
+    var usedPoolIdx = [];
+
+    function fillSlot(slotIdx, roleId, poolIdx){
+      slots[slotIdx] = roleId;
+      usedPoolIdx.push(poolIdx);
+      var role = roleById(roleId);
+      var el = slotEls[slotIdx];
+      el.classList.add('filled');
+      el.style.setProperty('--rc', role.color);
+      el.style.borderLeft = '4px solid ' + role.color;
+      el.innerHTML = '<span class="slot-num">' + (slotIdx+1) + '</span><span class="slot-emoji">' + role.emoji + '</span><span class="slot-name">' + role.name + '</span>';
+      playTone(430, 0.08);
+      el.addEventListener('click', function clearHandler(){
+        slots[slotIdx] = null;
+        var uIdx = usedPoolIdx.indexOf(poolIdx);
+        if(uIdx>-1) usedPoolIdx.splice(uIdx,1);
+        el.classList.remove('filled');
+        el.style.borderLeft = '';
+        el.innerHTML = '<span class="slot-num">' + (slotIdx+1) + '</span><span class="zone-placeholder" style="font-size:11.5px;">empty</span>';
+        el.removeEventListener('click', clearHandler);
+        renderPool();
+        submitBtn.disabled = slots.indexOf(null) > -1;
+      });
+      renderPool();
+      submitBtn.disabled = slots.indexOf(null) > -1;
+    }
+
+    renderPool();
+
+    submitBtn.addEventListener('click', function(){
+      var matched = 0;
+      for(var i=0;i<n;i++){ if(slots[i]===task.route[i]) matched++; }
+      state.s2.push({ matched: matched, total: n });
+      playTone(matched===n ? 620 : 400, 0.15);
+      animateThenReveal(task, slots, matched, n);
+    });
+  }
+
+  function animateThenReveal(task, slots, matched, n){
+    var slotRow = document.getElementById('slotRow');
+    var slotEls = Array.prototype.slice.call(slotRow.querySelectorAll('.slot'));
+    var i = 0;
+    function step(){
+      slotEls.forEach(function(s){ s.style.boxShadow=''; });
+      if(i<slotEls.length){
+        slotEls[i].style.boxShadow = '0 0 0 2px var(--gold), 0 8px 20px rgba(217,178,76,0.3)';
+        i++;
+        setTimeout(step, 420);
+      } else {
+        setTimeout(function(){ showStage2Reveal(task, matched, n); }, 250);
+      }
+    }
+    step();
+  }
+
+  function showStage2Reveal(task, matched, n){
+    var routeChips = task.route.map(function(id){
+      var r = roleById(id);
+      return '<div class="zone-chip" style="--rc:' + r.color + '">' + r.emoji + ' ' + r.name + '</div>';
+    }).join('<span class="slot-arrow">→</span>');
+
+    var overlay = document.createElement('div');
+    overlay.className = 'reveal-overlay';
+    overlay.innerHTML =
+      '<div class="reveal-card glass">' +
+        '<div class="reveal-badge ' + (matched===n?'badge-match':'badge-diff') + '">' + matched + ' of ' + n + ' steps matched common practice</div>' +
+        '<h3>How this workflow usually runs</h3>' +
+        '<div class="reveal-chips" style="margin-bottom:14px;">' + routeChips + '</div>' +
+        '<p>' + task.explanation + '</p>' +
+        '<button class="btn-primary" id="continueBtn">Continue</button>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    document.getElementById('continueBtn').addEventListener('click', function(){
+      overlay.remove();
+      state.idx++;
+      if(state.idx<3){ renderStage2(); }
+      else { state.stage=3; state.idx=0; renderStage3(); }
+    });
+  }
+
+  /* ============== STAGE 3 ============== */
+  function renderStage3(){
+    updateProgress();
+    var task = STAGE3[state.idx];
+    var selected = [];
+
+    main.innerHTML =
+      '<section class="stage">' +
+        '<div class="stage-header"><span class="stage-badge">Stage 3 · Collaboration Challenge</span><h2>Task ' + (state.idx+1) + ' of 3</h2></div>' +
+        '<div class="ticket-card glass"><div class="ticket-tab">Situation</div><p class="ticket-text">"' + task.text + '"</p></div>' +
+        '<p class="select-hint">Choose up to 4 roles or departments you would bring in to handle this well.</p>' +
+        '<div class="role-select-grid" id="selectGrid"></div>' +
+        '<button class="btn-primary" id="submitBtn" disabled>Confirm Team</button>' +
+      '</section>';
+
+    var grid = document.getElementById('selectGrid');
+    var submitBtn = document.getElementById('submitBtn');
+
+    ROLES.forEach(function(role){
+      var card = document.createElement('div');
+      card.className = 'select-card';
+      card.style.setProperty('--rc', role.color);
+      card.innerHTML = '<span class="sc-check">✓</span><span class="rc-emoji">' + role.emoji + '</span><span class="rc-name">' + role.name + '</span>';
+      grid.appendChild(card);
+      card.addEventListener('click', function(){
+        var pos = selected.indexOf(role.id);
+        if(pos>-1){
+          selected.splice(pos,1);
+          card.classList.remove('active');
+        } else {
+          if(selected.length>=4){
+            card.style.transform='translateX(2px)';
+            setTimeout(function(){ card.style.transform=''; }, 150);
+            return;
+          }
+          selected.push(role.id);
+          card.classList.add('active');
+        }
+        submitBtn.disabled = selected.length===0;
+      });
+    });
+
+    submitBtn.addEventListener('click', function(){
+      var ideal = [task.primary].concat(task.supporting);
+      var matchCount = ideal.filter(function(id){ return selected.indexOf(id)>-1; }).length;
+      var includesPrimary = selected.indexOf(task.primary)>-1;
+      state.s3.push({ matchCount: matchCount, total: ideal.length, includesPrimary: includesPrimary, selectedCount: selected.length });
+      playTone(matchCount>=ideal.length-1 ? 620 : 420, 0.15);
+      showStage3Reveal(task, selected, matchCount, ideal.length);
+    });
+  }
+
+  function showStage3Reveal(task, selected, matchCount, total){
+    var primaryRole = roleById(task.primary);
+    var supportChips = task.supporting.map(function(id){
+      var r = roleById(id);
+      return '<div class="zone-chip" style="--rc:' + r.color + '">' + r.emoji + ' ' + r.name + '</div>';
+    }).join('');
+
+    var feedback = "You included " + matchCount + " of the " + total + " roles commonly pulled into a situation like this.";
+    var extra = selected.filter(function(id){ return id!==task.primary && task.supporting.indexOf(id)===-1; });
+    if(extra.length>0){
+      var extraNames = extra.map(function(id){ return roleById(id).name; }).join(', ');
+      feedback += " You also brought in " + extraNames + " — a reasonable stretch depending on how the situation unfolds.";
+    }
+
+    var overlay = document.createElement('div');
+    overlay.className = 'reveal-overlay';
+    overlay.innerHTML =
+      '<div class="reveal-card glass">' +
+        '<div class="reveal-badge ' + (matchCount>=total-1?'badge-match':'badge-diff') + '">' + matchCount + ' of ' + total + ' roles matched</div>' +
+        '<h3>' + primaryRole.emoji + ' ' + primaryRole.name + ' — Primary Owner</h3>' +
+        '<div class="label">Supporting teams</div>' +
+        '<div class="reveal-chips">' + supportChips + '</div>' +
+        '<p style="margin-top:14px;">' + task.reasoning + '</p>' +
+        '<div class="label">Possible communication flow</div>' +
+        '<p>' + task.commFlow + '</p>' +
+        '<div class="reveal-feedback">' + feedback + '</div>' +
+        '<button class="btn-primary" id="continueBtn">Continue</button>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    document.getElementById('continueBtn').addEventListener('click', function(){
+      overlay.remove();
+      state.idx++;
+      if(state.idx<3){ renderStage3(); }
+      else { state.stage='final'; renderFinal(); }
+    });
+  }
+
+  /* ============== FINAL ============== */
+  function avg(arr, fn){
+    if(arr.length===0) return 0;
+    var sum = 0;
+    arr.forEach(function(x){ sum += fn(x); });
+    return sum/arr.length;
+  }
+
+  function renderFinal(){
+    updateProgress();
+    var ownership = Math.round(avg(state.s1, function(r){ return r.correct?1:0; })*100);
+    var delegation = Math.round(avg(state.s1, function(r){ return r.assistRatio; })*100);
+    var workflow = Math.round(avg(state.s2, function(r){ return r.matched/r.total; })*100);
+    var collaboration = Math.round(avg(state.s3, function(r){ return r.matchCount/r.total; })*100);
+
+    var cats = [
+      { key:'ownership', label:'Ownership', value:ownership },
+      { key:'delegation', label:'Delegation', value:delegation },
+      { key:'collaboration', label:'Collaboration', value:collaboration },
+      { key:'workflow', label:'Workflow Thinking', value:workflow }
+    ];
+
+    main.innerHTML =
+      '<section class="stage final-wrap">' +
+        '<span class="intro-emoji">🎉</span>' +
+        '<h2>Shift Complete</h2>' +
+        '<p class="final-sub">Here\'s how you tend to think about ownership, delegation, and collaboration.</p>' +
+        '<div class="chart-card glass"><div id="radarWrap" style="display:flex; justify-content:center;"></div></div>' +
+        '<div id="reflectionWrap"></div>' +
+      '</section>';
+
+    drawRadar(document.getElementById('radarWrap'), cats);
+    renderReflection(cats);
+    celebrate();
+  }
+
+  function drawRadar(container, cats){
+    var size = 320, cx = size/2, cy = size/2, maxR = 110;
+    var n = cats.length;
+    function pointFor(i, ratio){
+      var angle = -Math.PI/2 + i*(2*Math.PI/n);
+      return { x: cx + Math.cos(angle)*maxR*ratio, y: cy + Math.sin(angle)*maxR*ratio };
+    }
+    var gridRings = [0.25,0.5,0.75,1].map(function(ratio){
+      var pts = [];
+      for(var i=0;i<n;i++){ var p = pointFor(i,ratio); pts.push(p.x+','+p.y); }
+      return '<polygon points="' + pts.join(' ') + '" fill="none" stroke="rgba(244,233,216,0.14)" stroke-width="1"/>';
+    }).join('');
+
+    var axisLines = '', labels = '';
+    for(var i=0;i<n;i++){
+      var p = pointFor(i,1);
+      axisLines += '<line x1="'+cx+'" y1="'+cy+'" x2="'+p.x+'" y2="'+p.y+'" stroke="rgba(244,233,216,0.14)" stroke-width="1"/>';
+      var lp = pointFor(i,1.24);
+      var anchor = 'middle';
+      if(lp.x < cx-10) anchor='end'; else if(lp.x > cx+10) anchor='start';
+      labels += '<text x="'+lp.x+'" y="'+lp.y+'" fill="var(--cream)" font-size="12" text-anchor="'+anchor+'" font-family="var(--sans)">'+cats[i].label+' ('+cats[i].value+'%)</text>';
+    }
+
+    var dataPts = cats.map(function(c,i){ return pointFor(i, Math.max(c.value,3)/100); });
+    var dataPointsStr = dataPts.map(function(p){ return p.x+','+p.y; }).join(' ');
+    var dots = dataPts.map(function(p){ return '<circle cx="'+p.x+'" cy="'+p.y+'" r="4" fill="var(--gold)"/>'; }).join('');
+
+    var svg =
+      '<svg width="' + size + '" height="' + (size+20) + '" viewBox="0 0 ' + size + ' ' + (size+20) + '">' +
+        gridRings + axisLines +
+        '<polygon points="' + dataPointsStr + '" fill="rgba(217,178,76,0.28)" stroke="var(--gold)" stroke-width="2" style="animation: fadeIn 0.8s ease;"/>' +
+        dots + labels +
+      '</svg>';
+    container.innerHTML = svg;
+  }
+
+  function renderReflection(cats){
+    var sorted = cats.slice().sort(function(a,b){ return b.value-a.value; });
+    var best = sorted[0];
+    var lowest = sorted[sorted.length-1];
+
+    var overAssignCount = state.s3.filter(function(r){ return r.selectedCount<=1; }).length;
+    var overAssignText;
+    if(overAssignCount>=2){
+      overAssignText = "In some of the bigger situations, you leaned toward handing the whole problem to a single owner. Complex, cross-team issues usually spread across more than one desk.";
+    } else if(overAssignCount===1){
+      overAssignText = "Once or twice you assigned a complex situation to a single role — worth pausing to ask who else it touches.";
+    } else {
+      overAssignText = "You didn't show much over-assigning this shift — a good sign you're already thinking past a single owner for bigger problems.";
+    }
+
+    var underCollabText;
+    if(collaborationBelow(cats,70)){
+      underCollabText = "Some of the supporting roles in the bigger scenarios didn't make your list — those are often the roles that catch a problem before it repeats.";
+    } else {
+      underCollabText = "You didn't underestimate collaboration much — you consistently brought in supporting roles when situations called for it.";
+    }
+
+    main_appendReflection(best, lowest, overAssignText, underCollabText);
+  }
+
+  function collaborationBelow(cats, threshold){
+    var c = cats.filter(function(x){ return x.key==='collaboration'; })[0];
+    return c && c.value < threshold;
+  }
+
+  function main_appendReflection(best, lowest, overAssignText, underCollabText){
+    var strengthMap = {
+      ownership:"You consistently spotted who genuinely owns a task, even when the obvious-looking answer wasn't quite right.",
+      delegation:"You had a good sense of who else needed to be looped in once you identified an owner.",
+      collaboration:"You readily brought multiple roles into bigger, messier situations instead of pinning them on one person.",
+      workflow:"You had a strong feel for the order work actually moves through a team, step by step."
+    };
+    var wrap = document.getElementById('reflectionWrap');
+    wrap.innerHTML =
+      '<div class="reflect-grid">' +
+        '<div class="reflect-card glass"><h4>What you understood well</h4><p>' + strengthMap[best.key] + '</p></div>' +
+        '<div class="reflect-card glass"><h4>Where you tended to over-assign responsibility</h4><p>' + overAssignText + '</p></div>' +
+        '<div class="reflect-card glass"><h4>Where you underestimated collaboration</h4><p>' + underCollabText + '</p></div>' +
+        '<div class="reflect-card glass"><h4>Lightest touch this shift</h4><p>' + ('Your ' + lowest.label.toLowerCase() + ' score (' + lowest.value + '%) was the softest of the four — a natural next thing to sharpen.') + '</p></div>' +
+      '</div>' +
+      '<div class="insight-card glass"><h4>One takeaway</h4><p>' + INSIGHTS[lowest.key] + '</p></div>' +
+      '<button class="btn-ghost" id="restartBtn">Run another shift</button>';
+    document.getElementById('restartBtn').addEventListener('click', function(){
+      state = { stage:'intro', idx:0, s1:[], s2:[], s3:[] };
+      renderIntro();
+    });
+  }
+
+  /* ============== UTIL ============== */
+  function shuffle(arr){
+    for(var i=arr.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var tmp = arr[i]; arr[i]=arr[j]; arr[j]=tmp;
+    }
+    return arr;
+  }
+
+  /* ============== INIT ============== */
+  renderIntro();
+
+})();
+</script>
+</body>
+</html>
