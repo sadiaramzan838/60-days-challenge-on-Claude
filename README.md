@@ -321,3 +321,9 @@ Day 37 – Task Compass
 * Built an interactive Task Compass workplace simulation using HTML, CSS, and JavaScript.
 * Explored task ownership, workflow routing, and team collaboration through drag-and-drop challenges.
 * Generated a personalized workplace reflection with collaboration insights and workflow understanding.
+
+Day 38 – Typing Speed Studio
+
+* Built an interactive Typing Speed Studio using HTML, CSS, and JavaScript.
+* Implemented multiple typing modes with real-time performance tracking and adaptive practice.
+* Generated a detailed analytics dashboard with session history, progress insights, and personalized feedback.
