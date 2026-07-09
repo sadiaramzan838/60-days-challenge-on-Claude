@@ -327,3 +327,9 @@ Day 38 – Typing Speed Studio
 * Built an interactive Typing Speed Studio using HTML, CSS, and JavaScript.
 * Implemented multiple typing modes with real-time performance tracking and adaptive practice.
 * Generated a detailed analytics dashboard with session history, progress insights, and personalized feedback.
+
+Day 39 – PDF Splitter & Merger
+
+* Built an interactive PDF Splitter & Merger using HTML, CSS, and JavaScript.
+* Implemented PDF splitting, merging, page preview, drag-and-drop uploads, and file reordering.
+* Generated a responsive offline tool with validation, processing indicators, and an intuitive user experience.
