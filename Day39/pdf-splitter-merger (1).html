@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF Splitter &amp; Merger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --paper:#F6F4EF;
+  --paper-raised:#FFFFFF;
+  --ink:#1B1F1D;
+  --ink-soft:#5B615A;
+  --ink-faint:#8A8F87;
+  --line:#DCD6C9;
+  --line-strong:#C7C0B0;
+  --accent:#4C56E0;
+  --accent-hover:#3C45C9;
+  --accent-ink:#FFFFFF;
+  --accent-soft:#E9E9FB;
+  --success:#1F9D6B;
+  --success-soft:#E4F5EC;
+  --danger:#C6403A;
+  --danger-soft:#FBE9E7;
+  --warn:#B5810A;
+  --warn-soft:#FBF1DC;
+  --radius-sm:6px;
+  --radius:10px;
+  --radius-lg:16px;
+  --shadow-sm:0 1px 2px rgba(27,31,29,.06);
+  --shadow:0 1px 2px rgba(27,31,29,.06), 0 10px 28px -14px rgba(27,31,29,.24);
+  --shadow-lift:0 4px 10px rgba(27,31,29,.10), 0 20px 44px -18px rgba(27,31,29,.30);
+  --font-display:'Space Grotesk',system-ui,sans-serif;
+  --font-body:'Inter',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,monospace;
+  color-scheme: light;
+}
+html[data-theme="dark"]{
+  --paper:#15181B;
+  --paper-raised:#1D2226;
+  --ink:#ECEAE4;
+  --ink-soft:#9AA09B;
+  --ink-faint:#6B716C;
+  --line:#2B3136;
+  --line-strong:#3A4147;
+  --accent:#8089FF;
+  --accent-hover:#9AA1FF;
+  --accent-ink:#12142B;
+  --accent-soft:#262A4A;
+  --success:#3FC793;
+  --success-soft:#173029;
+  --danger:#E27069;
+  --danger-soft:#33201F;
+  --warn:#E0B24C;
+  --warn-soft:#332A15;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4);
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px -14px rgba(0,0,0,.6);
+  --shadow-lift:0 4px 10px rgba(0,0,0,.5), 0 20px 44px -18px rgba(0,0,0,.7);
+  color-scheme: dark;
+}
+*,*::before,*::after{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;
+  font-family:var(--font-body);
+  background:var(--paper);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  transition:background .25s ease, color .25s ease;
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; scroll-behavior:auto !important;}
+}
+img,canvas{max-width:100%;display:block;}
+button{font-family:inherit;}
+a{color:inherit;}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:4px;}
+
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+
+/* ============ LAYOUT ============ */
+.app{min-height:100%;display:flex;flex-direction:column;}
+
+.topbar{
+  position:sticky;top:0;z-index:40;
+  display:flex;align-items:center;gap:20px;
+  padding:14px 28px;
+  background:color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto;}
+.brand-mark{
+  width:34px;height:34px;border-radius:8px;
+  background:var(--ink);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+html[data-theme="dark"] .brand-mark{background:var(--accent);}
+.brand-mark svg{width:18px;height:18px;}
+.brand-name{font-family:var(--font-display);font-weight:600;font-size:17px;letter-spacing:-.01em;}
+.brand-sub{font-size:11px;color:var(--ink-faint);font-family:var(--font-mono);letter-spacing:.02em;}
+
+.tool-switch{
+  display:flex;background:var(--paper-raised);border:1px solid var(--line);border-radius:999px;padding:3px;box-shadow:var(--shadow-sm);
+}
+.tool-switch button{
+  border:none;background:transparent;color:var(--ink-soft);
+  padding:8px 18px;border-radius:999px;font-weight:600;font-size:13.5px;cursor:pointer;
+  display:flex;align-items:center;gap:7px;
+  transition:background .18s ease,color .18s ease;
+  position:relative;
+}
+.tool-switch button svg{width:15px;height:15px;}
+.tool-switch button[aria-pressed="true"]{background:var(--ink);color:var(--paper);}
+html[data-theme="dark"] .tool-switch button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);}
+.tool-switch button:not([aria-pressed="true"]):hover{color:var(--ink);}
+
+.icon-btn{
+  width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:var(--paper-raised);
+  color:var(--ink-soft);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:transform .15s ease, color .15s ease, border-color .15s ease;
+}
+.icon-btn:hover{color:var(--ink);border-color:var(--line-strong);transform:translateY(-1px);}
+.icon-btn svg{width:17px;height:17px;}
+
+main{flex:1;padding:32px 28px 80px;max-width:1320px;margin:0 auto;width:100%;}
+
+.hero{margin-bottom:28px;}
+.hero-eyebrow{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:600;margin:0 0 8px;}
+.hero h1{font-family:var(--font-display);font-size:clamp(24px,3vw,32px);letter-spacing:-.02em;margin:0 0 6px;font-weight:600;}
+.hero p{margin:0;color:var(--ink-soft);font-size:15px;max-width:60ch;}
+
+.panel{display:none;}
+.panel.active{display:block;animation:fadeUp .35s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+.workspace{display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:start;}
+@media (max-width:980px){.workspace{grid-template-columns:1fr;}}
+
+/* ============ DROPZONE ============ */
+.dropzone{
+  border:1.5px dashed var(--line-strong);
+  border-radius:var(--radius-lg);
+  background:var(--paper-raised);
+  padding:44px 24px;
+  text-align:center;
+  cursor:pointer;
+  transition:border-color .18s ease, background .18s ease, transform .12s ease;
+}
+.dropzone:hover{border-color:var(--accent);}
+.dropzone.dragover{border-color:var(--accent);background:var(--accent-soft);transform:scale(1.005);}
+.dropzone-icon{
+  width:52px;height:52px;margin:0 auto 14px;border-radius:12px;
+  background:var(--accent-soft);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+}
+.dropzone-icon svg{width:26px;height:26px;}
+.dropzone h3{margin:0 0 4px;font-family:var(--font-display);font-size:17px;font-weight:600;}
+.dropzone p{margin:0;color:var(--ink-faint);font-size:13.5px;}
+.dropzone .browse{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:2px;}
+input[type="file"]{display:none;}
+
+/* ============ CARD ============ */
+.card{
+  background:var(--paper-raised);
+  border:1px solid var(--line);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-sm);
+}
+.card-pad{padding:20px;}
+.card-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line);}
+.card-header h2{font-family:var(--font-display);font-size:15px;margin:0;font-weight:600;letter-spacing:-.01em;}
+.card-header .meta{font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);}
+
+/* ============ FILE SUMMARY STRIP ============ */
+.file-strip{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:var(--radius);background:var(--paper-raised);border:1px solid var(--line);margin-bottom:18px;}
+.file-strip-icon{width:38px;height:38px;border-radius:8px;background:var(--danger-soft);color:var(--danger);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.file-strip-icon svg{width:19px;height:19px;}
+.file-strip-info{min-width:0;flex:1;}
+.file-strip-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.file-strip-meta{font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);margin-top:2px;}
+.file-strip .ghost-btn{flex-shrink:0;}
+
+/* ============ THUMBNAIL GRID (signature: page tray) ============ */
+.tray{
+  display:flex;flex-wrap:wrap;gap:0;
+  padding:22px 18px 8px;
+  background:
+    repeating-linear-gradient(90deg, transparent, transparent 0px);
+}
+.page-slot{display:flex;align-items:stretch;}
+.thumb{
+  width:104px;
+  margin:0 4px 22px;
+  cursor:pointer;
+  border:none;
+  background:none;
+  padding:0;
+  text-align:left;
+  color:inherit;
+  font-family:inherit;
+}
+.thumb-card{
+  border-radius:6px;
+  background:var(--paper-raised);
+  border:1.5px solid var(--line);
+  box-shadow:0 1px 3px rgba(0,0,0,.08);
+  overflow:hidden;
+  aspect-ratio:3/4;
+  position:relative;
+  transition:transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.thumb:hover .thumb-card{transform:translateY(-3px) rotate(-.4deg);box-shadow:var(--shadow-lift);}
+.thumb canvas, .thumb img{width:100%;height:100%;object-fit:cover;}
+.thumb .ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--ink-faint);font-size:11px;background:repeating-linear-gradient(45deg,var(--paper),var(--paper) 8px,var(--line) 8px,var(--line) 9px);}
+.thumb-num{text-align:center;font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);margin-top:6px;}
+.thumb.selected .thumb-card{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+.thumb.selected .thumb-num{color:var(--accent);font-weight:600;}
+.thumb-check{
+  position:absolute;top:6px;right:6px;width:18px;height:18px;border-radius:5px;
+  background:var(--paper-raised);border:1.5px solid var(--line-strong);
+  display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .12s ease;
+}
+.thumb.selected .thumb-check{opacity:1;background:var(--accent);border-color:var(--accent);color:#fff;}
+.thumb-check svg{width:11px;height:11px;}
+.thumb.dimmed .thumb-card{opacity:.35;}
+
+/* perforation / cut markers between thumbnails */
+.cut-gap{
+  width:14px;display:flex;align-items:center;justify-content:center;margin:0 -3px 22px;position:relative;align-self:stretch;
+  cursor:pointer;
+}
+.cut-gap .line{width:0;border-left:2px dashed var(--line-strong);height:calc(100% - 22px);position:absolute;top:0;transition:border-color .15s ease;}
+.cut-gap .scissors{
+  width:20px;height:20px;border-radius:50%;background:var(--paper);border:1.5px solid var(--line-strong);
+  display:flex;align-items:center;justify-content:center;color:var(--ink-faint);opacity:0;transform:scale(.8);
+  transition:opacity .15s ease, transform .15s ease, color .15s ease, border-color .15s ease, background .15s ease;
+  z-index:2;
+}
+.cut-gap .scissors svg{width:11px;height:11px;}
+.cut-gap:hover .scissors{opacity:1;transform:scale(1);}
+.cut-gap:hover .line{border-color:var(--accent);}
+.cut-gap.active .line{border-color:var(--accent);border-left-style:solid;}
+.cut-gap.active .scissors{opacity:1;transform:scale(1);background:var(--accent);color:var(--accent-ink);border-color:var(--accent);}
+
+/* ============ CONTROL PANEL ============ */
+.control-group{padding:18px 20px;border-bottom:1px solid var(--line);}
+.control-group:last-child{border-bottom:none;}
+.control-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-faint);margin-bottom:10px;display:block;}
+
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.mode-btn{
+  border:1.5px solid var(--line);background:var(--paper);border-radius:9px;padding:10px 10px;
+  text-align:left;cursor:pointer;font-size:12.5px;font-weight:600;color:var(--ink-soft);
+  transition:border-color .15s ease, background .15s ease, color .15s ease;
+  display:flex;flex-direction:column;gap:2px;
+}
+.mode-btn span.sub{font-weight:400;font-size:11px;color:var(--ink-faint);}
+.mode-btn[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);}
+.mode-btn[aria-pressed="true"] span.sub{color:var(--accent);opacity:.8;}
+.mode-btn:hover:not([aria-pressed="true"]){border-color:var(--line-strong);}
+
+.field{margin-bottom:12px;}
+.field label{display:block;font-size:12.5px;font-weight:600;margin-bottom:5px;color:var(--ink-soft);}
+.field input[type="text"], .field input[type="number"]{
+  width:100%;padding:9px 11px;border-radius:8px;border:1.5px solid var(--line);
+  background:var(--paper);color:var(--ink);font-family:var(--font-mono);font-size:13px;
+  transition:border-color .15s ease;
+}
+.field input:focus{border-color:var(--accent);}
+.field input.invalid{border-color:var(--danger);background:var(--danger-soft);}
+.field-help{font-size:11.5px;color:var(--ink-faint);margin-top:5px;}
+.field-error{font-size:11.5px;color:var(--danger);margin-top:5px;display:none;align-items:center;gap:4px;}
+.field-error.show{display:flex;}
+.field-error svg{width:12px;height:12px;flex-shrink:0;}
+
+.range-row{display:flex;gap:6px;align-items:center;margin-bottom:8px;}
+.range-row input{width:100%;}
+.range-row .to{color:var(--ink-faint);font-size:12px;font-family:var(--font-mono);}
+.range-row .remove-row{
+  width:28px;height:28px;flex-shrink:0;border-radius:7px;border:1px solid var(--line);background:var(--paper);
+  color:var(--ink-faint);cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.range-row .remove-row:hover{color:var(--danger);border-color:var(--danger);}
+.range-row .remove-row svg{width:13px;height:13px;}
+
+.add-row-btn{
+  width:100%;padding:9px;border-radius:8px;border:1.5px dashed var(--line-strong);background:transparent;
+  color:var(--ink-soft);font-size:12.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:border-color .15s ease,color .15s ease;
+}
+.add-row-btn:hover{border-color:var(--accent);color:var(--accent);}
+.add-row-btn svg{width:13px;height:13px;}
+
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.switch{position:relative;width:38px;height:22px;flex-shrink:0;}
+.switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;}
+.switch .track{position:absolute;inset:0;background:var(--line-strong);border-radius:999px;transition:background .18s ease;}
+.switch .thumb-dot{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .18s ease;}
+.switch input:checked + .track{background:var(--accent);}
+.switch input:checked + .track .thumb-dot{transform:translateX(16px);}
+.switch input:checked ~ .thumb-dot{transform:translateX(16px);}
+
+/* ============ BUTTONS ============ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:11px 18px;border-radius:9px;font-weight:600;font-size:13.5px;cursor:pointer;border:1.5px solid transparent;
+  transition:transform .12s ease, box-shadow .12s ease, background .15s ease, border-color .15s ease, opacity .15s ease;
+}
+.btn svg{width:15px;height:15px;}
+.btn:active{transform:translateY(1px);}
+.btn-primary{background:var(--accent);color:var(--accent-ink);width:100%;box-shadow:var(--shadow-sm);}
+.btn-primary:hover:not(:disabled){background:var(--accent-hover);}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed;}
+.ghost-btn{background:transparent;border-color:var(--line);color:var(--ink-soft);}
+.ghost-btn:hover{border-color:var(--line-strong);color:var(--ink);}
+.btn-sm{padding:7px 12px;font-size:12.5px;border-radius:7px;}
+.btn-block{width:100%;}
+
+/* ============ MERGE LIST ============ */
+.merge-list{list-style:none;margin:0;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.merge-item{
+  display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;
+  background:var(--paper);border:1px solid var(--line);position:relative;
+  transition:box-shadow .15s ease, transform .15s ease, opacity .15s ease;
+}
+.merge-item.dragging{opacity:.4;}
+.merge-item.drop-target{box-shadow:0 0 0 2px var(--accent) inset;}
+.merge-item .spine{width:5px;align-self:stretch;border-radius:4px;flex-shrink:0;}
+.merge-item .grip{cursor:grab;color:var(--ink-faint);flex-shrink:0;display:flex;}
+.merge-item .grip svg{width:15px;height:15px;}
+.merge-item .thumb-mini{width:38px;height:50px;border-radius:4px;overflow:hidden;border:1px solid var(--line);flex-shrink:0;background:var(--paper-raised);}
+.merge-item .thumb-mini img,.merge-item .thumb-mini canvas{width:100%;height:100%;object-fit:cover;}
+.merge-item .info{flex:1;min-width:0;}
+.merge-item .name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.merge-item .sub{font-size:11.5px;font-family:var(--font-mono);color:var(--ink-faint);margin-top:2px;}
+.merge-item .order-badge{
+  width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--paper);font-family:var(--font-mono);
+  font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:600;
+}
+html[data-theme="dark"] .merge-item .order-badge{background:var(--accent);color:var(--accent-ink);}
+.merge-item .remove-item{
+  width:26px;height:26px;border-radius:7px;border:1px solid transparent;background:transparent;color:var(--ink-faint);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.merge-item .remove-item:hover{color:var(--danger);background:var(--danger-soft);}
+.merge-item .remove-item svg{width:14px;height:14px;}
+.merge-empty{padding:40px 20px;text-align:center;color:var(--ink-faint);font-size:13px;}
+
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border-radius:10px;overflow:hidden;border:1px solid var(--line);margin-bottom:16px;}
+.summary-cell{background:var(--paper-raised);padding:14px 12px;text-align:center;}
+.summary-cell .num{font-family:var(--font-display);font-size:22px;font-weight:600;}
+.summary-cell .lbl{font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+
+/* ============ OUTPUT PREVIEW ============ */
+.output-group{border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden;}
+.output-group.invalid{border-color:var(--danger);}
+.output-group-head{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--paper);border-bottom:1px solid var(--line);}
+.output-group-head .title{font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:7px;}
+.output-group-head .title .dot{width:7px;height:7px;border-radius:50%;background:var(--success);flex-shrink:0;}
+.output-group.invalid .title .dot{background:var(--danger);}
+.output-group-head .count{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);}
+.output-group-body{display:flex;gap:6px;padding:12px 14px;overflow-x:auto;}
+.output-group-body .mini{width:34px;aspect-ratio:3/4;border-radius:4px;border:1px solid var(--line);background:var(--paper-raised);flex-shrink:0;overflow:hidden;}
+.output-group-body .mini img,.output-group-body .mini canvas{width:100%;height:100%;object-fit:cover;}
+.output-group-err{padding:0 14px 12px;font-size:12px;color:var(--danger);display:flex;align-items:center;gap:6px;}
+.output-group-err svg{width:13px;height:13px;flex-shrink:0;}
+
+.results-list{display:flex;flex-direction:column;gap:8px;margin-top:14px;}
+.result-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;background:var(--success-soft);border:1px solid transparent;}
+.result-item .ic{color:var(--success);flex-shrink:0;display:flex;}
+.result-item .ic svg{width:17px;height:17px;}
+.result-item .info{flex:1;min-width:0;}
+.result-item .name{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.result-item .sub{font-size:11px;font-family:var(--font-mono);color:var(--ink-faint);}
+
+/* ============ TOAST ============ */
+.toast-stack{position:fixed;bottom:20px;right:20px;z-index:100;display:flex;flex-direction:column;gap:8px;max-width:340px;}
+.toast{
+  display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:10px;background:var(--paper-raised);
+  border:1px solid var(--line);box-shadow:var(--shadow-lift);font-size:13px;animation:toastIn .25s ease both;
+}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px) scale(.98);}to{opacity:1;transform:translateY(0) scale(1);}}
+.toast.error{border-color:var(--danger);}
+.toast.success{border-color:var(--success);}
+.toast .ic{flex-shrink:0;display:flex;margin-top:1px;}
+.toast.error .ic{color:var(--danger);}
+.toast.success .ic{color:var(--success);}
+.toast .ic svg{width:16px;height:16px;}
+.toast .msg{flex:1;line-height:1.4;}
+.toast .close-toast{background:none;border:none;color:var(--ink-faint);cursor:pointer;padding:0;display:flex;flex-shrink:0;}
+.toast .close-toast svg{width:14px;height:14px;}
+
+/* ============ PROCESSING OVERLAY ============ */
+.overlay{
+  position:fixed;inset:0;background:color-mix(in srgb, var(--ink) 45%, transparent);backdrop-filter:blur(2px);
+  display:none;align-items:center;justify-content:center;z-index:90;
+}
+.overlay.show{display:flex;}
+.overlay-card{background:var(--paper-raised);border-radius:16px;padding:28px 34px;text-align:center;box-shadow:var(--shadow-lift);min-width:240px;}
+.spinner{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);margin:0 auto 14px;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.overlay-card p{margin:0;font-size:13.5px;font-weight:600;}
+
+/* ============ MODAL (shortcuts) ============ */
+.modal-back{position:fixed;inset:0;background:color-mix(in srgb, var(--ink) 45%, transparent);display:none;align-items:center;justify-content:center;z-index:95;padding:20px;}
+.modal-back.show{display:flex;}
+.modal{background:var(--paper-raised);border-radius:16px;padding:24px;max-width:420px;width:100%;box-shadow:var(--shadow-lift);}
+.modal h2{font-family:var(--font-display);font-size:17px;margin:0 0 14px;}
+.modal .kb-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px;}
+.modal .kb-row:last-child{border-bottom:none;}
+kbd{font-family:var(--font-mono);background:var(--paper);border:1px solid var(--line-strong);border-radius:5px;padding:2px 7px;font-size:11.5px;}
+.modal-close{margin-top:16px;}
+
+.empty-hint{display:flex;align-items:center;gap:8px;padding:14px;border-radius:10px;background:var(--warn-soft);color:var(--warn);font-size:12.5px;margin-bottom:14px;}
+.empty-hint svg{width:16px;height:16px;flex-shrink:0;}
+
+footer{text-align:center;padding:26px;color:var(--ink-faint);font-size:12px;font-family:var(--font-mono);border-top:1px solid var(--line);}
+
+@media (max-width:600px){
+  .topbar{padding:12px 14px;flex-wrap:wrap;}
+  main{padding:20px 14px 60px;}
+  .brand-sub{display:none;}
+  .mode-grid{grid-template-columns:1fr;}
+  .summary-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="white"/><path d="M14 2v6h6" stroke="white"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">PDF Splitter &amp; Merger</div>
+        <div class="brand-sub">runs entirely in your browser</div>
+      </div>
+    </div>
+
+    <nav class="tool-switch" role="tablist" aria-label="Choose tool">
+      <button role="tab" id="tab-split" aria-pressed="true" aria-selected="true" aria-controls="panel-split" data-tool="split">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 3v18M18 3v18M3 9h4M17 9h4M3 15h4M17 15h4"/></svg>
+        Split
+      </button>
+      <button role="tab" id="tab-merge" aria-pressed="false" aria-selected="false" aria-controls="panel-merge" data-tool="merge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3v6a2 2 0 0 0 2 2h4M16 21v-6a2 2 0 0 0-2-2H8"/></svg>
+        Merge
+      </button>
+    </nav>
+
+    <button class="icon-btn" id="shortcutsBtn" aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M18 13h.01M9 13h6"/></svg>
+    </button>
+    <button class="icon-btn" id="themeBtn" aria-label="Toggle dark mode" title="Toggle dark mode (D)">
+      <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
+  </header>
+
+  <main>
+    <!-- ============ SPLIT PANEL ============ -->
+    <section class="panel active" id="panel-split" role="tabpanel" aria-labelledby="tab-split">
+      <div class="hero">
+        <p class="hero-eyebrow">Tool 01 · Splitter</p>
+        <h1>Cut one PDF into exactly the pieces you need</h1>
+        <p>Upload a document, lay every page out on the tray, and mark where it should be cut. Nothing leaves your device.</p>
+      </div>
+
+      <div id="splitDropWrap">
+        <div class="dropzone" id="splitDropzone" tabindex="0" role="button" aria-label="Upload a PDF file to split">
+          <div class="dropzone-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 16V4M12 4l-5 5M12 4l5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+          </div>
+          <h3>Drop a PDF here</h3>
+          <p>or <span class="browse">browse your files</span> — one document at a time</p>
+        </div>
+        <input type="file" id="splitFileInput" accept="application/pdf">
+      </div>
+
+      <div id="splitWorkspace" style="display:none;">
+        <div class="file-strip">
+          <div class="file-strip-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          </div>
+          <div class="file-strip-info">
+            <div class="file-strip-name" id="splitFileName">document.pdf</div>
+            <div class="file-strip-meta" id="splitFileMeta">— pages · —</div>
+          </div>
+          <button class="btn ghost-btn btn-sm" id="splitReplaceBtn">Replace file</button>
+        </div>
+
+        <div class="workspace">
+          <div class="card">
+            <div class="card-header">
+              <h2>Page tray</h2>
+              <span class="meta" id="trayHint">click a gap to mark a cut</span>
+            </div>
+            <div class="tray" id="pageTray"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><h2>Split settings</h2></div>
+
+            <div class="control-group">
+              <span class="control-label">Method</span>
+              <div class="mode-grid" id="splitModeGrid">
+                <button class="mode-btn" data-mode="custom" aria-pressed="true">Custom ranges<span class="sub">e.g. 1–3, 4–9</span></button>
+                <button class="mode-btn" data-mode="after" aria-pressed="false">Split after pages<span class="sub">click the tray or type</span></button>
+                <button class="mode-btn" data-mode="every" aria-pressed="false">Every N pages<span class="sub">equal chunks</span></button>
+                <button class="mode-btn" data-mode="extract" aria-pressed="false">Extract pages<span class="sub">pick pages on tray</span></button>
+              </div>
+            </div>
+
+            <!-- CUSTOM RANGES -->
+            <div class="control-group" id="ctrl-custom">
+              <span class="control-label">Ranges</span>
+              <div id="rangeRows"></div>
+              <button class="add-row-btn" id="addRangeBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                Add range
+              </button>
+            </div>
+
+            <!-- SPLIT AFTER -->
+            <div class="control-group" id="ctrl-after" style="display:none;">
+              <div class="field">
+                <label for="afterInput">Split after page numbers</label>
+                <input type="text" id="afterInput" placeholder="e.g. 3, 7, 10">
+                <p class="field-help">A new file starts right after each page listed here.</p>
+                <p class="field-error" id="afterError"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg><span></span></p>
+              </div>
+            </div>
+
+            <!-- EVERY N -->
+            <div class="control-group" id="ctrl-every" style="display:none;">
+              <div class="field">
+                <label for="everyInput">Pages per file</label>
+                <input type="number" id="everyInput" min="1" value="2">
+                <p class="field-error" id="everyError"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg><span></span></p>
+              </div>
+            </div>
+
+            <!-- EXTRACT -->
+            <div class="control-group" id="ctrl-extract" style="display:none;">
+              <p class="field-help" style="margin-bottom:12px;">Click pages on the tray to select them. <span id="extractCount">0 selected</span>.</p>
+              <div class="toggle-row">
+                <label for="extractCombine" style="font-size:12.5px;font-weight:600;">Combine into one file</label>
+                <span class="switch">
+                  <input type="checkbox" id="extractCombine" checked>
+                  <span class="track"><span class="thumb-dot"></span></span>
+                </span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <span class="control-label">Output preview</span>
+              <div id="outputPreview"></div>
+            </div>
+
+            <div class="control-group">
+              <button class="btn btn-primary" id="processSplitBtn" disabled>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 3v18M18 3v18M3 9h4M17 9h4M3 15h4M17 15h4"/></svg>
+                Split PDF
+              </button>
+              <div id="splitResults"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ MERGE PANEL ============ -->
+    <section class="panel" id="panel-merge" role="tabpanel" aria-labelledby="tab-merge">
+      <div class="hero">
+        <p class="hero-eyebrow">Tool 02 · Merger</p>
+        <h1>Combine PDFs into a single document</h1>
+        <p>Drop in any number of files, drag them into the right order, then merge into one clean PDF.</p>
+      </div>
+
+      <div class="dropzone" id="mergeDropzone" tabindex="0" role="button" aria-label="Upload PDF files to merge, multiple allowed">
+        <div class="dropzone-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3v6a2 2 0 0 0 2 2h4M16 21v-6a2 2 0 0 0-2-2H8"/></svg>
+        </div>
+        <h3>Drop PDFs here</h3>
+        <p>or <span class="browse">browse your files</span> — add as many as you like</p>
+      </div>
+      <input type="file" id="mergeFileInput" accept="application/pdf" multiple>
+
+      <div class="workspace" style="margin-top:22px;">
+        <div class="card">
+          <div class="card-header">
+            <h2>Files to merge</h2>
+            <span class="meta" id="mergeHint">drag the grip to reorder</span>
+          </div>
+          <ul class="merge-list" id="mergeList">
+            <li class="merge-empty" id="mergeEmpty">No files yet — add PDFs above to get started.</li>
+          </ul>
+        </div>
+
+        <div class="card card-pad">
+          <span class="control-label">Summary</span>
+          <div class="summary-grid">
+            <div class="summary-cell"><div class="num" id="sumFiles">0</div><div class="lbl">Files</div></div>
+            <div class="summary-cell"><div class="num" id="sumPages">0</div><div class="lbl">Pages</div></div>
+            <div class="summary-cell"><div class="num" id="sumSize">0 KB</div><div class="lbl">Est. size</div></div>
+          </div>
+          <button class="btn btn-primary" id="processMergeBtn" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3v6a2 2 0 0 0 2 2h4M16 21v-6a2 2 0 0 0-2-2H8"/></svg>
+            Merge PDFs
+          </button>
+          <div id="mergeResults"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>PDF Splitter &amp; Merger — all processing happens locally in your browser. No file is ever uploaded.</footer>
+</div>
+
+<div class="overlay" id="overlay"><div class="overlay-card"><div class="spinner"></div><p id="overlayText">Processing…</p></div></div>
+
+<div class="modal-back" id="shortcutsModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="shortcutsTitle">
+    <h2 id="shortcutsTitle">Keyboard shortcuts</h2>
+    <div class="kb-row"><span>Switch to Split</span><kbd>Alt</kbd>+<kbd>1</kbd></div>
+    <div class="kb-row"><span>Switch to Merge</span><kbd>Alt</kbd>+<kbd>2</kbd></div>
+    <div class="kb-row"><span>Toggle dark mode</span><kbd>D</kbd></div>
+    <div class="kb-row"><span>Show this dialog</span><kbd>?</kbd></div>
+    <div class="kb-row"><span>Close dialogs</span><kbd>Esc</kbd></div>
+    <button class="btn ghost-btn modal-close" id="closeShortcuts">Close</button>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+'use strict';
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const { PDFDocument } = PDFLib;
+
+/* ============ helpers ============ */
+const $ = (sel, el=document) => el.querySelector(sel);
+const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
+const svgOk = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>';
+const svgErr = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>';
+const svgClose = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+const svgFile = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';
+
+function formatBytes(bytes){
+  if(bytes < 1024) return bytes + ' B';
+  if(bytes < 1024*1024) return (bytes/1024).toFixed(0) + ' KB';
+  return (bytes/(1024*1024)).toFixed(1) + ' MB';
+}
+function toast(msg, type='success', timeout=4200){
+  const stack = $('#toastStack');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = `<span class="ic">${type==='error'?svgErr:svgOk}</span><span class="msg">${msg}</span><button class="close-toast" aria-label="Dismiss">${svgClose}</button>`;
+  el.querySelector('.close-toast').addEventListener('click',()=>el.remove());
+  stack.appendChild(el);
+  setTimeout(()=>{ el.style.transition='opacity .25s ease'; el.style.opacity='0'; setTimeout(()=>el.remove(),260); }, timeout);
+}
+function showOverlay(text){ $('#overlayText').textContent = text; $('#overlay').classList.add('show'); }
+function hideOverlay(){ $('#overlay').classList.remove('show'); }
+function parsePageList(str, max){
+  // returns {ok, values, error}
+  const parts = str.split(',').map(s=>s.trim()).filter(Boolean);
+  const values = [];
+  for(const p of parts){
+    if(!/^\d+$/.test(p)) return {ok:false, error:`"${p}" isn't a valid page number.`};
+    const n = parseInt(p,10);
+    if(n < 1 || n > max) return {ok:false, error:`Page ${n} is out of range (1–${max}).`};
+    values.push(n);
+  }
+  return {ok:true, values:[...new Set(values)].sort((a,b)=>a-b)};
+}
+
+/* ============ THEME ============ */
+function initTheme(){
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  setTheme(prefersDark ? 'dark' : 'light');
+}
+function setTheme(mode){
+  document.documentElement.setAttribute('data-theme', mode);
+  const icon = $('#themeIcon');
+  icon.innerHTML = mode === 'dark'
+    ? '<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/>'
+    : '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+}
+$('#themeBtn').addEventListener('click', ()=>{
+  const cur = document.documentElement.getAttribute('data-theme');
+  setTheme(cur === 'dark' ? 'light' : 'dark');
+});
+initTheme();
+
+/* ============ TOOL SWITCH ============ */
+function switchTool(tool){
+  $$('.tool-switch button').forEach(b=>{
+    const active = b.dataset.tool === tool;
+    b.setAttribute('aria-pressed', active);
+    b.setAttribute('aria-selected', active);
+  });
+  $('#panel-split').classList.toggle('active', tool==='split');
+  $('#panel-merge').classList.toggle('active', tool==='merge');
+}
+$('#tab-split').addEventListener('click', ()=>switchTool('split'));
+$('#tab-merge').addEventListener('click', ()=>switchTool('merge'));
+
+/* ============ SHORTCUTS ============ */
+function openShortcuts(){ $('#shortcutsModal').classList.add('show'); }
+function closeShortcuts(){ $('#shortcutsModal').classList.remove('show'); }
+$('#shortcutsBtn').addEventListener('click', openShortcuts);
+$('#closeShortcuts').addEventListener('click', closeShortcuts);
+$('#shortcutsModal').addEventListener('click', e=>{ if(e.target.id==='shortcutsModal') closeShortcuts(); });
+document.addEventListener('keydown', e=>{
+  const tag = (e.target.tagName || '').toLowerCase();
+  const typing = tag === 'input' || tag === 'textarea';
+  if(e.key === 'Escape'){ closeShortcuts(); return; }
+  if(typing) return;
+  if(e.key === '?'){ openShortcuts(); }
+  else if(e.key.toLowerCase() === 'd'){ setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'); }
+  else if(e.altKey && e.key === '1'){ switchTool('split'); }
+  else if(e.altKey && e.key === '2'){ switchTool('merge'); }
+});
+
+/* =====================================================================
+   SPLITTER
+   ===================================================================== */
+const split = {
+  file:null, bytes:null, srcDoc:null, pdfjsDoc:null, pageCount:0,
+  mode:'custom', ranges:[], cuts:new Set(), everyN:2, selected:new Set(), combine:true,
+  thumbCache:{}
+};
+
+const splitDropzone = $('#splitDropzone');
+const splitFileInput = $('#splitFileInput');
+['click','keydown'].forEach(evt=>{
+  splitDropzone.addEventListener(evt, e=>{
+    if(evt==='keydown' && e.key!=='Enter' && e.key!==' ') return;
+    splitFileInput.click();
+  });
+});
+$('#splitReplaceBtn').addEventListener('click', ()=>splitFileInput.click());
+splitFileInput.addEventListener('change', e=>{ if(e.target.files[0]) loadSplitFile(e.target.files[0]); });
+['dragenter','dragover'].forEach(evt=>splitDropzone.addEventListener(evt, e=>{ e.preventDefault(); splitDropzone.classList.add('dragover'); }));
+['dragleave','drop'].forEach(evt=>splitDropzone.addEventListener(evt, e=>{ e.preventDefault(); splitDropzone.classList.remove('dragover'); }));
+splitDropzone.addEventListener('drop', e=>{
+  const f = e.dataTransfer.files[0];
+  if(f) loadSplitFile(f);
+});
+
+async function loadSplitFile(file){
+  if(file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')){
+    toast("That file doesn't look like a PDF. Please choose a .pdf file.", 'error');
+    return;
+  }
+  showOverlay('Reading your PDF…');
+  try{
+    const buf = await file.arrayBuffer();
+    const srcDoc = await PDFDocument.load(buf.slice(0));
+    const pdfjsDoc = await pdfjsLib.getDocument({data: buf.slice(0)}).promise;
+    split.file = file;
+    split.bytes = buf;
+    split.srcDoc = srcDoc;
+    split.pdfjsDoc = pdfjsDoc;
+    split.pageCount = srcDoc.getPageCount();
+    split.cuts = new Set();
+    split.selected = new Set();
+    split.ranges = [{start:1, end:split.pageCount}];
+
+    $('#splitFileName').textContent = file.name;
+    $('#splitFileMeta').textContent = `${split.pageCount} page${split.pageCount!==1?'s':''} · ${formatBytes(file.size)}`;
+    $('#splitDropWrap').style.display = 'none';
+    $('#splitWorkspace').style.display = 'block';
+
+    await renderTray();
+    renderRangeRows();
+    updateSplitPreview();
+    toast(`Loaded "${file.name}" — ${split.pageCount} pages ready on the tray.`);
+  }catch(err){
+    console.error(err);
+    toast("Couldn't open that PDF. It may be corrupted or password-protected.", 'error');
+  }finally{
+    hideOverlay();
+  }
+}
+
+async function renderTray(){
+  const tray = $('#pageTray');
+  tray.innerHTML = '';
+  const scale = 0.35;
+  for(let i=1;i<=split.pageCount;i++){
+    const btn = document.createElement('button');
+    btn.className = 'thumb';
+    btn.dataset.page = i;
+    btn.setAttribute('aria-label', `Page ${i}`);
+    btn.innerHTML = `<div class="thumb-card"><div class="ph">…</div><div class="thumb-check">${svgOk}</div></div><div class="thumb-num">${i}</div>`;
+    btn.addEventListener('click', ()=>onThumbClick(i));
+    tray.appendChild(btn);
+
+    if(i < split.pageCount){
+      const gap = document.createElement('div');
+      gap.className = 'cut-gap';
+      gap.dataset.after = i;
+      gap.setAttribute('role','button');
+      gap.setAttribute('tabindex','0');
+      gap.setAttribute('aria-label', `Toggle cut after page ${i}`);
+      gap.innerHTML = `<span class="line"></span><span class="scissors">✂</span>`;
+      gap.addEventListener('click', ()=>toggleCut(i));
+      gap.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggleCut(i);} });
+      tray.appendChild(gap);
+    }
+  }
+  // render thumbnails progressively
+  for(let i=1;i<=split.pageCount;i++){
+    try{
+      const page = await split.pdfjsDoc.getPage(i);
+      const viewport = page.getViewport({scale});
+      const canvas = document.createElement('canvas');
+      canvas.width = viewport.width; canvas.height = viewport.height;
+      await page.render({canvasContext: canvas.getContext('2d'), viewport}).promise;
+      split.thumbCache[i] = canvas.toDataURL('image/jpeg',0.82);
+      const holder = tray.querySelector(`.thumb[data-page="${i}"] .ph`);
+      if(holder){ holder.outerHTML = `<img src="${split.thumbCache[i]}" alt="">`; }
+    }catch(e){ /* leave placeholder */ }
+  }
+}
+
+function onThumbClick(pageNum){
+  if(split.mode === 'extract'){
+    if(split.selected.has(pageNum)) split.selected.delete(pageNum);
+    else split.selected.add(pageNum);
+    reflectSelection();
+    updateSplitPreview();
+  }
+}
+function reflectSelection(){
+  $$('#pageTray .thumb').forEach(t=>{
+    const p = parseInt(t.dataset.page,10);
+    t.classList.toggle('selected', split.mode==='extract' && split.selected.has(p));
+  });
+  $('#extractCount').textContent = `${split.selected.size} selected`;
+}
+function toggleCut(afterPage){
+  if(split.mode !== 'after') setSplitMode('after');
+  if(split.cuts.has(afterPage)) split.cuts.delete(afterPage);
+  else split.cuts.add(afterPage);
+  syncAfterInputFromCuts();
+  reflectCuts();
+  updateSplitPreview();
+}
+function reflectCuts(){
+  $$('#pageTray .cut-gap').forEach(g=>{
+    const p = parseInt(g.dataset.after,10);
+    g.classList.toggle('active', split.mode==='after' && split.cuts.has(p));
+  });
+}
+function syncAfterInputFromCuts(){
+  $('#afterInput').value = [...split.cuts].sort((a,b)=>a-b).join(', ');
+}
+
+/* mode switching */
+function setSplitMode(mode){
+  split.mode = mode;
+  $$('#splitModeGrid .mode-btn').forEach(b=>b.setAttribute('aria-pressed', b.dataset.mode===mode));
+  ['custom','after','every','extract'].forEach(m=>{
+    $('#ctrl-'+m).style.display = (m===mode) ? 'block' : 'none';
+  });
+  $('#trayHint').textContent = mode==='after' ? 'click a gap to mark a cut'
+    : mode==='extract' ? 'click pages to select them'
+    : mode==='every' ? 'chunks generated automatically'
+    : 'ranges are generated from the fields on the right';
+  reflectCuts();
+  reflectSelection();
+  updateSplitPreview();
+}
+$$('#splitModeGrid .mode-btn').forEach(b=>b.addEventListener('click', ()=>setSplitMode(b.dataset.mode)));
+
+/* custom ranges UI */
+function renderRangeRows(){
+  const wrap = $('#rangeRows');
+  wrap.innerHTML = '';
+  split.ranges.forEach((r, idx)=>{
+    const row = document.createElement('div');
+    row.className = 'range-row';
+    row.innerHTML = `
+      <input type="number" min="1" max="${split.pageCount}" value="${r.start}" aria-label="Range ${idx+1} start page" data-idx="${idx}" data-field="start">
+      <span class="to">–</span>
+      <input type="number" min="1" max="${split.pageCount}" value="${r.end}" aria-label="Range ${idx+1} end page" data-idx="${idx}" data-field="end">
+      <button class="remove-row" aria-label="Remove range ${idx+1}" data-idx="${idx}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    `;
+    wrap.appendChild(row);
+  });
+  $$('#rangeRows input').forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      const idx = parseInt(inp.dataset.idx,10);
+      const field = inp.dataset.field;
+      split.ranges[idx][field] = parseInt(inp.value,10) || 0;
+      updateSplitPreview();
+    });
+  });
+  $$('#rangeRows .remove-row').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      split.ranges.splice(parseInt(btn.dataset.idx,10),1);
+      renderRangeRows();
+      updateSplitPreview();
+    });
+  });
+}
+$('#addRangeBtn').addEventListener('click', ()=>{
+  const last = split.ranges[split.ranges.length-1];
+  const start = last ? Math.min(last.end+1, split.pageCount) : 1;
+  split.ranges.push({start, end: split.pageCount});
+  renderRangeRows();
+  updateSplitPreview();
+});
+
+$('#afterInput').addEventListener('input', e=>{
+  const errEl = $('#afterError');
+  const res = parsePageList(e.target.value, split.pageCount);
+  if(!res.ok){
+    e.target.classList.add('invalid');
+    errEl.classList.add('show'); errEl.querySelector('span').textContent = res.error;
+    return;
+  }
+  e.target.classList.remove('invalid'); errEl.classList.remove('show');
+  split.cuts = new Set(res.values.filter(v=>v<split.pageCount));
+  reflectCuts();
+  updateSplitPreview();
+});
+$('#everyInput').addEventListener('input', e=>{
+  const errEl = $('#everyError');
+  const n = parseInt(e.target.value,10);
+  if(!n || n<1){
+    e.target.classList.add('invalid'); errEl.classList.add('show'); errEl.querySelector('span').textContent = 'Enter a number of at least 1.';
+    return;
+  }
+  e.target.classList.remove('invalid'); errEl.classList.remove('show');
+  split.everyN = n;
+  updateSplitPreview();
+});
+$('#extractCombine').addEventListener('change', e=>{ split.combine = e.target.checked; updateSplitPreview(); });
+
+/* compute output groups from current mode -> [{label, pages:[..], error}] */
+function computeOutputGroups(){
+  const groups = [];
+  if(split.mode === 'custom'){
+    split.ranges.forEach((r,idx)=>{
+      let error = null;
+      if(!r.start || !r.end) error = 'Both start and end pages are required.';
+      else if(r.start < 1 || r.end > split.pageCount) error = `Pages must be between 1 and ${split.pageCount}.`;
+      else if(r.start > r.end) error = 'Start page must come before end page.';
+      const pages = error ? [] : Array.from({length:r.end-r.start+1}, (_,i)=>r.start+i);
+      groups.push({label:`Part ${idx+1} · pages ${r.start||'?'}–${r.end||'?'}`, pages, error});
+    });
+  } else if(split.mode === 'after'){
+    const cutList = [...split.cuts].filter(c=>c>=1 && c<split.pageCount).sort((a,b)=>a-b);
+    let start = 1;
+    [...cutList, split.pageCount].forEach((end,idx)=>{
+      const pages = Array.from({length:end-start+1}, (_,i)=>start+i);
+      groups.push({label:`Part ${idx+1} · pages ${start}–${end}`, pages, error:null});
+      start = end+1;
+    });
+  } else if(split.mode === 'every'){
+    const n = split.everyN || 1;
+    let idx = 1;
+    for(let start=1; start<=split.pageCount; start+=n){
+      const end = Math.min(start+n-1, split.pageCount);
+      const pages = Array.from({length:end-start+1}, (_,i)=>start+i);
+      groups.push({label:`Part ${idx} · pages ${start}–${end}`, pages, error:null});
+      idx++;
+    }
+  } else if(split.mode === 'extract'){
+    const pages = [...split.selected].sort((a,b)=>a-b);
+    if(pages.length === 0){
+      groups.push({label:'No pages selected', pages:[], error:'Click pages on the tray to select them.'});
+    } else if(split.combine){
+      groups.push({label:`Extracted file · ${pages.length} page${pages.length!==1?'s':''}`, pages, error:null});
+    } else {
+      pages.forEach(p=>groups.push({label:`Page ${p}`, pages:[p], error:null}));
+    }
+  }
+  return groups;
+}
+
+function updateSplitPreview(){
+  const groups = computeOutputGroups();
+  const wrap = $('#outputPreview');
+  wrap.innerHTML = '';
+  if(groups.length === 0){
+    wrap.innerHTML = `<div class="empty-hint">${'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg>'}<span>Set up a split method to see the output preview.</span></div>`;
+  }
+  let anyError = false;
+  groups.forEach(g=>{
+    if(g.error) anyError = true;
+    const div = document.createElement('div');
+    div.className = 'output-group' + (g.error ? ' invalid' : '');
+    const bodyThumbs = g.pages.slice(0,10).map(p=>`<div class="mini">${split.thumbCache[p]?`<img src="${split.thumbCache[p]}" alt="">`:''}</div>`).join('');
+    div.innerHTML = `
+      <div class="output-group-head">
+        <span class="title"><span class="dot"></span>${g.label}</span>
+        <span class="count">${g.pages.length} pg${g.pages.length!==1?'s':''}</span>
+      </div>
+      ${g.pages.length ? `<div class="output-group-body">${bodyThumbs}${g.pages.length>10?`<div class="mini" style="display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--ink-faint);">+${g.pages.length-10}</div>`:''}</div>` : ''}
+      ${g.error ? `<div class="output-group-err">${svgErr}<span>${g.error}</span></div>` : ''}
+    `;
+    wrap.appendChild(div);
+  });
+  const valid = groups.length>0 && !anyError && groups.some(g=>g.pages.length>0);
+  $('#processSplitBtn').disabled = !valid;
+  window.__splitGroups = groups;
+}
+
+/* process */
+$('#processSplitBtn').addEventListener('click', async ()=>{
+  const groups = (window.__splitGroups||[]).filter(g=>!g.error && g.pages.length>0);
+  if(groups.length===0) return;
+  showOverlay('Splitting your PDF…');
+  try{
+    const outputs = [];
+    for(const g of groups){
+      const newDoc = await PDFDocument.create();
+      const indices = g.pages.map(p=>p-1);
+      const copied = await newDoc.copyPages(split.srcDoc, indices);
+      copied.forEach(p=>newDoc.addPage(p));
+      const bytes = await newDoc.save();
+      outputs.push({name: sanitizeName(split.file.name, g.label), bytes});
+    }
+    renderSplitResults(outputs);
+    toast(`Created ${outputs.length} file${outputs.length!==1?'s':''} from "${split.file.name}".`);
+  }catch(err){
+    console.error(err);
+    toast('Something went wrong while splitting this PDF.', 'error');
+  }finally{
+    hideOverlay();
+  }
+});
+
+function sanitizeName(orig, label){
+  const base = orig.replace(/\.pdf$/i,'');
+  const tag = label.split('·')[0].trim().toLowerCase().replace(/\s+/g,'-');
+  return `${base}-${tag}.pdf`;
+}
+
+function renderSplitResults(outputs){
+  const wrap = $('#splitResults');
+  wrap.innerHTML = '<div class="results-list" id="resultsList"></div>';
+  const list = $('#resultsList');
+  const blobs = [];
+  outputs.forEach(o=>{
+    const blob = new Blob([o.bytes], {type:'application/pdf'});
+    blobs.push({name:o.name, blob});
+    const url = URL.createObjectURL(blob);
+    const item = document.createElement('div');
+    item.className = 'result-item';
+    item.innerHTML = `<span class="ic">${svgFile}</span><div class="info"><div class="name">${o.name}</div><div class="sub">${formatBytes(blob.size)}</div></div>
+      <a class="btn ghost-btn btn-sm" href="${url}" download="${o.name}">Download</a>`;
+    list.appendChild(item);
+  });
+  if(outputs.length > 1){
+    const allBtn = document.createElement('button');
+    allBtn.className = 'btn btn-primary btn-block';
+    allBtn.style.marginTop = '10px';
+    allBtn.innerHTML = 'Download all as ZIP';
+    allBtn.addEventListener('click', async ()=>{
+      const zip = new JSZip();
+      blobs.forEach(b=>zip.file(b.name, b.blob));
+      const content = await zip.generateAsync({type:'blob'});
+      const url = URL.createObjectURL(content);
+      const a = document.createElement('a');
+      a.href = url; a.download = (split.file.name.replace(/\.pdf$/i,'')) + '-split.zip';
+      a.click();
+    });
+    wrap.appendChild(allBtn);
+  }
+}
+
+/* =====================================================================
+   MERGER
+   ===================================================================== */
+const merge = { items: [] }; // {id, name, size, doc, pageCount, thumb}
+let mergeIdSeq = 1;
+let dragId = null;
+
+const mergeDropzone = $('#mergeDropzone');
+const mergeFileInput = $('#mergeFileInput');
+['click','keydown'].forEach(evt=>{
+  mergeDropzone.addEventListener(evt, e=>{
+    if(evt==='keydown' && e.key!=='Enter' && e.key!==' ') return;
+    mergeFileInput.click();
+  });
+});
+mergeFileInput.addEventListener('change', e=>loadMergeFiles(e.target.files));
+['dragenter','dragover'].forEach(evt=>mergeDropzone.addEventListener(evt, e=>{ e.preventDefault(); mergeDropzone.classList.add('dragover'); }));
+['dragleave','drop'].forEach(evt=>mergeDropzone.addEventListener(evt, e=>{ e.preventDefault(); mergeDropzone.classList.remove('dragover'); }));
+mergeDropzone.addEventListener('drop', e=>loadMergeFiles(e.dataTransfer.files));
+
+const spineColors = ['var(--accent)','var(--success)','var(--warn)','#B06AE0','#3AA0C9','#E0785C'];
+
+async function loadMergeFiles(fileList){
+  const files = Array.from(fileList).filter(f=>f.type==='application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
+  if(files.length === 0){ toast('Please choose PDF files only.', 'error'); return; }
+  showOverlay(`Reading ${files.length} file${files.length!==1?'s':''}…`);
+  for(const file of files){
+    try{
+      const buf = await file.arrayBuffer();
+      const doc = await PDFDocument.load(buf.slice(0));
+      const pdfjsDoc = await pdfjsLib.getDocument({data: buf.slice(0)}).promise;
+      const page = await pdfjsDoc.getPage(1);
+      const viewport = page.getViewport({scale:0.25});
+      const canvas = document.createElement('canvas');
+      canvas.width = viewport.width; canvas.height = viewport.height;
+      await page.render({canvasContext: canvas.getContext('2d'), viewport}).promise;
+      merge.items.push({
+        id: mergeIdSeq++,
+        name: file.name,
+        size: file.size,
+        doc,
+        pageCount: doc.getPageCount(),
+        thumb: canvas.toDataURL('image/jpeg',0.82)
+      });
+    }catch(err){
+      console.error(err);
+      toast(`Couldn't read "${file.name}" — it may be corrupted or password-protected.`, 'error');
+    }
+  }
+  hideOverlay();
+  renderMergeList();
+}
+
+function renderMergeList(){
+  const list = $('#mergeList');
+  list.innerHTML = '';
+  if(merge.items.length === 0){
+    list.innerHTML = '<li class="merge-empty" id="mergeEmpty">No files yet — add PDFs above to get started.</li>';
+  } else {
+    merge.items.forEach((it, idx)=>{
+      const li = document.createElement('li');
+      li.className = 'merge-item';
+      li.draggable = true;
+      li.dataset.id = it.id;
+      li.innerHTML = `
+        <span class="order-badge">${idx+1}</span>
+        <span class="spine" style="background:${spineColors[idx % spineColors.length]}"></span>
+        <span class="grip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="6" r="1.4"/><circle cx="8" cy="12" r="1.4"/><circle cx="8" cy="18" r="1.4"/><circle cx="16" cy="6" r="1.4"/><circle cx="16" cy="12" r="1.4"/><circle cx="16" cy="18" r="1.4"/></svg></span>
+        <span class="thumb-mini"><img src="${it.thumb}" alt=""></span>
+        <span class="info"><div class="name">${it.name}</div><div class="sub">${it.pageCount} pg${it.pageCount!==1?'s':''} · ${formatBytes(it.size)}</div></span>
+        <button class="remove-item" aria-label="Remove ${it.name}">${svgClose}</button>
+      `;
+      li.querySelector('.remove-item').addEventListener('click', ()=>{
+        merge.items = merge.items.filter(x=>x.id !== it.id);
+        renderMergeList();
+      });
+      li.addEventListener('dragstart', e=>{ dragId = it.id; li.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
+      li.addEventListener('dragend', ()=>{ li.classList.remove('dragging'); $$('.merge-item').forEach(x=>x.classList.remove('drop-target')); });
+      li.addEventListener('dragover', e=>{ e.preventDefault(); li.classList.add('drop-target'); });
+      li.addEventListener('dragleave', ()=>li.classList.remove('drop-target'));
+      li.addEventListener('drop', e=>{
+        e.preventDefault();
+        li.classList.remove('drop-target');
+        if(dragId===null || dragId===it.id) return;
+        const fromIdx = merge.items.findIndex(x=>x.id===dragId);
+        const toIdx = merge.items.findIndex(x=>x.id===it.id);
+        const [moved] = merge.items.splice(fromIdx,1);
+        merge.items.splice(toIdx,0,moved);
+        renderMergeList();
+      });
+      list.appendChild(li);
+    });
+  }
+  updateMergeSummary();
+}
+
+function updateMergeSummary(){
+  const totalFiles = merge.items.length;
+  const totalPages = merge.items.reduce((s,i)=>s+i.pageCount,0);
+  const totalSize = merge.items.reduce((s,i)=>s+i.size,0);
+  $('#sumFiles').textContent = totalFiles;
+  $('#sumPages').textContent = totalPages;
+  $('#sumSize').textContent = formatBytes(totalSize);
+  $('#processMergeBtn').disabled = totalFiles < 2;
+}
+
+$('#processMergeBtn').addEventListener('click', async ()=>{
+  if(merge.items.length < 2) return;
+  showOverlay('Merging your PDFs…');
+  try{
+    const outDoc = await PDFDocument.create();
+    for(const it of merge.items){
+      const indices = it.doc.getPageIndices();
+      const copied = await outDoc.copyPages(it.doc, indices);
+      copied.forEach(p=>outDoc.addPage(p));
+    }
+    const bytes = await outDoc.save();
+    const blob = new Blob([bytes], {type:'application/pdf'});
+    const url = URL.createObjectURL(blob);
+    const wrap = $('#mergeResults');
+    wrap.innerHTML = `<div class="results-list">
+      <div class="result-item"><span class="ic">${svgFile}</span>
+        <div class="info"><div class="name">merged.pdf</div><div class="sub">${formatBytes(blob.size)} · ${outDoc.getPageCount()} pages</div></div>
+        <a class="btn ghost-btn btn-sm" href="${url}" download="merged.pdf">Download</a>
+      </div></div>`;
+    toast(`Merged ${merge.items.length} files into one ${outDoc.getPageCount()}-page PDF.`);
+  }catch(err){
+    console.error(err);
+    toast('Something went wrong while merging these PDFs.', 'error');
+  }finally{
+    hideOverlay();
+  }
+});
+
+/* init */
+setSplitMode('custom');
+</script>
+</body>
+</html>
