@@ -333,3 +333,9 @@ Day 39 – PDF Splitter & Merger
 * Built an interactive PDF Splitter & Merger using HTML, CSS, and JavaScript.
 * Implemented PDF splitting, merging, page preview, drag-and-drop uploads, and file reordering.
 * Generated a responsive offline tool with validation, processing indicators, and an intuitive user experience.
+
+Day 40 – AI Assistant Builder
+
+* Built an interactive AI Assistant Builder using HTML, CSS, and JavaScript.
+* Designed custom AI assistants through guided configuration and production-ready system prompts.
+* Generated a premium interface with Claude API integration, documentation, and responsive user experience.
