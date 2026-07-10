@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Resume &amp; LinkedIn Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14181F;
+    --paper:#EFF1EE;
+    --paper-raised:#FFFFFF;
+    --slate:#5B6472;
+    --rule:#D7D9D3;
+    --red:#B3403A;
+    --green:#2E6F52;
+    --brass:#A9822F;
+    --brass-dim:#c9ad74;
+    --shadow: 0 1px 2px rgba(20,24,31,0.06), 0 8px 24px rgba(20,24,31,0.06);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      repeating-linear-gradient(180deg, transparent, transparent 27px, rgba(20,24,31,0.028) 28px),
+      var(--paper);
+    color:var(--ink);
+    font-family:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height:100vh;
+    line-height:1.5;
+  }
+
+  ::selection{ background: var(--brass-dim); color:var(--ink); }
+
+  a{ color:inherit; }
+
+  .wrap{
+    max-width:1240px;
+    margin:0 auto;
+    padding:28px 20px 80px;
+  }
+
+  /* ---------- Letterhead ---------- */
+  .letterhead{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+    padding:22px 26px;
+    background:var(--paper-raised);
+    border:1px solid var(--rule);
+    border-radius:4px;
+    box-shadow:var(--shadow);
+    flex-wrap:wrap;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:16px;
+  }
+  .seal{
+    width:52px; height:52px; flex:none;
+    border-radius:50%;
+    border:1.5px solid var(--brass);
+    display:flex; align-items:center; justify-content:center;
+    position:relative;
+    color:var(--brass);
+  }
+  .seal::before{
+    content:'';
+    position:absolute; inset:5px;
+    border:1px solid var(--brass);
+    border-radius:50%;
+  }
+  .seal svg{ width:22px; height:22px; }
+  .brand h1{
+    font-family:'Source Serif 4', Georgia, serif;
+    font-weight:700;
+    font-size:1.5rem;
+    margin:0;
+    letter-spacing:0.2px;
+  }
+  .brand p{
+    margin:2px 0 0;
+    font-size:0.78rem;
+    color:var(--slate);
+    text-transform:uppercase;
+    letter-spacing:1.4px;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .memo-meta{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    color:var(--slate);
+    text-align:right;
+    line-height:1.7;
+    text-transform:uppercase;
+    letter-spacing:0.8px;
+  }
+  .memo-meta span{ color:var(--ink); }
+
+  /* ---------- Layout ---------- */
+  .studio{
+    margin-top:22px;
+    display:grid;
+    grid-template-columns: minmax(320px, 0.85fr) 1.15fr;
+    gap:20px;
+    align-items:start;
+  }
+  @media (max-width: 880px){
+    .studio{ grid-template-columns: 1fr; }
+  }
+
+  .panel{
+    background:var(--paper-raised);
+    border:1px solid var(--rule);
+    border-radius:4px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .panel-head{
+    padding:16px 22px;
+    border-bottom:1px solid var(--rule);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .panel-head h2{
+    font-family:'Source Serif 4', Georgia, serif;
+    font-size:1.02rem;
+    margin:0;
+    font-weight:600;
+  }
+  .panel-head .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.68rem;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--slate);
+  }
+  .panel-body{ padding:22px; }
+
+  label{
+    display:block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    letter-spacing:0.8px;
+    text-transform:uppercase;
+    color:var(--slate);
+    margin-bottom:8px;
+  }
+  .field{ margin-bottom:18px; }
+  .field .hint{
+    font-size:0.76rem;
+    color:var(--slate);
+    margin-top:6px;
+  }
+
+  input[type=text], input[type=password], textarea{
+    width:100%;
+    font-family:'Inter', sans-serif;
+    font-size:0.92rem;
+    color:var(--ink);
+    background:var(--paper);
+    border:1px solid var(--rule);
+    border-radius:3px;
+    padding:11px 13px;
+    resize:vertical;
+    transition:border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  textarea{ min-height:150px; line-height:1.55; }
+  #resumeInput{ min-height:230px; }
+  input:focus, textarea:focus{
+    outline:none;
+    border-color:var(--brass);
+    box-shadow:0 0 0 3px rgba(169,130,47,0.14);
+  }
+
+  .row2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+  @media (max-width:520px){ .row2{ grid-template-columns:1fr; } }
+
+  details.advanced{
+    border-top:1px dashed var(--rule);
+    padding-top:14px;
+    margin-top:4px;
+  }
+  details.advanced summary{
+    cursor:pointer;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    letter-spacing:0.8px;
+    text-transform:uppercase;
+    color:var(--slate);
+    list-style:none;
+  }
+  details.advanced summary::-webkit-details-marker{ display:none; }
+  details.advanced summary::before{ content:'▸ '; color:var(--brass); }
+  details.advanced[open] summary::before{ content:'▾ '; }
+  details.advanced .panel-body-inner{ padding-top:12px; }
+
+  .btn{
+    appearance:none;
+    border:none;
+    cursor:pointer;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.78rem;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    padding:13px 20px;
+    border-radius:3px;
+    transition:transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease;
+  }
+  .btn-primary{
+    width:100%;
+    background:var(--ink);
+    color:var(--paper);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+  }
+  .btn-primary:hover{ background:#232a36; }
+  .btn-primary:active{ transform:scale(0.99); }
+  .btn-primary:disabled{ opacity:0.55; cursor:not-allowed; }
+
+  .btn-ghost{
+    background:transparent;
+    border:1px solid var(--rule);
+    color:var(--slate);
+    padding:7px 12px;
+    font-size:0.68rem;
+  }
+  .btn-ghost:hover{ border-color:var(--brass); color:var(--brass); }
+
+  /* ---------- Output ---------- */
+  .tabs{
+    display:flex;
+    gap:4px;
+  }
+  .tab{
+    background:transparent;
+    border:none;
+    cursor:pointer;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.7rem;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--slate);
+    padding:6px 10px;
+    border-radius:3px 3px 0 0;
+    border-bottom:2px solid transparent;
+  }
+  .tab.active{ color:var(--ink); border-bottom-color:var(--brass); }
+
+  .output-body{ min-height:420px; position:relative; }
+
+  .state{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    min-height:420px;
+    padding:30px;
+    color:var(--slate);
+  }
+  .state h3{
+    font-family:'Source Serif 4', Georgia, serif;
+    color:var(--ink);
+    font-size:1.15rem;
+    margin:14px 0 6px;
+    font-weight:600;
+  }
+  .state p{ font-size:0.88rem; max-width:340px; margin:0; }
+
+  .empty-icon svg{ width:56px; height:56px; color:var(--rule); stroke:var(--slate); }
+
+  /* stamp loader */
+  .stamp-loader{
+    width:78px; height:78px;
+    border:2.5px solid var(--red);
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    animation:stampPulse 1.4s ease-in-out infinite;
+  }
+  .stamp-loader::before{
+    content:'';
+    position:absolute; inset:8px;
+    border:1px solid var(--red);
+    border-radius:50%;
+  }
+  .stamp-loader svg{ width:30px; height:30px; color:var(--red); animation:spin 2.2s linear infinite; }
+  @keyframes stampPulse{
+    0%,100%{ transform:scale(1); opacity:0.85; }
+    50%{ transform:scale(1.06); opacity:1; }
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .loader-msg{ font-family:'IBM Plex Mono', monospace; font-size:0.75rem; letter-spacing:0.6px; color:var(--slate); margin-top:16px; min-height:18px; }
+
+  .error-icon svg{ width:48px; height:48px; color:var(--red); }
+  .state.error p{ color:var(--red); }
+
+  /* result cards */
+  .result{
+    padding:22px;
+    animation:fadeUp 0.5s ease both;
+  }
+  @keyframes fadeUp{
+    from{ opacity:0; transform:translateY(10px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  .approved-stamp{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    border:2px solid var(--red);
+    color:var(--red);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    padding:6px 14px;
+    border-radius:3px;
+    transform:rotate(-2deg);
+    margin-bottom:18px;
+    animation:stampIn 0.35s cubic-bezier(.2,1.4,.4,1) both;
+  }
+  @keyframes stampIn{
+    from{ opacity:0; transform:rotate(-2deg) scale(1.6); }
+    to{ opacity:1; transform:rotate(-2deg) scale(1); }
+  }
+
+  .doc h2{
+    font-family:'Source Serif 4', Georgia, serif;
+    font-size:1.08rem;
+    font-weight:700;
+    margin:26px 0 10px;
+    padding-bottom:8px;
+    border-bottom:1px solid var(--rule);
+  }
+  .doc h2:first-child{ margin-top:0; }
+  .doc h3{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.82rem;
+    text-transform:uppercase;
+    letter-spacing:0.6px;
+    color:var(--slate);
+    margin:18px 0 8px;
+  }
+  .doc p{ margin:0 0 10px; font-size:0.93rem; }
+  .doc ul{ margin:0 0 14px; padding-left:20px; }
+  .doc li{ margin-bottom:6px; font-size:0.93rem; }
+  .doc strong{ color:var(--ink); }
+
+  .copy-row{
+    display:flex; justify-content:flex-end; margin-top:20px;
+    border-top:1px dashed var(--rule); padding-top:16px;
+  }
+
+  /* ---------- Docs panel ---------- */
+  .docs{
+    margin-top:20px;
+  }
+  .docs summary{
+    cursor:pointer;
+    list-style:none;
+    padding:16px 22px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.76rem;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--slate);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .docs summary::-webkit-details-marker{ display:none; }
+  .docs summary::before{ content:'▸'; color:var(--brass); }
+  .docs[open] summary::before{ content:'▾'; }
+  .docs-body{ padding:0 26px 26px; }
+  .docs-body h4{
+    font-family:'Source Serif 4', Georgia, serif;
+    font-size:1rem; margin:20px 0 8px;
+  }
+  .docs-body h4:first-child{ margin-top:0; }
+  .docs-body p, .docs-body li{ font-size:0.87rem; color:var(--slate); line-height:1.65; }
+  .docs-body ul{ padding-left:18px; margin:8px 0; }
+  .docs-body code{
+    background:var(--paper); border:1px solid var(--rule);
+    padding:1px 5px; border-radius:2px; font-family:'IBM Plex Mono', monospace; font-size:0.82em; color:var(--ink);
+  }
+
+  .footer-note{
+    text-align:center;
+    font-size:0.72rem;
+    color:var(--slate);
+    margin-top:26px;
+    font-family:'IBM Plex Mono', monospace;
+  }
+
+  ::-webkit-scrollbar{ width:10px; height:10px; }
+  ::-webkit-scrollbar-thumb{ background:var(--rule); border-radius:6px; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="letterhead">
+    <div class="brand">
+      <div class="seal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div>
+        <h1>The Resume &amp; LinkedIn Studio</h1>
+        <p>Career materials, rewritten &amp; ready to send</p>
+      </div>
+    </div>
+    <div class="memo-meta">
+      MEMO NO. <span id="memoNo">0417</span><br>
+      STATUS: <span id="memoStatus">AWAITING DRAFT</span>
+    </div>
+  </header>
+
+  <main class="studio">
+
+    <!-- INPUT PANEL -->
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Intake</h2>
+        <span class="tag">Step 1 of 1</span>
+      </div>
+      <div class="panel-body">
+
+        <div class="field">
+          <label for="resumeInput">Paste your current resume / CV</label>
+          <textarea id="resumeInput" placeholder="Paste the full text of your resume here — roles, dates, bullets, education, skills..."></textarea>
+        </div>
+
+        <div class="field">
+          <label for="jdInput">Target job description <span style="text-transform:none;letter-spacing:0;">(optional, but recommended)</span></label>
+          <textarea id="jdInput" style="min-height:110px;" placeholder="Paste the job posting you're applying to, so the rewrite mirrors its language and priorities."></textarea>
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label for="roleInput">Target role / industry</label>
+            <input type="text" id="roleInput" placeholder="e.g. Frontend Developer">
+          </div>
+          <div class="field">
+            <label for="seniorityInput">Career stage</label>
+            <input type="text" id="seniorityInput" placeholder="e.g. Final-year student / freelancer">
+          </div>
+        </div>
+
+        <details class="advanced">
+          <summary>API configuration</summary>
+          <div class="panel-body-inner">
+            <div class="field" style="margin-bottom:8px;">
+              <label for="apiKey">Anthropic API key</label>
+              <input type="password" id="apiKey" placeholder="sk-ant-...">
+              <p class="hint">Stored only in this browser tab's memory — never saved or sent anywhere except directly to Anthropic's API. Cleared on refresh.</p>
+            </div>
+          </div>
+        </details>
+
+        <div style="margin-top:18px;">
+          <button class="btn btn-primary" id="generateBtn">
+            <span id="btnLabel">Rewrite my materials</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- OUTPUT PANEL -->
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Draft</h2>
+        <div class="tabs" id="tabs" style="display:none;">
+          <button class="tab active" data-tab="resume">Resume</button>
+          <button class="tab" data-tab="linkedin">LinkedIn</button>
+        </div>
+      </div>
+
+      <div class="output-body" id="outputBody">
+        <div class="state" id="emptyState">
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.4"><path d="M6 3h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/><path d="M8 13h8M8 17h8M8 9h3" stroke-linecap="round"/></svg>
+          </div>
+          <h3>Nothing drafted yet</h3>
+          <p>Paste your resume on the left and press "Rewrite my materials" — your polished resume and LinkedIn copy will appear here, ready to paste.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <details class="docs panel">
+    <summary>How this was built</summary>
+    <div class="docs-body">
+
+      <h4>The brief, distilled</h4>
+      <p>A general-purpose resume &amp; LinkedIn assistant. Input is free-pasted resume text plus an optional job description. Output is complete, copy-paste-ready rewritten copy — not a score, not a critique, a finished draft. Tone: professional, corporate-HR register.</p>
+
+      <h4>System prompt design</h4>
+      <ul>
+        <li><strong>Role framing</strong> — the model is cast as a senior resume writer and LinkedIn strategist, which anchors vocabulary, structure, and confidence level in the output rather than a generic "helpful assistant" voice.</li>
+        <li><strong>Anti-fabrication constraint</strong> — the single highest-risk failure mode for this domain is a model inventing metrics, job titles, or dates to make bullets sound stronger. The prompt explicitly forbids this and instructs the model to insert visible placeholders like <code>[add %/number]</code> instead.</li>
+        <li><strong>ATS-safe formatting rules</strong> — no tables, no decorative unicode, standard section headers — because the output is meant to be pasted directly into a resume that may pass through applicant tracking systems.</li>
+        <li><strong>Fixed output schema</strong> — the prompt mandates specific markdown headers (<code>## Professional Summary</code>, <code>## Rewritten Experience</code>, etc.) purely so this interface can reliably split the response into the Resume and LinkedIn tabs without fragile parsing.</li>
+        <li><strong>Edge-case handling</strong> — explicit instructions for sparse resumes (students/freelancers), non-English input, missing job descriptions, and non-resume input, so the assistant degrades gracefully instead of guessing.</li>
+      </ul>
+
+      <h4>UI &amp; design decisions</h4>
+      <ul>
+        <li><strong>Letterhead / memo motif</strong> — the whole interface is framed as a memo being drafted and stamped, which mirrors the domain (a recruiter reviewing and approving a document) more than a generic chat window would.</li>
+        <li><strong>Faint ruled-paper background</strong> and a red "approved" stamp on the finished draft reinforce the idea of a physical document moving from intake to sign-off, rather than a chatbot reply.</li>
+        <li><strong>Two-pane layout</strong> — intake on the left, draft on the right — so the source material and the rewritten result are visible side by side rather than buried in a scrolling conversation.</li>
+        <li><strong>Typography</strong> — Source Serif 4 for headings (editorial, letterhead feel), Inter for body copy (readable at length), IBM Plex Mono for labels and metadata (gives it a "form/document" utility feel).</li>
+      </ul>
+
+      <h4>Ideas for extending this</h4>
+      <ul>
+        <li><strong>Tools:</strong> connect a PDF/DOCX parser so users can upload a resume file directly instead of pasting text; add a real ATS keyword-match tool that diffs the job description against the resume programmatically.</li>
+        <li><strong>Memory:</strong> remember a user's target roles and past drafts across sessions, so follow-up requests ("make it punchier," "shorten for a 1-page limit") don't require re-pasting everything.</li>
+        <li><strong>Multi-step workflow:</strong> split into a pipeline — extract structured data from the resume, ask a clarifying question about missing metrics, then generate the final draft — rather than one single-shot generation.</li>
+        <li><strong>Export:</strong> generate a downloadable, properly formatted .docx or .pdf directly from the returned markdown.</li>
+      </ul>
+
+    </div>
+  </details>
+
+  <p class="footer-note">Built with the Claude API · No data leaves your browser except the request to Anthropic</p>
+
+</div>
+
+<script>
+(function(){
+
+  const SYSTEM_PROMPT = `You are "The Resume & LinkedIn Studio," a senior resume writer and LinkedIn personal-branding strategist with 15+ years of corporate HR and technical-recruiting experience across technology, business, and creative industries.
+
+YOUR JOB
+Given a pasted resume/CV, an optional target job description, and optional target-role/career-stage context, produce complete, copy-paste-ready rewritten career materials: a polished resume and LinkedIn profile copy. You are not giving feedback or a score — you are delivering a finished draft the person can paste and use immediately.
+
+HARD CONSTRAINTS
+1. Never invent employers, job titles, dates, degrees, certifications, or metrics that are not present in the source material. You may rephrase, restructure, reorder, and strengthen the language, but every fact must trace back to what the person actually provided.
+2. If a bullet would clearly be stronger with a number the person did not supply (e.g. "%", "users", "$", "hours saved"), insert a clear placeholder in the exact form [add %/number] rather than fabricating a figure.
+3. Optimize for Applicant Tracking Systems: use standard section headers, no tables, no columns, no graphics-dependent formatting, no decorative unicode beyond a plain "-" or "•" for bullets.
+4. If a job description is provided, naturally mirror its key terms and priorities in the summary and bullets — without keyword-stuffing or repeating phrases unnaturally.
+5. Tone is professional and polished, in a corporate-HR register: confident, concise, achievement-oriented, strong action verbs. Avoid clichés such as "hardworking team player" or "results-driven professional" used as empty filler.
+6. Resume bullets: 1–2 lines each, 3–6 bullets per role, most impactful first.
+7. LinkedIn About section: first-person, 3–5 short paragraphs, warmer and more personable than the resume, but still professional — never gimmicky or overly casual.
+8. Never introduce religious, cultural, or personal commentary unless the source material itself surfaces it (e.g., the person's own materials mention a religious organization) — and even then, treat it neutrally as a factual credential, not as an opportunity for unsolicited commentary.
+
+OUTPUT FORMAT — always use exactly these markdown headers, in this order, so the response can be programmatically split:
+## Professional Summary
+(3-4 sentence resume summary paragraph)
+
+## Rewritten Experience
+### {Company — Role, Dates}
+- bullet
+- bullet
+(repeat ### subsection per role, most recent first)
+
+## Skills
+(grouped, comma-separated or short categorized lists)
+
+## LinkedIn Headline
+(one line, under 220 characters)
+
+## LinkedIn About
+(3-5 short first-person paragraphs)
+
+If education is a meaningful credential for this person (e.g. a student or early-career candidate), include it as its own '### Education' subsection inside Rewritten Experience, positioned appropriately for their career stage.
+
+EDGE CASES
+- No resume text provided: do not generate placeholder content. Ask the person to paste their resume text.
+- Pasted text is not resume-like content: politely point this out and ask them to paste actual resume/CV text.
+- Very sparse resume (student, career-switcher, freelancer with few formal roles): build the strongest possible narrative around education, projects, freelance work, and skills — stay factual, but be encouraging in framing.
+- Resume written in a language other than English: respond in that same language, keeping the same structure and headers translated appropriately.
+- No job description given: proceed using only the target role/industry context (or general best practice if that's also absent).
+- Input contains multiple unrelated resumes or large amounts of irrelevant text: focus only on the most relevant, most complete resume content, and briefly note at the very end (outside the headers above, prefixed "Note:") that unrelated content was set aside.`;
+
+  const state = { activeTab: 'resume', resumeMd: '', linkedinMd: '', loading:false };
+
+  const $ = (id) => document.getElementById(id);
+  const resumeInput = $('resumeInput');
+  const jdInput = $('jdInput');
+  const roleInput = $('roleInput');
+  const seniorityInput = $('seniorityInput');
+  const apiKeyInput = $('apiKey');
+  const generateBtn = $('generateBtn');
+  const btnLabel = $('btnLabel');
+  const outputBody = $('outputBody');
+  const tabs = $('tabs');
+  const memoStatus = $('memoStatus');
+  const memoNo = $('memoNo');
+
+  memoNo.textContent = String(Math.floor(1000 + Math.random()*8999));
+
+  const loaderMessages = [
+    'Reading through your experience…',
+    'Matching language to the target role…',
+    'Strengthening bullet points…',
+    'Drafting LinkedIn copy…',
+    'Proofreading the final draft…'
+  ];
+
+  function escapeHtml(str){
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // Minimal markdown -> HTML renderer for the constrained output shape we expect
+  function renderMarkdown(md){
+    if(!md || !md.trim()) return '<p><em>Nothing generated for this section.</em></p>';
+    const lines = md.split('\n');
+    let html = '';
+    let inList = false;
+    const closeList = () => { if(inList){ html += '</ul>'; inList = false; } };
+
+    const inline = (text) => {
+      text = escapeHtml(text);
+      text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      text = text.replace(/\[(add[^\]]*)\]/gi, '<strong style="color:var(--red);">[$1]</strong>');
+      return text;
+    };
+
+    for(let raw of lines){
+      const line = raw.trim();
+      if(!line){ closeList(); continue; }
+      if(line.startsWith('### ')){ closeList(); html += `<h3>${inline(line.slice(4))}</h3>`; continue; }
+      if(line.startsWith('## ')){ closeList(); html += `<h2>${inline(line.slice(3))}</h2>`; continue; }
+      if(line.startsWith('# ')){ closeList(); html += `<h2>${inline(line.slice(2))}</h2>`; continue; }
+      if(line.startsWith('- ') || line.startsWith('• ')){
+        if(!inList){ html += '<ul>'; inList = true; }
+        html += `<li>${inline(line.slice(2))}</li>`;
+        continue;
+      }
+      if(/^note:/i.test(line)){ closeList(); html += `<p><em>${inline(line)}</em></p>`; continue; }
+      closeList();
+      html += `<p>${inline(line)}</p>`;
+    }
+    closeList();
+    return html;
+  }
+
+  // Split the model's single response into resume vs linkedin sections
+  function splitSections(md){
+    const idx = {};
+    const markers = ['## Professional Summary','## Rewritten Experience','## Skills','## LinkedIn Headline','## LinkedIn About'];
+    markers.forEach(m => { idx[m] = md.indexOf(m); });
+
+    const liStart = idx['## LinkedIn Headline'];
+    const resumeEnd = liStart > -1 ? liStart : md.length;
+    const resumeMd = md.slice(0, resumeEnd).trim();
+    const linkedinMd = liStart > -1 ? md.slice(liStart).trim() : '';
+
+    return { resumeMd, linkedinMd: linkedinMd || '' };
+  }
+
+  function setStatus(text){ memoStatus.textContent = text; }
+
+  function showEmpty(){
+    tabs.style.display = 'none';
+    outputBody.innerHTML = `
+      <div class="state" id="emptyState">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.4"><path d="M6 3h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/><path d="M8 13h8M8 17h8M8 9h3" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Nothing drafted yet</h3>
+        <p>Paste your resume on the left and press "Rewrite my materials" — your polished resume and LinkedIn copy will appear here, ready to paste.</p>
+      </div>`;
+  }
+
+  function showLoading(){
+    tabs.style.display = 'none';
+    outputBody.innerHTML = `
+      <div class="state" id="loadingState">
+        <div class="stamp-loader">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Drafting your materials</h3>
+        <p class="loader-msg" id="loaderMsg">${loaderMessages[0]}</p>
+      </div>`;
+    let i = 0;
+    state._loaderInterval = setInterval(() => {
+      i = (i+1) % loaderMessages.length;
+      const el = $('loaderMsg');
+      if(el) el.textContent = loaderMessages[i];
+    }, 1800);
+  }
+
+  function stopLoaderInterval(){
+    if(state._loaderInterval){ clearInterval(state._loaderInterval); state._loaderInterval = null; }
+  }
+
+  function showError(message){
+    tabs.style.display = 'none';
+    outputBody.innerHTML = `
+      <div class="state error">
+        <div class="error-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01" stroke-linecap="round"/></svg>
+        </div>
+        <h3>The draft didn't go through</h3>
+        <p>${escapeHtml(message)}</p>
+      </div>`;
+  }
+
+  function renderResult(){
+    tabs.style.display = 'flex';
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === state.activeTab));
+    const md = state.activeTab === 'resume' ? state.resumeMd : state.linkedinMd;
+    const copyLabel = state.activeTab === 'resume' ? 'Copy resume' : 'Copy LinkedIn copy';
+    outputBody.innerHTML = `
+      <div class="result">
+        <div class="approved-stamp">✓ Approved — ready to send</div>
+        <div class="doc">${renderMarkdown(md)}</div>
+        <div class="copy-row">
+          <button class="btn btn-ghost" id="copyBtn">${copyLabel}</button>
+        </div>
+      </div>`;
+    $('copyBtn').addEventListener('click', () => {
+      navigator.clipboard.writeText(md).then(() => {
+        $('copyBtn').textContent = 'Copied ✓';
+        setTimeout(() => { $('copyBtn').textContent = copyLabel; }, 1600);
+      });
+    });
+  }
+
+  tabs.addEventListener('click', (e) => {
+    const btn = e.target.closest('.tab');
+    if(!btn) return;
+    state.activeTab = btn.dataset.tab;
+    renderResult();
+  });
+
+  async function callClaude(userMessage){
+    const key = apiKeyInput.value.trim();
+    if(!key){
+      throw new Error('Add your Anthropic API key under "API configuration" first.');
+    }
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 3000,
+        system: SYSTEM_PROMPT,
+        messages: [
+          { role: 'user', content: userMessage }
+        ]
+      })
+    });
+
+    if(!response.ok){
+      let detail = '';
+      try{ const errJson = await response.json(); detail = errJson?.error?.message || ''; } catch(e){}
+      if(response.status === 401) throw new Error('That API key was rejected. Double-check it and try again.');
+      if(response.status === 429) throw new Error('Rate limited by the API. Wait a moment and try again.');
+      throw new Error(detail || `The API returned an error (status ${response.status}).`);
+    }
+
+    const data = await response.json();
+    const text = (data.content || [])
+      .filter(block => block.type === 'text')
+      .map(block => block.text)
+      .join('\n');
+
+    if(!text.trim()){
+      throw new Error('The model returned an empty response. Try again.');
+    }
+    return text;
+  }
+
+  function buildUserMessage(){
+    const resume = resumeInput.value.trim();
+    const jd = jdInput.value.trim();
+    const role = roleInput.value.trim();
+    const seniority = seniorityInput.value.trim();
+
+    let msg = `RESUME TEXT:\n${resume || '(none provided)'}\n\n`;
+    msg += `TARGET JOB DESCRIPTION:\n${jd || '(none provided)'}\n\n`;
+    msg += `TARGET ROLE / INDUSTRY: ${role || '(not specified)'}\n`;
+    msg += `CAREER STAGE / CONTEXT: ${seniority || '(not specified)'}\n`;
+    return msg;
+  }
+
+  async function handleGenerate(){
+    if(state.loading) return;
+
+    const resume = resumeInput.value.trim();
+    if(!resume){
+      resumeInput.focus();
+      resumeInput.style.borderColor = 'var(--red)';
+      setTimeout(() => { resumeInput.style.borderColor = ''; }, 1200);
+      return;
+    }
+
+    state.loading = true;
+    generateBtn.disabled = true;
+    btnLabel.textContent = 'Drafting…';
+    setStatus('DRAFTING');
+    showLoading();
+
+    try{
+      const raw = await callClaude(buildUserMessage());
+      const { resumeMd, linkedinMd } = splitSections(raw);
+      state.resumeMd = resumeMd;
+      state.linkedinMd = linkedinMd;
+      state.activeTab = 'resume';
+      stopLoaderInterval();
+      setStatus('APPROVED');
+      renderResult();
+    }catch(err){
+      stopLoaderInterval();
+      setStatus('NEEDS ATTENTION');
+      showError(err.message || 'Something went wrong. Please try again.');
+    }finally{
+      state.loading = false;
+      generateBtn.disabled = false;
+      btnLabel.textContent = 'Rewrite my materials';
+    }
+  }
+
+  generateBtn.addEventListener('click', handleGenerate);
+  showEmpty();
+
+})();
+</script>
+
+</body>
+</html>
