@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Async JavaScript — Interactive Learning Studio</title>
+<style>
+:root{
+  --void:#0b0f14;
+  --surface:#121821;
+  --surface-2:#182130;
+  --gutter:#1c2532;
+  --line:#26313f;
+  --text:#e7edf4;
+  --muted:#8996a6;
+  --amber:#f5a623;
+  --amber-dim:#7a5518;
+  --violet:#8b7cf6;
+  --violet-dim:#463c85;
+  --mint:#3ddc97;
+  --mint-dim:#1d5a41;
+  --coral:#ff6b6b;
+  --coral-dim:#7a2b2b;
+  --mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --radius: 10px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--void);color:var(--text);font-family:var(--sans);}
+@media (prefers-reduced-motion: reduce){ *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;} }
+
+body{min-height:100vh;}
+::selection{background:var(--amber-dim);color:var(--text);}
+a{color:var(--amber);}
+button{font-family:var(--sans);}
+
+/* ---------- IDE Shell ---------- */
+.ide-topbar{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 16px;background:var(--surface);
+  border-bottom:1px solid var(--line);
+  position:sticky;top:0;z-index:50;
+}
+.dots{display:flex;gap:6px;}
+.dot{width:11px;height:11px;border-radius:50%;}
+.dot.red{background:#ff5f56;} .dot.yellow{background:#ffbd2e;} .dot.green{background:#27c93f;}
+.filename{font-family:var(--mono);font-size:13px;color:var(--muted);}
+.filename b{color:var(--text);}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:16px;}
+.xp-pill{
+  font-family:var(--mono);font-size:12.5px;background:var(--surface-2);
+  border:1px solid var(--line);padding:5px 12px;border-radius:20px;color:var(--amber);
+  display:flex;align-items:center;gap:6px;white-space:nowrap;
+}
+.xp-pill svg{width:13px;height:13px;}
+
+.tabbar{
+  display:flex;overflow-x:auto;background:var(--surface);
+  border-bottom:1px solid var(--line);
+}
+.tab{
+  font-family:var(--mono);font-size:13px;padding:10px 18px;color:var(--muted);
+  border-right:1px solid var(--line);cursor:pointer;white-space:nowrap;
+  display:flex;align-items:center;gap:8px;position:relative;user-select:none;
+  transition:color .15s, background .15s;
+}
+.tab:hover{color:var(--text);background:var(--surface-2);}
+.tab.active{color:var(--text);background:var(--void);}
+.tab.active::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--amber);}
+.tab .lockicon{opacity:.5;font-size:11px;}
+.tab.locked{cursor:not-allowed;color:#4a5568;}
+.tab.locked:hover{background:transparent;color:#4a5568;}
+.tab .dotstate{width:6px;height:6px;border-radius:50%;background:var(--line);}
+.tab.done .dotstate{background:var(--mint);}
+
+.progress-outer{height:3px;background:var(--surface-2);}
+.progress-inner{height:100%;background:linear-gradient(90deg,var(--amber),var(--violet));width:0%;transition:width .4s ease;}
+
+.shell-body{display:flex;}
+.gutter{
+  width:52px;flex-shrink:0;background:var(--gutter);
+  border-right:1px solid var(--line);
+  padding-top:24px;text-align:right;
+  font-family:var(--mono);font-size:12px;color:#3c4a5c;
+  user-select:none;
+  display:none;
+}
+@media(min-width:900px){.gutter{display:block;}}
+.gutter div{padding:2px 10px;line-height:26px;}
+
+main{flex:1;min-width:0;padding:28px 20px 80px;max-width:980px;margin:0 auto;width:100%;}
+@media(min-width:640px){main{padding:40px 40px 100px;}}
+
+.section{display:none;animation:fadeIn .4s ease;}
+.section.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+.eyebrow{font-family:var(--mono);font-size:12px;color:var(--violet);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;}
+h1{font-family:var(--mono);font-size:clamp(28px,5vw,42px);margin:0 0 12px;line-height:1.15;}
+h1 .accent{color:var(--amber);}
+h2{font-family:var(--mono);font-size:22px;margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--line);}
+h2 .num{color:var(--violet);}
+h3{font-family:var(--mono);font-size:16px;color:var(--text);margin:28px 0 10px;}
+h3.accent-amber{color:var(--amber);}
+p{line-height:1.7;color:#c7d1dd;margin:0 0 14px;}
+.muted{color:var(--muted);}
+strong{color:var(--text);}
+code, .code-inline{font-family:var(--mono);font-size:.9em;background:var(--surface-2);color:var(--mint);padding:1px 6px;border-radius:4px;}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin:16px 0;}
+.card.warn{border-left:3px solid var(--coral);}
+.card.tip{border-left:3px solid var(--mint);}
+.card.analogy{border-left:3px solid var(--violet);background:linear-gradient(180deg,rgba(139,124,246,.06),transparent);}
+
+.grid-2{display:grid;grid-template-columns:1fr;gap:16px;}
+@media(min-width:760px){.grid-2{grid-template-columns:1fr 1fr;}}
+
+pre.code-block{
+  background:#0d1420;border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.65;
+  position:relative;
+}
+pre.code-block .cmt{color:#5c6b7e;}
+pre.code-block .kw{color:var(--violet);}
+pre.code-block .str{color:var(--mint);}
+pre.code-block .fn{color:var(--amber);}
+pre.code-block .num{color:#f78c6c;}
+
+.badge-row{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0;}
+.pill{font-family:var(--mono);font-size:12px;padding:5px 11px;border-radius:20px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted);}
+
+/* intro */
+.intro-grid{display:grid;grid-template-columns:1fr;gap:14px;margin:24px 0;}
+@media(min-width:760px){.intro-grid{grid-template-columns:repeat(4,1fr);}}
+.stat-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;}
+.stat-card .icon{font-size:20px;margin-bottom:6px;}
+.stat-card .label{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.stat-card .value{font-size:15px;margin-top:4px;color:var(--text);}
+
+.reward-box{
+  background:linear-gradient(135deg,var(--surface-2),var(--surface));
+  border:1px solid var(--amber-dim);border-radius:var(--radius);padding:20px;margin:24px 0;
+}
+.reward-box h3{margin-top:0;color:var(--amber);}
+.badge-list{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;}
+.badge-chip{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);padding:8px 14px;border-radius:8px;font-size:13px;}
+.badge-chip .icon{width:22px;height:22px;border-radius:50%;background:var(--gutter);display:flex;align-items:center;justify-content:center;font-size:12px;}
+.badge-chip.earned{border-color:var(--mint);}
+.badge-chip.earned .icon{background:var(--mint-dim);color:var(--mint);}
+
+.start-btn{
+  margin-top:20px;font-family:var(--mono);font-size:14px;background:var(--amber);color:#1a1206;
+  border:none;padding:13px 26px;border-radius:8px;cursor:pointer;font-weight:600;
+  transition:transform .15s, box-shadow .15s;
+}
+.start-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(245,166,35,.25);}
+.start-btn:focus-visible{outline:2px solid var(--amber);outline-offset:2px;}
+
+/* nav buttons at bottom of module */
+.nav-buttons{display:flex;justify-content:space-between;margin-top:36px;gap:12px;flex-wrap:wrap;}
+.btn{
+  font-family:var(--mono);font-size:13px;padding:11px 20px;border-radius:8px;cursor:pointer;
+  border:1px solid var(--line);background:var(--surface-2);color:var(--text);
+  transition:background .15s, border-color .15s, transform .15s;
+}
+.btn:hover{background:var(--gutter);border-color:var(--muted);}
+.btn:focus-visible{outline:2px solid var(--amber);outline-offset:2px;}
+.btn.primary{background:var(--amber);color:#1a1206;border-color:var(--amber);font-weight:600;}
+.btn.primary:hover{transform:translateY(-2px);}
+.btn.violet{background:var(--violet);border-color:var(--violet);color:#0e0a26;font-weight:600;}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+
+/* ---------- Event Loop Visualizer (signature element) ---------- */
+.eventloop{
+  background:#0d1420;border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px;margin:20px 0;
+}
+.el-controls{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
+.el-controls .btn{padding:8px 16px;font-size:12.5px;}
+.el-log{font-family:var(--mono);font-size:12px;color:var(--muted);margin-left:auto;}
+.el-stage{display:grid;grid-template-columns:1fr;gap:12px;}
+@media(min-width:760px){.el-stage{grid-template-columns:1fr 1fr 1fr;}}
+.el-box{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px;min-height:150px;}
+.el-box h4{font-family:var(--mono);font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:0 0 10px;display:flex;justify-content:space-between;}
+.el-slot{
+  font-family:var(--mono);font-size:12.5px;background:var(--gutter);border:1px solid var(--line);
+  border-radius:6px;padding:8px 10px;margin-bottom:6px;opacity:0;transform:translateY(8px) scale(.95);
+  transition:all .35s ease;
+}
+.el-slot.show{opacity:1;transform:translateY(0) scale(1);}
+.el-slot.stack{border-left:3px solid var(--coral);}
+.el-slot.micro{border-left:3px solid var(--violet);}
+.el-slot.macro{border-left:3px solid var(--amber);}
+.el-slot.done{opacity:.35;text-decoration:line-through;}
+.console-out{background:#000;border-radius:6px;padding:10px;font-family:var(--mono);font-size:12.5px;min-height:150px;max-height:220px;overflow-y:auto;}
+.console-out div{color:var(--mint);padding:2px 0;border-bottom:1px dashed #1c2532;opacity:0;animation:consoleIn .3s forwards;}
+@keyframes consoleIn{to{opacity:1;}}
+
+/* Promise state machine SVG diagram */
+.state-diagram{display:flex;justify-content:center;padding:14px 0;}
+.state-diagram svg{max-width:100%;height:auto;}
+.sd-node{transition:filter .3s;}
+.sd-node.active{filter:drop-shadow(0 0 8px currentColor);}
+
+/* quiz */
+.quiz-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin-top:30px;}
+.quiz-box h3{margin-top:0;}
+.q-item{margin-bottom:26px;padding-bottom:22px;border-bottom:1px solid var(--line);}
+.q-item:last-child{border-bottom:none;margin-bottom:0;}
+.q-text{font-size:15px;margin-bottom:12px;color:var(--text);font-weight:600;}
+.q-options{display:flex;flex-direction:column;gap:8px;}
+.q-opt{
+  text-align:left;background:var(--surface-2);border:1px solid var(--line);color:var(--text);
+  padding:11px 14px;border-radius:8px;cursor:pointer;font-family:var(--sans);font-size:14px;
+  transition:border-color .15s, background .15s;
+}
+.q-opt:hover{border-color:var(--muted);}
+.q-opt:focus-visible{outline:2px solid var(--amber);}
+.q-opt.correct{background:var(--mint-dim);border-color:var(--mint);}
+.q-opt.incorrect{background:var(--coral-dim);border-color:var(--coral);}
+.q-opt.disabled{cursor:default;}
+.q-feedback{margin-top:10px;padding:10px 12px;border-radius:8px;font-size:13.5px;display:none;background:var(--surface-2);border-left:3px solid var(--muted);}
+.q-feedback.show{display:block;}
+.q-feedback.correct-fb{border-left-color:var(--mint);}
+.q-feedback.incorrect-fb{border-left-color:var(--coral);}
+.quiz-summary{display:none;text-align:center;padding:20px;margin-top:10px;}
+.quiz-summary.show{display:block;}
+.quiz-summary .score{font-family:var(--mono);font-size:36px;color:var(--amber);}
+.quiz-locked-msg{color:var(--muted);font-size:13.5px;font-style:italic;}
+
+/* exercise */
+.exercise-box{background:var(--surface);border:1px dashed var(--violet-dim);border-radius:var(--radius);padding:20px;margin:20px 0;}
+.exercise-box h4{font-family:var(--mono);color:var(--violet);margin:0 0 10px;font-size:14px;}
+.reveal-btn{margin-top:10px;}
+.reveal-content{display:none;margin-top:14px;}
+.reveal-content.show{display:block;}
+
+/* footer / resources */
+footer.resources{background:var(--surface);border-top:1px solid var(--line);padding:40px 20px 60px;}
+.res-inner{max-width:980px;margin:0 auto;}
+.res-grid{display:grid;grid-template-columns:1fr;gap:20px;margin-top:20px;}
+@media(min-width:760px){.res-grid{grid-template-columns:1fr 1fr;}}
+.res-card{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius);padding:18px;}
+.res-card h4{font-family:var(--mono);font-size:13px;color:var(--amber);margin:0 0 10px;text-transform:uppercase;letter-spacing:.05em;}
+.res-card ul{margin:0;padding-left:18px;color:#c7d1dd;font-size:13.5px;line-height:1.8;}
+.res-card ul li{margin-bottom:2px;}
+
+.keyword-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+.keyword-chips span{font-family:var(--mono);font-size:12px;background:var(--gutter);padding:4px 10px;border-radius:6px;color:var(--muted);}
+
+.print-btn{position:fixed;bottom:20px;right:20px;z-index:40;}
+@media print{
+  .ide-topbar,.tabbar,.progress-outer,.nav-buttons,.print-btn,.el-controls,.quiz-box .q-opt{display:none !important;}
+  body{background:#fff;color:#000;}
+}
+::-webkit-scrollbar{width:9px;height:9px;}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+</style>
+</head>
+<body>
+
+<div class="ide-topbar">
+  <div class="dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+  <div class="filename"><b>async-javascript.js</b> — Interactive Learning Studio</div>
+  <div class="topbar-right">
+    <div class="xp-pill" id="xpPill">✦ 0 XP</div>
+  </div>
+</div>
+
+<div class="tabbar" id="tabbar"></div>
+<div class="progress-outer"><div class="progress-inner" id="progressBar"></div></div>
+
+<div class="shell-body">
+  <div class="gutter" id="gutter"></div>
+  <main id="main"></main>
+</div>
+
+<button class="btn print-btn" onclick="window.print()" title="Print / Save Notes">🖨 Print Notes</button>
+
+<script>
+/* ============================================================
+   STATE
+=============================================================*/
+const state = {
+  xp: 0,
+  currentSection: 'intro',
+  quizPassed: {m1:false, m2:false, m3:false, m4:false},
+  quizScores: {m1:null, m2:null, m3:null, m4:null},
+  unlocked: {intro:true, m1:true, m2:false, m3:false, m4:false, final:false}
+};
+
+const sectionsOrder = ['intro','m1','m2','m3','m4','final'];
+const tabLabels = {
+  intro:'00_intro', m1:'01_foundations', m2:'02_promises', m3:'03_async-await', m4:'04_mastery', final:'05_final-challenge'
+};
+
+function addXP(n){
+  state.xp += n;
+  document.getElementById('xpPill').textContent = `✦ ${state.xp} XP`;
+}
+
+function updateProgress(){
+  const doneCount = sectionsOrder.filter(s => state.unlocked[s] && (s==='intro' || state.quizPassed['m'+s.replace('m','')] !== undefined ? true: true)).length;
+  const idx = sectionsOrder.indexOf(state.currentSection);
+  const pct = Math.round(((idx)/(sectionsOrder.length-1))*100);
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+function renderTabs(){
+  const bar = document.getElementById('tabbar');
+  bar.innerHTML = '';
+  sectionsOrder.forEach(key=>{
+    const isLocked = !state.unlocked[key];
+    const isDone = key.startsWith('m') && state.quizPassed[key];
+    const tab = document.createElement('div');
+    tab.className = 'tab' + (state.currentSection===key ? ' active':'') + (isLocked?' locked':'') + (isDone?' done':'');
+    tab.innerHTML = `<span class="dotstate"></span> ${tabLabels[key]} ${isLocked?'<span class="lockicon">🔒</span>':''}`;
+    if(!isLocked){
+      tab.onclick = ()=> goTo(key);
+    }
+    bar.appendChild(tab);
+  });
+}
+
+function renderGutter(){
+  const g = document.getElementById('gutter');
+  g.innerHTML='';
+  for(let i=1;i<=45;i++){
+    const d = document.createElement('div');
+    d.textContent=i;
+    g.appendChild(d);
+  }
+}
+
+function goTo(key){
+  if(!state.unlocked[key]) return;
+  state.currentSection = key;
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+key).classList.add('active');
+  renderTabs();
+  updateProgress();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function unlockNext(after){
+  const idx = sectionsOrder.indexOf(after);
+  const next = sectionsOrder[idx+1];
+  if(next){ state.unlocked[next] = true; }
+}
+</script>
+
+<main id="main-content-holder" style="display:contents;">
+
+<!-- ================= INTRO ================= -->
+<section class="section active" id="sec-intro">
+<div class="eyebrow">Interactive Learning Studio</div>
+<h1>Async JavaScript<br><span class="accent">Promises &amp; Async/Await</span></h1>
+<p>JavaScript runs on a <strong>single thread</strong>, yet somehow juggles network requests, timers, and user clicks without freezing the page. This tutorial teaches you exactly how — from the event loop's inner mechanics to writing clean, production-grade asynchronous code with <code>Promise</code> and <code>async</code>/<code>await</code>.</p>
+
+<div class="intro-grid">
+  <div class="stat-card"><div class="icon">⏱️</div><div class="label">Est. Time</div><div class="value">90–110 minutes</div></div>
+  <div class="stat-card"><div class="icon">📐</div><div class="label">Prerequisites</div><div class="value">JS functions, ES6 basics</div></div>
+  <div class="stat-card"><div class="icon">🎯</div><div class="label">Modules</div><div class="value">4 + Final Challenge</div></div>
+  <div class="stat-card"><div class="icon">🏆</div><div class="label">Reward</div><div class="value">XP + 4 Badges</div></div>
+</div>
+
+<h3>Learning objectives</h3>
+<div class="card">
+  <ul style="margin:0;padding-left:20px;line-height:1.9;color:#c7d1dd;">
+    <li>Explain <strong>why</strong> JavaScript needs asynchronous patterns and how the call stack, Web APIs, microtask queue, and macrotask queue cooperate via the event loop.</li>
+    <li>Create, chain, and combine <code>Promise</code> objects — including <code>.then()</code>, <code>.catch()</code>, <code>.finally()</code>, and the combinators <code>Promise.all/allSettled/race/any</code>.</li>
+    <li>Rewrite promise chains as <code>async</code>/<code>await</code> functions, and correctly handle errors with <code>try/catch</code>.</li>
+    <li>Distinguish <strong>sequential</strong> vs <strong>parallel</strong> await patterns and avoid the accidental-waterfall bug.</li>
+    <li>Apply real-world patterns: retries with backoff, request cancellation with <code>AbortController</code>, and defensive error handling.</li>
+  </ul>
+</div>
+
+<h3>Expected outcomes</h3>
+<p>By the end, you'll read any async codebase with confidence, predict execution order correctly, and write your own resilient async utilities from scratch — no library required.</p>
+
+<div class="reward-box">
+  <h3>🏅 Reward System</h3>
+  <p style="margin-bottom:6px;">Earn <strong>XP</strong> for every quiz you pass (score ≥ 75%) and unlock a badge per module. Finish the Final Challenge to complete the course.</p>
+  <div class="badge-list" id="badgeList"></div>
+</div>
+
+<button class="start-btn" onclick="goTo('m1')">▶ Start Module 1 →</button>
+</section>
+
+<!-- ================= MODULE 1 ================= -->
+<section class="section" id="sec-m1">
+<h2><span class="num">01 /</span> Foundations — The Event Loop</h2>
+
+<p>Before touching a single <code>Promise</code>, you need a mental model of <strong>how JavaScript actually executes code</strong>. Everything about async behavior — why <code>setTimeout(fn, 0)</code> doesn't run immediately, why promises "jump the queue" ahead of timers — falls out of one simple machine: the event loop.</p>
+
+<h3>The single thread, and its helpers</h3>
+<p>JavaScript itself runs on <strong>one thread</strong> with one <strong>call stack</strong>. It can only do one thing at a time. But the environment around it — the browser or Node.js — provides <strong>Web APIs</strong> (timers, network, DOM events) that run outside that thread. When those finish, they don't jump straight back into your code; they place a callback into a <strong>queue</strong>, and the <strong>event loop</strong> only pulls from that queue when the call stack is completely empty.</p>
+
+<div class="card analogy">
+<strong>🍳 Analogy — The kitchen ticket rail</strong>
+<p style="margin-top:8px;">Picture a small kitchen with one chef (the call stack) who can only cook one ticket at a time. When an order needs the grill to slow-cook for 20 minutes, the chef doesn't stand there watching it — they hand it to the grill station (a Web API), clip a reminder to the ticket rail (the queue), and immediately start the next order. Only when the chef is completely free do they glance at the rail and pick up the next ready ticket. The chef never multitasks; the <em>kitchen</em> does.</p>
+</div>
+
+<h3>Two queues, not one</h3>
+<p>There are actually two waiting lines feeding the event loop, and this distinction is one of the most commonly misunderstood parts of JavaScript:</p>
+<ul style="line-height:1.9;color:#c7d1dd;">
+  <li><strong>Microtask queue</strong> — holds <code>Promise</code> callbacks (<code>.then</code>, <code>.catch</code>, <code>.finally</code>) and <code>queueMicrotask()</code>. This queue is <strong>always fully drained</strong> before the event loop touches the next item below.</li>
+  <li><strong>Macrotask queue</strong> (a.k.a. the "task queue") — holds <code>setTimeout</code>, <code>setInterval</code>, DOM events, I/O callbacks. Only <strong>one</strong> macrotask runs per event loop tick, then the loop checks microtasks again.</li>
+</ul>
+
+<h3 class="accent-amber">Signature Diagram — Live Event Loop Visualizer</h3>
+<p>Click <strong>Run</strong> to watch this exact snippet execute, token by token, exactly like a real JS engine would:</p>
+
+<pre class="code-block"><span class="cmt">// The snippet being visualized below</span>
+<span class="kw">console</span>.log(<span class="str">'1: start'</span>);
+
+setTimeout(() => <span class="kw">console</span>.log(<span class="str">'2: timeout'</span>), <span class="num">0</span>);
+
+Promise.resolve().then(() => <span class="kw">console</span>.log(<span class="str">'3: promise'</span>));
+
+<span class="kw">console</span>.log(<span class="str">'4: end'</span>);</pre>
+
+<div class="eventloop">
+  <div class="el-controls">
+    <button class="btn primary" id="elRunBtn" onclick="EventLoopViz.run()">▶ Run Simulation</button>
+    <button class="btn" onclick="EventLoopViz.reset()">↺ Reset</button>
+    <span class="el-log" id="elStepLog">Step 0 / 0</span>
+  </div>
+  <div class="el-stage">
+    <div class="el-box"><h4>Call Stack</h4><div id="elStack"></div></div>
+    <div class="el-box"><h4>Microtask Queue <span style="color:var(--violet)">●</span></h4><div id="elMicro"></div></div>
+    <div class="el-box"><h4>Macrotask Queue <span style="color:var(--amber)">●</span></h4><div id="elMacro"></div></div>
+  </div>
+  <h4 style="font-family:var(--mono);font-size:11.5px;color:var(--muted);text-transform:uppercase;margin:14px 0 8px;">Console Output</h4>
+  <div class="console-out" id="elConsole"></div>
+</div>
+
+<p>Notice the order: <code>1</code>, <code>4</code>, <code>3</code>, <code>2</code>. Synchronous code always finishes first. Then the <strong>entire</strong> microtask queue drains (the promise callback). Only then does the event loop allow one macrotask (the timeout) to run — <strong>even though the timeout was scheduled with a delay of 0</strong>.</p>
+
+<h3>Comparison — callback style vs the queues it creates</h3>
+<div class="grid-2">
+  <div class="card">
+    <strong>Callback-based code</strong>
+    <pre class="code-block" style="margin-top:10px;"><span class="fn">getUser</span>(id, (user) => {
+  <span class="fn">getPosts</span>(user, (posts) => {
+    <span class="fn">getComments</span>(posts, (c) => {
+      <span class="cmt">// "callback hell" —
+      // 3 levels deep, hard to
+      // read top-to-bottom</span>
+    });
+  });
+});</pre>
+  </div>
+  <div class="card">
+    <strong>Why it gets painful</strong>
+    <p style="margin-top:10px;">Each callback nests one level deeper. Error handling has to be repeated at every level, the code drifts right ("pyramid of doom"), and there's no single place to <code>catch</code> a failure from any step. Promises exist specifically to flatten this pyramid — that's Module 2.</p>
+  </div>
+</div>
+
+<div class="exercise-box">
+  <h4>✏️ Exercise — Predict the output</h4>
+  <p>Given the code below, write down the order in which the four <code>console.log</code> lines will print, then reveal the answer.</p>
+  <pre class="code-block"><span class="kw">console</span>.log(<span class="str">'A'</span>);
+setTimeout(() => <span class="kw">console</span>.log(<span class="str">'B'</span>), <span class="num">0</span>);
+Promise.resolve().then(() => <span class="kw">console</span>.log(<span class="str">'C'</span>));
+Promise.resolve().then(() => <span class="kw">console</span>.log(<span class="str">'D'</span>));
+<span class="kw">console</span>.log(<span class="str">'E'</span>);</pre>
+  <button class="btn reveal-btn" onclick="toggleReveal('rev1')">Show Answer</button>
+  <div class="reveal-content" id="rev1">
+    <p><strong>Order: A, E, C, D, B.</strong> All synchronous lines (A, E) run first. Then <em>both</em> microtasks (C, D) drain completely, in the order they were queued. Only then does the single macrotask (B) get its turn.</p>
+  </div>
+</div>
+
+<h3>Common misconceptions</h3>
+<div class="card warn">
+  <ul style="margin:0;padding-left:20px;color:#c7d1dd;line-height:1.9;">
+    <li><strong>"setTimeout(fn, 0) runs immediately."</strong> It's still a macrotask — it waits for the stack to empty <em>and</em> for all microtasks to drain first.</li>
+    <li><strong>"JavaScript is multi-threaded."</strong> The language itself is single-threaded; concurrency comes from the surrounding environment (Web APIs / libuv in Node), not from JS running two lines at once.</li>
+    <li><strong>"Promises run on a separate thread."</strong> They don't — their callbacks still execute on the same single JS thread, just scheduled via the microtask queue.</li>
+  </ul>
+</div>
+
+<h3>Key takeaways</h3>
+<div class="badge-row">
+  <span class="pill">One thread, one call stack</span>
+  <span class="pill">Web APIs run concurrency outside JS</span>
+  <span class="pill">Microtasks always drain before the next macrotask</span>
+  <span class="pill">Promises = microtasks, setTimeout = macrotask</span>
+</div>
+
+<div class="quiz-box">
+<h3>📝 Quiz 1 — Check your understanding</h3>
+<div id="quiz-m1"></div>
+</div>
+
+<div class="nav-buttons">
+  <button class="btn" onclick="goTo('intro')">← Back to Intro</button>
+  <button class="btn primary" id="next-m1" onclick="goTo('m2')" disabled>Pass the quiz to unlock Module 2 →</button>
+</div>
+</section>
+
+<!-- ================= MODULE 2 ================= -->
+<section class="section" id="sec-m2">
+<h2><span class="num">02 /</span> Promises — States, Chaining &amp; Combinators</h2>
+
+<p>A <code>Promise</code> is an object representing a value that isn't ready yet, but will be — eventually, one way or another. It's the primitive that made async code composable instead of nested.</p>
+
+<h3>The three states</h3>
+<p>Every promise starts <strong>pending</strong> and settles exactly once, into either <strong>fulfilled</strong> (it has a value) or <strong>rejected</strong> (it has a reason for failing). Once settled, a promise never changes state again — this immutability is what makes promises reliable to pass around.</p>
+
+<div class="state-diagram">
+<svg viewBox="0 0 560 200" width="560">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8996a6"/></marker>
+  </defs>
+  <line x1="150" y1="90" x2="240" y2="45" stroke="#26313f" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="150" y1="110" x2="240" y2="155" stroke="#26313f" stroke-width="2" marker-end="url(#arrow)"/>
+  <g class="sd-node" id="sd-pending">
+    <rect x="30" y="70" width="120" height="60" rx="10" fill="#182130" stroke="#f5a623" stroke-width="2"/>
+    <text x="90" y="95" text-anchor="middle" fill="#f5a623" font-family="monospace" font-size="13" font-weight="bold">PENDING</text>
+    <text x="90" y="114" text-anchor="middle" fill="#8996a6" font-family="monospace" font-size="10">initial state</text>
+  </g>
+  <g class="sd-node" id="sd-fulfilled">
+    <rect x="240" y="15" width="150" height="60" rx="10" fill="#182130" stroke="#3ddc97" stroke-width="2"/>
+    <text x="315" y="40" text-anchor="middle" fill="#3ddc97" font-family="monospace" font-size="13" font-weight="bold">FULFILLED</text>
+    <text x="315" y="59" text-anchor="middle" fill="#8996a6" font-family="monospace" font-size="10">resolve(value) called</text>
+  </g>
+  <g class="sd-node" id="sd-rejected">
+    <rect x="240" y="125" width="150" height="60" rx="10" fill="#182130" stroke="#ff6b6b" stroke-width="2"/>
+    <text x="315" y="150" text-anchor="middle" fill="#ff6b6b" font-family="monospace" font-size="13" font-weight="bold">REJECTED</text>
+    <text x="315" y="169" text-anchor="middle" fill="#8996a6" font-family="monospace" font-size="10">reject(reason) called</text>
+  </g>
+  <line x1="390" y1="45" x2="470" y2="45" stroke="#26313f" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="470" y="40" fill="#8996a6" font-family="monospace" font-size="11">.then()</text>
+  <line x1="390" y1="155" x2="470" y2="155" stroke="#26313f" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="470" y="150" fill="#8996a6" font-family="monospace" font-size="11">.catch()</text>
+</svg>
+</div>
+
+<h3>Creating and consuming a promise</h3>
+<pre class="code-block"><span class="kw">function</span> <span class="fn">orderCoffee</span>(inStock) {
+  <span class="kw">return new</span> Promise((resolve, reject) => {
+    setTimeout(() => {
+      <span class="kw">if</span> (inStock) resolve(<span class="str">'☕ Latte ready'</span>);
+      <span class="kw">else</span> reject(<span class="kw">new</span> Error(<span class="str">'Out of milk'</span>));
+    }, <span class="num">1000</span>);
+  });
+}
+
+<span class="fn">orderCoffee</span>(<span class="kw">true</span>)
+  .then(msg => <span class="kw">console</span>.log(msg))
+  .catch(err => <span class="kw">console</span>.log(<span class="str">'Failed:'</span>, err.message))
+  .finally(() => <span class="kw">console</span>.log(<span class="str">'Register closed'</span>));</pre>
+
+<div class="card analogy">
+<strong>📦 Analogy — A delivery tracking link</strong>
+<p style="margin-top:8px;">A promise is like the tracking link you get right after placing an online order. The package isn't in your hands yet (pending), but the link is a real object you can act on immediately — you can tell it "when this arrives, text me" (<code>.then</code>) or "if it's lost, email me" (<code>.catch</code>). You never have to keep manually checking; the courier notifies the link when the state changes, exactly once.</p>
+</div>
+
+<h3>Chaining — returning values through <code>.then()</code></h3>
+<p>The real power of promises is that <code>.then()</code> itself <strong>returns a new promise</strong>. Whatever you <code>return</code> inside a <code>.then()</code> callback becomes the fulfilled value of the next link in the chain — including another promise, which gets automatically "flattened."</p>
+<pre class="code-block"><span class="fn">getUser</span>(id)
+  .then(user => <span class="fn">getPosts</span>(user.id))   <span class="cmt">// returns a promise — auto-flattened</span>
+  .then(posts => <span class="fn">getComments</span>(posts[<span class="num">0</span>]))
+  .then(comments => <span class="kw">console</span>.log(comments))
+  .catch(err => <span class="kw">console</span>.log(<span class="str">'Any step failed:'</span>, err));</pre>
+<p>One <code>.catch()</code> at the end covers <strong>every</strong> step above it — a huge readability win over nested callbacks, where each level needed its own error handling.</p>
+
+<h3>Combinators — running promises together</h3>
+<div class="grid-2">
+  <div class="card">
+    <strong><code>Promise.all()</code></strong>
+    <p style="margin-top:8px;">Waits for <em>all</em> to fulfill. Rejects immediately if <em>any one</em> rejects — "all or nothing."</p>
+  </div>
+  <div class="card">
+    <strong><code>Promise.allSettled()</code></strong>
+    <p style="margin-top:8px;">Waits for all to finish regardless of outcome, and gives you a status report for each — nothing short-circuits.</p>
+  </div>
+  <div class="card">
+    <strong><code>Promise.race()</code></strong>
+    <p style="margin-top:8px;">Settles as soon as the <em>first</em> promise settles — fulfilled or rejected, whichever happens first wins.</p>
+  </div>
+  <div class="card">
+    <strong><code>Promise.any()</code></strong>
+    <p style="margin-top:8px;">Settles as soon as the <em>first one fulfills</em>. Only rejects if <strong>all</strong> of them reject.</p>
+  </div>
+</div>
+
+<div class="exercise-box">
+  <h4>✏️ Exercise — Choose the right combinator</h4>
+  <p>You're loading a dashboard that needs <em>three independent widgets</em>. If one widget's API fails, the other two should still render with their own data. Which combinator fits?</p>
+  <button class="btn reveal-btn" onclick="toggleReveal('rev2')">Show Answer</button>
+  <div class="reveal-content" id="rev2">
+    <p><strong><code>Promise.allSettled()</code></strong> — because you want every widget's outcome (success or failure) without one rejection wiping out the results of the other two, which is exactly what <code>Promise.all()</code> would do.</p>
+  </div>
+</div>
+
+<h3>Common misconceptions</h3>
+<div class="card warn">
+  <ul style="margin:0;padding-left:20px;color:#c7d1dd;line-height:1.9;">
+    <li><strong>"The executor function runs asynchronously."</strong> It doesn't — the code inside <code>new Promise((resolve, reject) => {...})</code> runs <em>synchronously</em>, immediately, the moment the promise is constructed.</li>
+    <li><strong>"Forgetting to <code>return</code> inside a <code>.then()</code> is harmless."</strong> If you don't return the inner promise, the chain moves on before it settles, and you lose its resolved value entirely.</li>
+    <li><strong>"One <code>.catch()</code> anywhere is enough."</strong> A <code>.catch()</code> only catches errors from steps <em>above</em> it in the chain — placed too early, later steps' errors slip through uncaught.</li>
+  </ul>
+</div>
+
+<h3>Key takeaways</h3>
+<div class="badge-row">
+  <span class="pill">Pending → Fulfilled / Rejected, once</span>
+  <span class="pill">.then() returns a new promise</span>
+  <span class="pill">Always return inside .then()</span>
+  <span class="pill">all / allSettled / race / any</span>
+</div>
+
+<div class="quiz-box">
+<h3>📝 Quiz 2 — Check your understanding</h3>
+<div id="quiz-m2"></div>
+</div>
+
+<div class="nav-buttons">
+  <button class="btn" onclick="goTo('m1')">← Module 1</button>
+  <button class="btn primary" id="next-m2" onclick="goTo('m3')" disabled>Pass the quiz to unlock Module 3 →</button>
+</div>
+</section>
+
+<!-- ================= MODULE 3 ================= -->
+<section class="section" id="sec-m3">
+<h2><span class="num">03 /</span> Async/Await — Syntactic Sugar with Power</h2>
+
+<p><code>async</code>/<code>await</code> doesn't replace promises — it's built directly on top of them. It lets you write asynchronous code that <em>reads</em> like synchronous code, without changing the underlying event-loop mechanics from Module 1.</p>
+
+<h3>The two keywords</h3>
+<ul style="line-height:1.9;color:#c7d1dd;">
+  <li><code>async</code> in front of a function means that function <strong>always returns a promise</strong> — even if you just <code>return 5</code>, the caller gets a promise that resolves to <code>5</code>.</li>
+  <li><code>await</code> can only be used inside an <code>async</code> function. It pauses <em>that function</em> (not the whole program) until the promise settles, then unwraps its value.</li>
+</ul>
+
+<h3>Side-by-side: <code>.then()</code> chain vs <code>async</code>/<code>await</code></h3>
+<div class="grid-2">
+  <div class="card">
+    <strong>Promise chain</strong>
+    <pre class="code-block" style="margin-top:10px;"><span class="kw">function</span> <span class="fn">loadDashboard</span>() {
+  <span class="kw">return</span> <span class="fn">getUser</span>(id)
+    .then(user => <span class="fn">getPosts</span>(user.id))
+    .then(posts => {
+      <span class="kw">console</span>.log(posts);
+      <span class="kw">return</span> posts;
+    })
+    .catch(err => {
+      <span class="kw">console</span>.log(<span class="str">'Error:'</span>, err);
+    });
+}</pre>
+  </div>
+  <div class="card">
+    <strong>Async/await</strong>
+    <pre class="code-block" style="margin-top:10px;"><span class="kw">async function</span> <span class="fn">loadDashboard</span>() {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> user = <span class="kw">await</span> <span class="fn">getUser</span>(id);
+    <span class="kw">const</span> posts = <span class="kw">await</span> <span class="fn">getPosts</span>(user.id);
+    <span class="kw">console</span>.log(posts);
+    <span class="kw">return</span> posts;
+  } <span class="kw">catch</span> (err) {
+    <span class="kw">console</span>.log(<span class="str">'Error:'</span>, err);
+  }
+}</pre>
+  </div>
+</div>
+<p>Same behavior, same microtask timing — just a flatter, top-to-bottom shape that reads like ordinary procedural code.</p>
+
+<div class="card analogy">
+<strong>👩‍🍳 Analogy — Recipe steps vs. sticky notes</strong>
+<p style="margin-top:8px;">A <code>.then()</code> chain is like leaving yourself a trail of sticky notes: "when the water boils, do this; when that's done, do this next." <code>async</code>/<code>await</code> is the same recipe rewritten as ordinary numbered steps: "boil water, wait, add pasta, wait, drain." The waiting still happens — you haven't skipped the timer — you've just stopped writing it as a note-passing relay.</p>
+</div>
+
+<h3 class="accent-amber">Sequential vs. parallel — the bug almost everyone writes once</h3>
+<p>Because <code>await</code> pauses the function, writing two independent awaits back-to-back accidentally makes them run <strong>sequentially</strong>, even when they don't depend on each other:</p>
+<div class="grid-2">
+  <div class="card warn">
+    <strong>❌ Accidental waterfall (slow)</strong>
+    <pre class="code-block" style="margin-top:10px;"><span class="kw">const</span> weather = <span class="kw">await</span> <span class="fn">getWeather</span>();
+<span class="kw">const</span> news = <span class="kw">await</span> <span class="fn">getNews</span>();
+<span class="cmt">// news waits for weather to
+// finish first — unnecessary!
+// Total time = sum of both.</span></pre>
+  </div>
+  <div class="card tip">
+    <strong>✅ Run in parallel</strong>
+    <pre class="code-block" style="margin-top:10px;"><span class="kw">const</span> [weather, news] = <span class="kw">await</span> Promise.all([
+  <span class="fn">getWeather</span>(),
+  <span class="fn">getNews</span>()
+]);
+<span class="cmt">// Both start immediately.
+// Total time = the slower
+// of the two, not the sum.</span></pre>
+  </div>
+</div>
+
+<h3>Error handling with try/catch/finally</h3>
+<pre class="code-block"><span class="kw">async function</span> <span class="fn">checkout</span>(cart) {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> payment = <span class="kw">await</span> <span class="fn">charge</span>(cart.total);
+    <span class="kw">return</span> payment;
+  } <span class="kw">catch</span> (err) {
+    <span class="kw">console</span>.log(<span class="str">'Payment failed:'</span>, err.message);
+    <span class="kw">throw</span> err; <span class="cmt">// re-throw so the caller still knows</span>
+  } <span class="kw">finally</span> {
+    <span class="fn">hideSpinner</span>();  <span class="cmt">// always runs — success or failure</span>
+  }
+}</pre>
+
+<div class="exercise-box">
+  <h4>✏️ Exercise — Fix the waterfall</h4>
+  <p>Rewrite this function so <code>fetchProfile</code> and <code>fetchSettings</code> run in parallel instead of sequentially:</p>
+  <pre class="code-block"><span class="kw">async function</span> <span class="fn">loadAccountPage</span>() {
+  <span class="kw">const</span> profile  = <span class="kw">await</span> <span class="fn">fetchProfile</span>();
+  <span class="kw">const</span> settings = <span class="kw">await</span> <span class="fn">fetchSettings</span>();
+  <span class="kw">return</span> { profile, settings };
+}</pre>
+  <button class="btn reveal-btn" onclick="toggleReveal('rev3')">Show Answer</button>
+  <div class="reveal-content" id="rev3">
+    <pre class="code-block"><span class="kw">async function</span> <span class="fn">loadAccountPage</span>() {
+  <span class="kw">const</span> [profile, settings] = <span class="kw">await</span> Promise.all([
+    <span class="fn">fetchProfile</span>(),
+    <span class="fn">fetchSettings</span>()
+  ]);
+  <span class="kw">return</span> { profile, settings };
+}</pre>
+    <p>Both requests fire on the same tick; the function only pauses once, for whichever one is slower.</p>
+  </div>
+</div>
+
+<h3>Common misconceptions</h3>
+<div class="card warn">
+  <ul style="margin:0;padding-left:20px;color:#c7d1dd;line-height:1.9;">
+    <li><strong>"<code>await</code> freezes the whole browser/tab."</strong> It only pauses the <em>current async function</em>. Other code, UI rendering, and event handlers continue running normally.</li>
+    <li><strong>"An <code>async</code> function's first line always runs asynchronously."</strong> Code before the first <code>await</code> runs synchronously, immediately, just like any normal function call.</li>
+    <li><strong>"<code>await</code> works inside <code>.forEach()</code>."</strong> <code>forEach</code> ignores returned promises entirely — awaits inside it don't pause the loop. Use a <code>for...of</code> loop or <code>Promise.all</code> with <code>.map()</code> instead.</li>
+  </ul>
+</div>
+
+<h3>Key takeaways</h3>
+<div class="badge-row">
+  <span class="pill">async function → always returns a Promise</span>
+  <span class="pill">await pauses only that function</span>
+  <span class="pill">Independent awaits → use Promise.all</span>
+  <span class="pill">try/catch replaces .catch()</span>
+</div>
+
+<div class="quiz-box">
+<h3>📝 Quiz 3 — Check your understanding</h3>
+<div id="quiz-m3"></div>
+</div>
+
+<div class="nav-buttons">
+  <button class="btn" onclick="goTo('m2')">← Module 2</button>
+  <button class="btn primary" id="next-m3" onclick="goTo('m4')" disabled>Pass the quiz to unlock Module 4 →</button>
+</div>
+</section>
+
+<!-- ================= MODULE 4 ================= -->
+<section class="section" id="sec-m4">
+<h2><span class="num">04 /</span> Mastery — Real-World Async Patterns</h2>
+
+<p>Production code needs more than the happy path. This module covers the patterns you'll actually reach for: retrying flaky requests, cancelling stale ones, and avoiding subtle race conditions.</p>
+
+<h3>Retry with exponential backoff</h3>
+<p>Network calls fail. Instead of giving up immediately, a common pattern retries a few times, waiting progressively longer between attempts so you don't hammer a struggling server.</p>
+<pre class="code-block"><span class="kw">async function</span> <span class="fn">retryWithBackoff</span>(fn, attempts = <span class="num">3</span>) {
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i < attempts; i++) {
+    <span class="kw">try</span> {
+      <span class="kw">return await</span> fn();
+    } <span class="kw">catch</span> (err) {
+      <span class="kw">if</span> (i === attempts - <span class="num">1</span>) <span class="kw">throw</span> err; <span class="cmt">// out of tries</span>
+      <span class="kw">const</span> delay = <span class="num">2</span> ** i * <span class="num">200</span>; <span class="cmt">// 200ms, 400ms, 800ms...</span>
+      <span class="kw">await new</span> Promise(r => setTimeout(r, delay));
+    }
+  }
+}</pre>
+
+<h3 class="accent-amber">Cancelling stale requests with AbortController</h3>
+<p>If a user types in a search box and fires three requests, you usually only want the <em>latest</em> one to matter. <code>AbortController</code> lets you cancel promises that would otherwise resolve too late and overwrite fresher data.</p>
+<div class="card">
+<pre class="code-block"><span class="kw">let</span> controller;
+
+<span class="kw">async function</span> <span class="fn">search</span>(query) {
+  controller?.abort();          <span class="cmt">// cancel the previous request</span>
+  controller = <span class="kw">new</span> AbortController();
+  <span class="kw">try</span> {
+    <span class="kw">const</span> res = <span class="kw">await</span> fetch(<span class="str">`/search?q=${query}`</span>, {
+      signal: controller.signal
+    });
+    <span class="kw">return await</span> res.json();
+  } <span class="kw">catch</span> (err) {
+    <span class="kw">if</span> (err.name === <span class="str">'AbortError'</span>) <span class="kw">return</span>; <span class="cmt">// expected, ignore</span>
+    <span class="kw">throw</span> err;
+  }
+}</pre>
+</div>
+
+<div class="card analogy">
+<strong>🏁 Analogy — A relay team with a whistle</strong>
+<p style="margin-top:8px;">Firing off requests without cancellation is like sending a new runner down the track every time you blink, without calling back the earlier ones — whichever runner happens to cross the line last "wins," even if they were the first one sent. <code>AbortController</code> is the coach's whistle: the moment a newer runner is sent, the old one is told to stop, so only the most recent result ever gets recorded.</p>
+</div>
+
+<h3>Comparison — <code>Promise.all</code> error behavior vs individual try/catch</h3>
+<div class="grid-2">
+  <div class="card warn">
+    <strong>❌ One try/catch around Promise.all</strong>
+    <pre class="code-block" style="margin-top:10px;"><span class="kw">try</span> {
+  <span class="kw">const</span> [a, b] = <span class="kw">await</span> Promise.all([
+    <span class="fn">taskA</span>(), <span class="fn">taskB</span>()
+  ]);
+} <span class="kw">catch</span> (e) {
+  <span class="cmt">// you only know SOMETHING
+  // failed — not which one,
+  // and the other's result
+  // is thrown away entirely.</span>
+}</pre>
+  </div>
+  <div class="card tip">
+    <strong>✅ Per-task safety with allSettled</strong>
+    <pre class="code-block" style="margin-top:10px;"><span class="kw">const</span> results = <span class="kw">await</span> Promise.allSettled([
+  <span class="fn">taskA</span>(), <span class="fn">taskB</span>()
+]);
+results.forEach(r => {
+  <span class="kw">if</span> (r.status === <span class="str">'fulfilled'</span>)
+    <span class="kw">console</span>.log(r.value);
+  <span class="kw">else</span>
+    <span class="kw">console</span>.log(<span class="str">'failed:'</span>, r.reason);
+});</pre>
+  </div>
+</div>
+
+<div class="exercise-box">
+  <h4>✏️ Exercise — Spot the race condition</h4>
+  <p>A search box calls <code>search(query)</code> on every keystroke, with no cancellation logic. The user types "ap", then quickly "apple". Why might the results for "ap" flash on screen <em>after</em> the results for "apple"?</p>
+  <button class="btn reveal-btn" onclick="toggleReveal('rev4')">Show Answer</button>
+  <div class="reveal-content" id="rev4">
+    <p>Both requests are in flight at once. If the server (or network) happens to respond to "ap" <em>slower</em> than to "apple", the "ap" response arrives second and overwrites the newer, correct "apple" results — even though "apple" was typed later. This is exactly the bug <code>AbortController</code> or a request-id check prevents.</p>
+  </div>
+</div>
+
+<h3>Common misconceptions</h3>
+<div class="card warn">
+  <ul style="margin:0;padding-left:20px;color:#c7d1dd;line-height:1.9;">
+    <li><strong>"Retrying is always safe."</strong> Only retry <strong>idempotent</strong> operations (like GET requests) — blindly retrying a payment POST could charge a user twice.</li>
+    <li><strong>"AbortController cancels the server-side work too."</strong> It only stops the client from waiting on / using the response; the server may still finish processing the original request.</li>
+    <li><strong>"More retries is always better."</strong> Unlimited retries against a truly down service just adds load; always cap attempts and back off.</li>
+  </ul>
+</div>
+
+<h3>Key takeaways</h3>
+<div class="badge-row">
+  <span class="pill">Backoff between retries, cap attempts</span>
+  <span class="pill">AbortController cancels stale requests</span>
+  <span class="pill">allSettled for independent, isolated failures</span>
+  <span class="pill">Only retry idempotent operations</span>
+</div>
+
+<div class="quiz-box">
+<h3>📝 Quiz 4 — Check your understanding</h3>
+<div id="quiz-m4"></div>
+</div>
+
+<div class="nav-buttons">
+  <button class="btn" onclick="goTo('m3')">← Module 3</button>
+  <button class="btn primary" id="next-m4" onclick="goTo('final')" disabled>Pass the quiz to unlock the Final Challenge →</button>
+</div>
+</section>
+
+<!-- ================= FINAL ================= -->
+<section class="section" id="sec-final">
+<h2><span class="num">05 /</span> Final Practical Challenge</h2>
+
+<p>Put everything together: chaining, parallel execution, error isolation, and retries — in one function.</p>
+
+<div class="exercise-box">
+<h4>🏆 Challenge — Build <code>loadDashboard()</code></h4>
+<p>You're given three mock async functions (already defined below, simulating a flaky network): <code>fetchUser()</code>, <code>fetchStats()</code> (sometimes fails), and <code>fetchNotifications()</code>. Write an <code>async</code> function <code>loadDashboard()</code> that:</p>
+<ol style="line-height:1.9;color:#c7d1dd;">
+  <li>Fetches all three <strong>in parallel</strong>.</li>
+  <li>Wraps <code>fetchStats()</code> in <code>retryWithBackoff</code> (provided) since it's the flaky one.</li>
+  <li>Doesn't let a failure in one call block the other two — use <code>allSettled</code>.</li>
+  <li>Returns an object <code>{ user, stats, notifications }</code>, using <code>null</code> for anything that ultimately failed.</li>
+</ol>
+<button class="btn reveal-btn" onclick="toggleReveal('revFinal')">Show Reference Solution</button>
+<div class="reveal-content" id="revFinal">
+<pre class="code-block"><span class="kw">async function</span> <span class="fn">loadDashboard</span>() {
+  <span class="kw">const</span> results = <span class="kw">await</span> Promise.allSettled([
+    <span class="fn">fetchUser</span>(),
+    <span class="fn">retryWithBackoff</span>(<span class="fn">fetchStats</span>, <span class="num">3</span>),
+    <span class="fn">fetchNotifications</span>()
+  ]);
+
+  <span class="kw">const</span> [user, stats, notifications] = results.map(
+    r => r.status === <span class="str">'fulfilled'</span> ? r.value : <span class="kw">null</span>
+  );
+
+  <span class="kw">return</span> { user, stats, notifications };
+}</pre>
+<p>This single function demonstrates every concept from all four modules: parallel execution (Module 3), isolated failure handling via <code>allSettled</code> (Module 2 &amp; 4), and a resilient retry wrapper (Module 4).</p>
+</div>
+</div>
+
+<h3>📋 Cheat Sheet</h3>
+<div class="card">
+<pre class="code-block"><span class="cmt">// Creating</span>
+<span class="kw">new</span> Promise((resolve, reject) => { ... })
+
+<span class="cmt">// Consuming</span>
+promise.then(onFulfilled).catch(onRejected).finally(onDone)
+
+<span class="cmt">// Combinators</span>
+Promise.all([p1, p2])        <span class="cmt">// all-or-nothing</span>
+Promise.allSettled([p1, p2]) <span class="cmt">// every outcome, no throw</span>
+Promise.race([p1, p2])       <span class="cmt">// first to settle</span>
+Promise.any([p1, p2])        <span class="cmt">// first to fulfill</span>
+
+<span class="cmt">// Async/await</span>
+<span class="kw">async function</span> f() { <span class="kw">await</span> somePromise; }
+<span class="kw">try</span> { <span class="kw">await</span> f(); } <span class="kw">catch</span> (e) { }
+
+<span class="cmt">// Parallel await (not sequential!)</span>
+<span class="kw">const</span> [a, b] = <span class="kw">await</span> Promise.all([taskA(), taskB()]);
+
+<span class="cmt">// Cancellation</span>
+<span class="kw">const</span> c = <span class="kw">new</span> AbortController();
+fetch(url, { signal: c.signal });
+c.abort();</pre>
+</div>
+
+<h3>Summary notes</h3>
+<div class="card tip">
+<p style="margin:0;">The event loop drains the <strong>microtask queue</strong> (promises) completely before running a single <strong>macrotask</strong> (timers). Promises give you a chainable, catchable representation of a future value; <code>async</code>/<code>await</code> is the same mechanism wearing synchronous-looking clothes. Master the difference between running things sequentially and in parallel, isolate failures with <code>allSettled</code>, and add retries/cancellation for anything talking to a real network.</p>
+</div>
+
+<div class="reward-box" id="finalRewardBox">
+  <h3>🎉 Course Complete</h3>
+  <p>You've earned all four module badges. Final XP total: <strong id="finalXpText">0 XP</strong>.</p>
+</div>
+
+<hr style="border-color:var(--line);margin:34px 0;">
+
+<h3>Continue learning</h3>
+<div class="grid-2">
+  <div class="card">
+    <h4 style="font-family:var(--mono);color:var(--amber);font-size:13px;text-transform:uppercase;">📚 Books</h4>
+    <ul style="padding-left:18px;line-height:1.9;color:#c7d1dd;">
+      <li><em>You Don't Know JS Yet: Async &amp; Performance</em> — Kyle Simpson</li>
+      <li><em>Eloquent JavaScript</em> (Async chapter) — Marijn Haverbeke</li>
+      <li><em>JavaScript: The Definitive Guide</em> — David Flanagan</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4 style="font-family:var(--mono);color:var(--amber);font-size:13px;text-transform:uppercase;">📖 Documentation</h4>
+    <ul style="padding-left:18px;line-height:1.9;color:#c7d1dd;">
+      <li>MDN — Using Promises</li>
+      <li>MDN — async function reference</li>
+      <li>web.dev — JavaScript event loop guide</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4 style="font-family:var(--mono);color:var(--amber);font-size:13px;text-transform:uppercase;">🔬 Specs &amp; Papers</h4>
+    <ul style="padding-left:18px;line-height:1.9;color:#c7d1dd;">
+      <li>ECMAScript 2015 (ES6) — Promise specification, Section 25.4</li>
+      <li>TC39 proposal — async-await (background &amp; design rationale)</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4 style="font-family:var(--mono);color:var(--amber);font-size:13px;text-transform:uppercase;">👥 Communities</h4>
+    <ul style="padding-left:18px;line-height:1.9;color:#c7d1dd;">
+      <li>r/javascript &amp; r/learnjavascript</li>
+      <li>DEV Community (#javascript tag)</li>
+      <li>Stack Overflow — [promise] / [async-await] tags</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4 style="font-family:var(--mono);color:var(--amber);font-size:13px;text-transform:uppercase;">🧩 Practice Platforms</h4>
+    <ul style="padding-left:18px;line-height:1.9;color:#c7d1dd;">
+      <li>JavaScript30 (Wes Bos) — free build-along projects</li>
+      <li>Codewars — async kata collections</li>
+      <li>freeCodeCamp — JS algorithms &amp; async modules</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4 style="font-family:var(--mono);color:var(--amber);font-size:13px;text-transform:uppercase;">🔎 Search Keywords</h4>
+    <div class="keyword-chips">
+      <span>microtask vs macrotask</span><span>promise chaining</span><span>async await error handling</span>
+      <span>AbortController fetch</span><span>event loop visualized</span><span>race condition async js</span>
+    </div>
+  </div>
+</div>
+
+<h3>Additional AI prompts for further learning</h3>
+<div class="card">
+<ul style="padding-left:18px;line-height:1.9;color:#c7d1dd;">
+  <li>"Explain the JavaScript microtask queue vs macrotask queue with a step-by-step trace of this code: [paste code]"</li>
+  <li>"Review my async function for race conditions or missing error handling: [paste code]"</li>
+  <li>"Show me how to convert this callback-based function to async/await: [paste code]"</li>
+  <li>"Give me 5 practice problems on Promise.all vs allSettled with increasing difficulty."</li>
+</ul>
+</div>
+
+<div class="nav-buttons">
+  <button class="btn" onclick="goTo('m4')">← Module 4</button>
+  <button class="btn violet" onclick="window.print()">🖨 Print / Save Notes</button>
+</div>
+</section>
+
+</main>
+</div>
+
+<script>
+/* ============================================================
+   BADGES
+=============================================================*/
+const badgeMeta = {
+  m1:{icon:'⚡',label:'Event Loop Explorer'},
+  m2:{icon:'🔗',label:'Chain Master'},
+  m3:{icon:'⏳',label:'Await Adept'},
+  m4:{icon:'🛡️',label:'Resilience Engineer'}
+};
+function renderBadges(){
+  const list = document.getElementById('badgeList');
+  list.innerHTML = '';
+  Object.keys(badgeMeta).forEach(k=>{
+    const earned = state.quizPassed[k];
+    const chip = document.createElement('div');
+    chip.className = 'badge-chip' + (earned?' earned':'');
+    chip.innerHTML = `<span class="icon">${badgeMeta[k].icon}</span> ${badgeMeta[k].label}`;
+    list.appendChild(chip);
+  });
+}
+
+/* ============================================================
+   EVENT LOOP VISUALIZER
+=============================================================*/
+const EventLoopViz = (function(){
+  const timeline = [
+    {type:'log', text:"1: start"},
+    {type:'schedule-macro', text:"setTimeout queued"},
+    {type:'schedule-micro', text:"Promise .then queued"},
+    {type:'log', text:"4: end"},
+    {type:'drain-micro', text:"3: promise"},
+    {type:'drain-macro', text:"2: timeout"}
+  ];
+  let stepIndex = 0;
+  let stackEl, microEl, macroEl, consoleEl, logLbl;
+
+  function els(){
+    stackEl = document.getElementById('elStack');
+    microEl = document.getElementById('elMicro');
+    macroEl = document.getElementById('elMacro');
+    consoleEl = document.getElementById('elConsole');
+    logLbl = document.getElementById('elStepLog');
+  }
+
+  function reset(){
+    els();
+    stepIndex = 0;
+    stackEl.innerHTML=''; microEl.innerHTML=''; macroEl.innerHTML=''; consoleEl.innerHTML='';
+    logLbl.textContent = `Step 0 / ${timeline.length}`;
+    document.getElementById('elRunBtn').disabled = false;
+  }
+
+  function addSlot(container, cls, text){
+    const el = document.createElement('div');
+    el.className = 'el-slot ' + cls;
+    el.textContent = text;
+    container.appendChild(el);
+    requestAnimationFrame(()=> el.classList.add('show'));
+    return el;
+  }
+
+  function consoleLine(text){
+    const el = document.createElement('div');
+    el.textContent = '> ' + text;
+    consoleEl.appendChild(el);
+    consoleEl.scrollTop = consoleEl.scrollHeight;
+  }
+
+  function step(){
+    if(stepIndex >= timeline.length){
+      document.getElementById('elRunBtn').disabled = true;
+      return;
+    }
+    const t = timeline[stepIndex];
+    if(t.type==='log'){
+      const s = addSlot(stackEl,'stack', t.text);
+      consoleLine(t.text);
+      setTimeout(()=>{ s.classList.add('done'); }, 500);
+    } else if(t.type==='schedule-macro'){
+      addSlot(macroEl,'macro', t.text);
+    } else if(t.type==='schedule-micro'){
+      addSlot(microEl,'micro', t.text);
+    } else if(t.type==='drain-micro'){
+      microEl.innerHTML='';
+      const s = addSlot(stackEl,'stack', t.text);
+      consoleLine(t.text);
+      setTimeout(()=>{ s.classList.add('done'); }, 500);
+    } else if(t.type==='drain-macro'){
+      macroEl.innerHTML='';
+      const s = addSlot(stackEl,'stack', t.text);
+      consoleLine(t.text);
+      setTimeout(()=>{ s.classList.add('done'); }, 500);
+    }
+    stepIndex++;
+    logLbl.textContent = `Step ${stepIndex} / ${timeline.length}`;
+  }
+
+  function run(){
+    els();
+    reset();
+    document.getElementById('elRunBtn').disabled = true;
+    let i = 0;
+    const interval = setInterval(()=>{
+      step();
+      i++;
+      if(i >= timeline.length){ clearInterval(interval); }
+    }, 900);
+  }
+
+  return {run, reset};
+})();
+
+/* ============================================================
+   REVEAL TOGGLES
+=============================================================*/
+function toggleReveal(id){
+  const el = document.getElementById(id);
+  el.classList.toggle('show');
+}
+
+/* ============================================================
+   QUIZZES
+=============================================================*/
+const quizData = {
+  m1:[
+    {
+      q:"What runs first when the call stack is empty and both a resolved promise callback and a setTimeout(fn,0) callback are waiting?",
+      options:["The setTimeout callback, because it was scheduled first","The promise callback, because microtasks always drain before the next macrotask","Whichever was written first in the source code","They run at exactly the same time"],
+      correct:1,
+      explain:"The event loop always fully drains the microtask queue (promise callbacks) before it allows a single macrotask (like setTimeout) to run, regardless of scheduling order."
+    },
+    {
+      q:"Which statement best describes JavaScript's threading model?",
+      options:["JavaScript runs on multiple threads by default","JavaScript is single-threaded, but the browser/Node environment provides concurrency via Web APIs","Promises run on a dedicated background thread","Async functions spawn a new OS thread each time they're called"],
+      correct:1,
+      explain:"JS itself has one call stack and one thread. Concurrency for things like timers and network requests comes from the host environment, not from JS running multiple lines simultaneously."
+    },
+    {
+      q:"In the kitchen analogy from this module, what does the 'ticket rail' represent?",
+      options:["The call stack","The task/callback queue","The Web API itself","The finished dish"],
+      correct:1,
+      explain:"The ticket rail is where a completed background task waits until the chef (call stack) is free to pick it up — exactly like the task queue holding callbacks until the stack is empty."
+    },
+    {
+      q:"Why does callback-nesting ('callback hell') make error handling harder?",
+      options:["Because callbacks can't accept arguments","Because each nested level needs its own error handling, with no single place to catch failures from every step","Because JavaScript doesn't allow more than 2 levels of nesting","Because callbacks always run before the outer function starts"],
+      correct:1,
+      explain:"With deep callback nesting, a single try/catch or unified error path doesn't naturally cover every level — you end up repeating error logic at each nested step."
+    }
+  ],
+  m2:[
+    {
+      q:"What are the three possible states of a Promise?",
+      options:["Started, Running, Finished","Pending, Fulfilled, Rejected","Waiting, Success, Error","Open, Closed, Cancelled"],
+      correct:1,
+      explain:"A promise begins pending and settles exactly once into fulfilled (has a value) or rejected (has a reason) — it never changes state again after settling."
+    },
+    {
+      q:"What happens if you forget to `return` a promise inside a `.then()` callback in a chain?",
+      options:["The program throws a syntax error","The chain automatically waits for it anyway","The next `.then()` runs before that inner promise settles, and its value is lost","Nothing — .then() always waits regardless"],
+      correct:2,
+      explain:"Without returning the inner promise, the outer chain doesn't know to wait for it — it moves on immediately, and you lose access to the resolved value."
+    },
+    {
+      q:"You need results from 3 independent API calls, but any one of them failing should NOT prevent you from getting the other two's results. Which combinator fits best?",
+      options:["Promise.all()","Promise.race()","Promise.allSettled()","Promise.any()"],
+      correct:2,
+      explain:"Promise.allSettled() waits for every promise to finish, successful or not, and reports each outcome individually — nothing short-circuits the others."
+    },
+    {
+      q:"When does the executor function passed to `new Promise((resolve, reject) => {...})` actually run?",
+      options:["Only after .then() is called","Asynchronously, on the next event loop tick","Synchronously and immediately, the moment the Promise is constructed","Only when the promise is awaited"],
+      correct:2,
+      explain:"The executor runs synchronously and immediately when you construct the Promise — a commonly missed detail, since everything else about promises feels asynchronous."
+    }
+  ],
+  m3:[
+    {
+      q:"What does adding the `async` keyword in front of a function guarantee?",
+      options:["The function will run on a separate thread","The function always returns a Promise, even if you return a plain value","The function can no longer throw errors","The function runs before any synchronous code"],
+      correct:1,
+      explain:"An async function always wraps its return value in a Promise automatically — callers can always .then() or await it, regardless of what you literally returned."
+    },
+    {
+      q:"What exactly does `await` pause?",
+      options:["The entire JavaScript engine, including the UI","Only the async function it's written in — other code keeps running","The browser's rendering thread only","Nothing; await is purely cosmetic"],
+      correct:1,
+      explain:"await pauses execution of just that async function until the awaited promise settles. The rest of the page — event handlers, other functions — continues to run normally."
+    },
+    {
+      q:"Two unrelated API calls are each awaited back-to-back inside an async function. What's the performance problem?",
+      options:["There is no problem — this is the fastest pattern","They run sequentially, so total time is the sum of both, when they could run in parallel","JavaScript will throw an error for using two awaits","The second await is simply ignored"],
+      correct:1,
+      explain:"Writing `await a(); await b();` for independent calls makes b wait for a to finish first, unnecessarily. Wrapping both in Promise.all lets them run concurrently."
+    },
+    {
+      q:"Why doesn't `await` work as expected inside `.forEach()`?",
+      options:["forEach doesn't exist in modern JavaScript","forEach ignores any promise returned by its callback, so it doesn't actually wait","await throws a syntax error inside forEach","forEach only allows synchronous callbacks and will crash"],
+      correct:1,
+      explain:"forEach calls its callback but never looks at (or waits for) what it returns, so any internal await doesn't pause the loop. Use a for...of loop or Promise.all with .map() instead."
+    }
+  ],
+  m4:[
+    {
+      q:"In an exponential backoff retry loop, why does the delay increase between attempts (e.g. 200ms, 400ms, 800ms)?",
+      options:["To make the code look more complex","To avoid overwhelming a struggling server with immediate repeated requests","Because JavaScript requires increasing delays by law of the spec","It has no real purpose, it's just convention"],
+      correct:1,
+      explain:"Growing the delay between retries reduces load on a server that may already be struggling, instead of hammering it with rapid repeated requests."
+    },
+    {
+      q:"What does AbortController primarily let you do?",
+      options:["Guarantee a promise resolves faster","Cancel a client-side request so a stale response is ignored","Force the server to stop processing a request","Automatically retry failed requests"],
+      correct:1,
+      explain:"AbortController lets the client stop waiting on / using a request's result. It does not guarantee the server itself halts its processing."
+    },
+    {
+      q:"Why is wrapping `Promise.all([taskA(), taskB()])` in a single try/catch often not enough for real apps?",
+      options:["Promise.all doesn't support try/catch at all","You only learn that something failed, not which task, and the other task's successful result is discarded","try/catch causes both tasks to run twice","It causes a memory leak"],
+      correct:1,
+      explain:"A single catch around Promise.all can't tell you which task failed, and it discards the other task's perfectly good result. Promise.allSettled() gives per-task outcomes instead."
+    },
+    {
+      q:"Which type of operation is generally safe to retry automatically?",
+      options:["A payment charge (POST) with no idempotency key","An idempotent GET request that just reads data","Any operation, retries are always harmless","Only operations that involve setTimeout"],
+      correct:1,
+      explain:"Idempotent operations (like GET requests, which don't change server state) are safe to retry. Non-idempotent operations like an un-keyed payment charge could be applied multiple times."
+    }
+  ]
+};
+
+function buildQuiz(key){
+  const container = document.getElementById('quiz-'+key);
+  container.innerHTML = '';
+  const answers = new Array(quizData[key].length).fill(null);
+
+  quizData[key].forEach((item, qi)=>{
+    const qDiv = document.createElement('div');
+    qDiv.className = 'q-item';
+    const qText = document.createElement('div');
+    qText.className = 'q-text';
+    qText.textContent = `${qi+1}. ${item.q}`;
+    qDiv.appendChild(qText);
+
+    const optsDiv = document.createElement('div');
+    optsDiv.className = 'q-options';
+
+    const feedback = document.createElement('div');
+    feedback.className = 'q-feedback';
+    feedback.textContent = item.explain;
+
+    item.options.forEach((opt, oi)=>{
+      const b = document.createElement('button');
+      b.className = 'q-opt';
+      b.textContent = opt;
+      b.onclick = ()=>{
+        if(answers[qi] !== null) return;
+        answers[qi] = oi;
+        const allOpts = optsDiv.querySelectorAll('.q-opt');
+        allOpts.forEach(o=>o.classList.add('disabled'));
+        if(oi === item.correct){
+          b.classList.add('correct');
+          feedback.classList.add('show','correct-fb');
+        } else {
+          b.classList.add('incorrect');
+          allOpts[item.correct].classList.add('correct');
+          feedback.classList.add('show','incorrect-fb');
+        }
+        checkQuizComplete(key, answers);
+      };
+      optsDiv.appendChild(b);
+    });
+
+    qDiv.appendChild(optsDiv);
+    qDiv.appendChild(feedback);
+    container.appendChild(qDiv);
+  });
+
+  const summary = document.createElement('div');
+  summary.className = 'quiz-summary';
+  summary.id = 'summary-'+key;
+  container.appendChild(summary);
+
+  container._answers = answers;
+}
+
+function checkQuizComplete(key, answers){
+  if(answers.some(a=>a===null)) return;
+  const correctCount = answers.filter((a,i)=> a===quizData[key][i].correct).length;
+  const total = answers.length;
+  const pct = Math.round((correctCount/total)*100);
+  state.quizScores[key] = pct;
+  const passed = pct >= 75;
+  state.quizPassed[key] = passed;
+
+  const summary = document.getElementById('summary-'+key);
+  summary.classList.add('show');
+  summary.innerHTML = `
+    <div class="score">${correctCount}/${total}</div>
+    <p style="margin-top:6px;">${pct}% — ${passed ? '✅ Passed! Badge earned.' : '❌ Below 75%. Review the module and you can still continue exploring, but aim to understand the missed concepts.'}</p>
+  `;
+
+  if(passed){
+    addXP(25);
+    unlockNext(key);
+    document.getElementById('next-'+key).disabled = false;
+    document.getElementById('next-'+key).textContent = document.getElementById('next-'+key).textContent.replace('Pass the quiz to unlock','Continue to');
+  } else {
+    // allow retry-free progress after reviewing, but still require passing threshold conceptually;
+    // give a gentle path forward without hard-blocking learning
+    document.getElementById('next-'+key).disabled = false;
+    document.getElementById('next-'+key).textContent = 'Continue anyway →';
+    unlockNext(key);
+  }
+  renderTabs();
+  renderBadges();
+  if(key==='m4'){
+    document.getElementById('finalXpText').textContent = state.xp + ' XP';
+  }
+}
+
+/* ============================================================
+   INIT
+=============================================================*/
+function init(){
+  renderTabs();
+  renderGutter();
+  renderBadges();
+  Object.keys(quizData).forEach(buildQuiz);
+  updateProgress();
+}
+init();
+</script>
+</body>
+</html>
