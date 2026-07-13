@@ -351,3 +351,9 @@ Day 42 – Personal Financial Command Center
 * Built an interactive Personal Financial Command Center using HTML, CSS, and JavaScript.
 * Created personalized financial dashboards with budgeting, savings, cash flow, and goal tracking.
 * Generated financial insights, health scores, planning tools, and interactive reports for better decision-making.
+
+Day 43 – AI Workflow Architect
+
+* Built an interactive AI Workflow Architect using HTML, CSS, and JavaScript.
+* Designed end-to-end workflows with AI tool recommendations, decision trees, and prompt examples.
+* Generated workflow summaries, learning resources, automation opportunities, and printable guides.
