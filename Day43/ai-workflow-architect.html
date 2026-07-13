@@ -1,0 +1,1981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AI Workflow Architect — Social Media Lead Generation</title>
+<style>
+/* ═══════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════ */
+:root{
+  --bg:#080c14;
+  --bg2:#0d1320;
+  --bg3:#111827;
+  --surface:#141d2e;
+  --surface2:#1a2540;
+  --border:#1e2d47;
+  --border2:#243454;
+  --blue:#3b82f6;
+  --blue-d:#2563eb;
+  --blue-l:#60a5fa;
+  --cyan:#06b6d4;
+  --violet:#8b5cf6;
+  --green:#10b981;
+  --amber:#f59e0b;
+  --rose:#f43f5e;
+  --text:#e2e8f0;
+  --text2:#94a3b8;
+  --text3:#64748b;
+  --radius:12px;
+  --radius-sm:8px;
+  --radius-lg:18px;
+  --tr:0.25s cubic-bezier(.4,0,.2,1);
+  --shadow:0 4px 24px rgba(0,0,0,.45);
+  --glow:0 0 32px rgba(59,130,246,.15);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px;scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;line-height:1.6}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+a{color:var(--blue-l);text-decoration:none}
+button{cursor:pointer;font-family:inherit;border:none;background:none}
+button:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:4px}
+
+/* ═══════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════ */
+.app{display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{
+  width:260px;flex-shrink:0;
+  background:var(--bg2);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;bottom:0;
+  z-index:100;transition:transform var(--tr);
+  overflow-y:auto;
+}
+.sidebar-logo{
+  padding:1.25rem 1.25rem 0.75rem;
+  border-bottom:1px solid var(--border);
+}
+.logo-badge{
+  display:inline-flex;align-items:center;gap:0.5rem;
+  background:linear-gradient(135deg,var(--blue),var(--violet));
+  color:#fff;font-size:0.7rem;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;
+  padding:.3rem .75rem;border-radius:50px;margin-bottom:.6rem;
+}
+.logo-title{font-size:1rem;font-weight:700;color:var(--text);line-height:1.2}
+.logo-sub{font-size:.72rem;color:var(--text3);margin-top:.2rem}
+.workflow-meta{
+  padding:.75rem 1.25rem;
+  border-bottom:1px solid var(--border);
+  display:flex;flex-direction:column;gap:.3rem;
+}
+.meta-tag{
+  display:inline-flex;align-items:center;gap:.35rem;
+  font-size:.7rem;color:var(--text2);
+}
+.meta-dot{width:5px;height:5px;border-radius:50%;background:var(--blue);flex-shrink:0}
+.sidebar-nav{padding:.75rem 0;flex:1}
+.nav-section-label{
+  font-size:.62rem;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--text3);
+  padding:.5rem 1.25rem .25rem;
+}
+.nav-item{
+  display:flex;align-items:center;gap:.65rem;
+  padding:.55rem 1.25rem;
+  font-size:.82rem;color:var(--text2);
+  cursor:pointer;transition:var(--tr);
+  border-left:2px solid transparent;
+  position:relative;
+}
+.nav-item:hover{background:var(--surface);color:var(--text)}
+.nav-item.active{
+  background:rgba(59,130,246,.08);
+  color:var(--blue-l);
+  border-left-color:var(--blue);
+}
+.nav-icon{font-size:1rem;flex-shrink:0;width:18px;text-align:center}
+.nav-badge{
+  margin-left:auto;background:var(--blue);color:#fff;
+  font-size:.6rem;font-weight:700;
+  padding:.1rem .4rem;border-radius:50px;min-width:18px;text-align:center;
+}
+.progress-mini{
+  padding:.75rem 1.25rem;border-top:1px solid var(--border);
+}
+.pm-label{font-size:.7rem;color:var(--text3);margin-bottom:.4rem;display:flex;justify-content:space-between}
+.pm-bar{height:4px;background:var(--border2);border-radius:2px;overflow:hidden}
+.pm-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:2px;transition:width .4s ease}
+.sidebar-actions{padding:.75rem 1.25rem;border-top:1px solid var(--border);display:flex;gap:.5rem}
+.sb-btn{
+  flex:1;padding:.5rem;border-radius:var(--radius-sm);
+  font-size:.72rem;font-weight:600;text-align:center;
+  transition:var(--tr);
+}
+.sb-btn-primary{background:var(--blue);color:#fff}
+.sb-btn-primary:hover{background:var(--blue-d)}
+.sb-btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
+.sb-btn-ghost:hover{color:var(--text);border-color:var(--border2)}
+
+/* MAIN */
+.main{margin-left:260px;flex:1;min-height:100vh;display:flex;flex-direction:column}
+.topbar{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:.85rem 2rem;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:50;
+  backdrop-filter:blur(12px);
+}
+.topbar-left{display:flex;align-items:center;gap:.75rem}
+.topbar-title{font-size:.95rem;font-weight:700;color:var(--text)}
+.topbar-breadcrumb{font-size:.75rem;color:var(--text3)}
+.topbar-right{display:flex;align-items:center;gap:.75rem}
+.tb-chip{
+  display:inline-flex;align-items:center;gap:.35rem;
+  padding:.3rem .75rem;border-radius:50px;
+  font-size:.7rem;font-weight:600;border:1px solid;
+}
+.chip-green{color:var(--green);border-color:rgba(16,185,129,.3);background:rgba(16,185,129,.08)}
+.chip-blue{color:var(--blue-l);border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.08)}
+.chip-amber{color:var(--amber);border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.08)}
+.menu-toggle{display:none;padding:.4rem;border-radius:var(--radius-sm);background:var(--surface)}
+
+.content{padding:2rem;flex:1}
+
+/* ═══════════════════════════════════════
+   SECTIONS
+═══════════════════════════════════════ */
+.section{display:none}
+.section.active{display:block;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* PAGE HEADER */
+.page-header{margin-bottom:2rem}
+.page-eyebrow{
+  display:inline-flex;align-items:center;gap:.4rem;
+  font-size:.68rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--blue-l);margin-bottom:.5rem;
+}
+.page-title{font-size:1.75rem;font-weight:800;color:var(--text);line-height:1.2;margin-bottom:.4rem}
+.page-desc{font-size:.88rem;color:var(--text2);max-width:650px;line-height:1.7}
+
+/* STAGE CARD */
+.stage-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);margin-bottom:1.5rem;
+  overflow:hidden;transition:var(--tr);
+}
+.stage-card:hover{border-color:var(--border2);box-shadow:var(--glow)}
+.stage-header{
+  padding:1.25rem 1.5rem;
+  display:flex;align-items:center;gap:1rem;
+  cursor:pointer;
+  border-bottom:1px solid transparent;
+  transition:var(--tr);
+}
+.stage-header.open{border-bottom-color:var(--border)}
+.stage-num{
+  width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;font-weight:800;flex-shrink:0;
+}
+.stage-info{flex:1}
+.stage-title{font-size:1rem;font-weight:700;color:var(--text)}
+.stage-subtitle{font-size:.75rem;color:var(--text3);margin-top:.1rem}
+.stage-meta{display:flex;gap:.5rem;align-items:center}
+.stage-time{
+  font-size:.68rem;color:var(--text3);
+  display:flex;align-items:center;gap:.3rem;
+}
+.stage-toggle{
+  width:28px;height:28px;border-radius:6px;
+  background:var(--surface2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;transition:transform var(--tr);color:var(--text3);
+}
+.stage-toggle.open{transform:rotate(180deg)}
+.stage-body{display:none;padding:1.5rem}
+.stage-body.open{display:block;animation:fadeIn .25s ease}
+
+/* TABS */
+.tab-row{
+  display:flex;gap:.25rem;flex-wrap:wrap;
+  border-bottom:1px solid var(--border);
+  margin-bottom:1.25rem;padding-bottom:0;
+}
+.tab-btn{
+  padding:.45rem .9rem;border-radius:var(--radius-sm) var(--radius-sm) 0 0;
+  font-size:.75rem;font-weight:600;color:var(--text3);
+  transition:var(--tr);border-bottom:2px solid transparent;
+  margin-bottom:-1px;
+}
+.tab-btn:hover{color:var(--text2)}
+.tab-btn.active{color:var(--blue-l);border-bottom-color:var(--blue)}
+.tab-pane{display:none}
+.tab-pane.active{display:block;animation:fadeIn .2s ease}
+
+/* CONTENT BLOCKS */
+.block-title{
+  font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text3);margin-bottom:.75rem;
+  display:flex;align-items:center;gap:.5rem;
+}
+.block-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.objective-list{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.25rem}
+.obj-item{
+  display:flex;align-items:flex-start;gap:.65rem;
+  padding:.7rem 1rem;background:var(--bg3);
+  border-radius:var(--radius-sm);border:1px solid var(--border);
+  font-size:.83rem;color:var(--text2);line-height:1.5;
+}
+.obj-icon{flex-shrink:0;margin-top:.05rem}
+.task-list{display:flex;flex-direction:column;gap:.4rem}
+.task-item{
+  display:flex;align-items:flex-start;gap:.65rem;
+  padding:.65rem 1rem;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--radius-sm);cursor:pointer;transition:var(--tr);
+}
+.task-item:hover{border-color:var(--border2)}
+.task-cb{
+  width:16px;height:16px;border-radius:4px;
+  border:1.5px solid var(--border2);flex-shrink:0;margin-top:.15rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:var(--tr);background:transparent;
+}
+.task-item.done .task-cb{background:var(--green);border-color:var(--green)}
+.task-item.done .task-cb::after{content:'✓';font-size:.6rem;color:#fff;font-weight:700}
+.task-item.done .task-text{text-decoration:line-through;color:var(--text3)}
+.task-text{font-size:.82rem;color:var(--text2);line-height:1.5;flex:1}
+
+/* TOOL CARDS */
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.75rem}
+.tool-card{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--radius);padding:1rem;
+  transition:var(--tr);position:relative;
+}
+.tool-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.tool-card.recommended{border-color:rgba(59,130,246,.4)}
+.tool-rec-badge{
+  position:absolute;top:.6rem;right:.6rem;
+  background:var(--blue);color:#fff;
+  font-size:.55rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  padding:.15rem .45rem;border-radius:50px;
+}
+.tool-name{font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:.2rem}
+.tool-category{font-size:.68rem;color:var(--text3);margin-bottom:.5rem}
+.tool-why{font-size:.76rem;color:var(--text2);line-height:1.5;margin-bottom:.65rem}
+.tool-tags{display:flex;flex-wrap:wrap;gap:.3rem}
+.tool-tag{
+  font-size:.62rem;padding:.15rem .5rem;border-radius:50px;
+  background:var(--surface2);color:var(--text3);border:1px solid var(--border2);
+}
+.tool-price{
+  display:inline-flex;align-items:center;gap:.25rem;
+  font-size:.65rem;color:var(--green);margin-top:.4rem;
+}
+
+/* PROMPT BOXES */
+.prompt-box{
+  background:var(--bg);border:1px solid var(--border2);
+  border-radius:var(--radius);padding:1rem 1.1rem;
+  margin-bottom:.75rem;position:relative;
+}
+.prompt-label{
+  font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--cyan);margin-bottom:.45rem;
+}
+.prompt-text{
+  font-family:'Courier New',monospace;font-size:.78rem;
+  color:#a5f3fc;line-height:1.6;white-space:pre-wrap;
+}
+.copy-btn{
+  position:absolute;top:.65rem;right:.65rem;
+  padding:.25rem .6rem;border-radius:6px;
+  background:var(--surface2);border:1px solid var(--border2);
+  font-size:.65rem;color:var(--text3);transition:var(--tr);
+}
+.copy-btn:hover{color:var(--text);border-color:var(--blue)}
+
+/* INFO GRIDS */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
+.info-card{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--radius);padding:.9rem 1rem;
+}
+.info-card-title{
+  font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem;
+}
+.info-item{
+  font-size:.78rem;color:var(--text2);
+  padding:.3rem 0;border-bottom:1px solid var(--border);
+  display:flex;align-items:flex-start;gap:.5rem;line-height:1.4;
+}
+.info-item:last-child{border-bottom:none;padding-bottom:0}
+.info-bullet{color:var(--blue-l);flex-shrink:0;font-size:.7rem;margin-top:.15rem}
+.warn-bullet{color:var(--rose);flex-shrink:0}
+.good-bullet{color:var(--green);flex-shrink:0}
+
+/* OUTPUT BADGES */
+.output-row{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.75rem}
+.output-badge{
+  display:inline-flex;align-items:center;gap:.35rem;
+  padding:.35rem .8rem;border-radius:50px;
+  font-size:.73rem;font-weight:600;
+  border:1px solid var(--border2);background:var(--surface2);color:var(--text2);
+}
+.output-badge .ob-icon{font-size:.8rem}
+
+/* DECISION TREE */
+.dtree{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;overflow-x:auto}
+.dtree-title{font-size:.75rem;font-weight:700;color:var(--text2);margin-bottom:1rem}
+.dtree-flow{display:flex;align-items:flex-start;gap:.5rem;min-width:max-content}
+.dt-node{
+  display:flex;flex-direction:column;align-items:center;gap:.4rem;
+}
+.dt-box{
+  padding:.55rem .9rem;border-radius:var(--radius-sm);
+  font-size:.72rem;font-weight:600;text-align:center;
+  max-width:130px;line-height:1.3;
+}
+.dt-question{background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);color:var(--blue-l)}
+.dt-yes{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:var(--green)}
+.dt-no{background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.3);color:var(--rose)}
+.dt-action{background:var(--surface2);border:1px solid var(--border2);color:var(--text2)}
+.dt-arrow{color:var(--text3);font-size:.9rem;margin-top:.65rem}
+.dt-label{font-size:.62rem;color:var(--text3);font-weight:600}
+
+/* COMPARISON TABLE */
+.comp-table{width:100%;border-collapse:collapse;font-size:.78rem}
+.comp-table th{
+  padding:.6rem .9rem;text-align:left;
+  font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--text3);border-bottom:1px solid var(--border2);background:var(--bg3);
+}
+.comp-table td{
+  padding:.6rem .9rem;border-bottom:1px solid var(--border);
+  color:var(--text2);vertical-align:top;line-height:1.5;
+}
+.comp-table tr:hover td{background:var(--surface)}
+.comp-table .best{color:var(--green);font-weight:600}
+.comp-table .ok{color:var(--amber)}
+.comp-table .bad{color:var(--rose)}
+
+/* PROGRESS TRACKER */
+.progress-ring-wrap{display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap}
+.ring-stat{text-align:center}
+.ring-num{font-size:1.6rem;font-weight:800;color:var(--text);line-height:1}
+.ring-lbl{font-size:.68rem;color:var(--text3);margin-top:.2rem}
+.overall-bar{
+  flex:1;min-width:200px;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--radius);padding:1.1rem 1.25rem;
+}
+.overall-label{font-size:.75rem;font-weight:700;color:var(--text2);margin-bottom:.75rem;display:flex;justify-content:space-between}
+.stage-bar-row{display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem}
+.sbr-name{font-size:.72rem;color:var(--text3);width:120px;flex-shrink:0}
+.sbr-track{flex:1;height:5px;background:var(--border2);border-radius:3px;overflow:hidden}
+.sbr-fill{height:100%;border-radius:3px;transition:width .4s ease}
+.sbr-pct{font-size:.68rem;color:var(--text3);width:28px;text-align:right}
+
+/* NOTES */
+.notes-area{
+  width:100%;min-height:120px;
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:var(--radius);padding:1rem;
+  color:var(--text);font-family:inherit;font-size:.83rem;
+  resize:vertical;transition:border-color var(--tr);line-height:1.6;
+}
+.notes-area:focus{outline:none;border-color:var(--blue)}
+.notes-area::placeholder{color:var(--text3)}
+.save-note-btn{
+  margin-top:.5rem;padding:.45rem 1rem;
+  background:var(--blue);color:#fff;border-radius:var(--radius-sm);
+  font-size:.75rem;font-weight:600;transition:var(--tr);
+}
+.save-note-btn:hover{background:var(--blue-d)}
+
+/* BOOKMARK */
+.bookmark-list{display:flex;flex-direction:column;gap:.5rem}
+.bk-item{
+  display:flex;align-items:center;gap:.75rem;
+  padding:.7rem 1rem;background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--radius-sm);font-size:.8rem;color:var(--text2);
+  transition:var(--tr);
+}
+.bk-item:hover{border-color:var(--border2)}
+.bk-icon{font-size:1rem;flex-shrink:0}
+.bk-text{flex:1}
+.bk-stage{font-size:.65rem;color:var(--text3);margin-top:.1rem}
+.bk-remove{font-size:.7rem;color:var(--text3);padding:.2rem .4rem;border-radius:4px;transition:var(--tr)}
+.bk-remove:hover{color:var(--rose);background:rgba(244,63,94,.1)}
+
+/* SUMMARY */
+.summary-hero{
+  background:linear-gradient(135deg,rgba(59,130,246,.12),rgba(139,92,246,.08));
+  border:1px solid rgba(59,130,246,.2);
+  border-radius:var(--radius-lg);padding:1.75rem;margin-bottom:1.5rem;
+}
+.sum-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:1rem;margin-top:1.25rem}
+.sum-stat{text-align:center;padding:.9rem;background:rgba(255,255,255,.04);border-radius:var(--radius);border:1px solid var(--border)}
+.sum-num{font-size:1.5rem;font-weight:800;background:linear-gradient(135deg,var(--blue-l),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sum-lbl{font-size:.68rem;color:var(--text3);margin-top:.2rem}
+.stack-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:.75rem}
+.stack-item{
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);
+  padding:.9rem 1rem;display:flex;align-items:center;gap:.75rem;
+}
+.stack-emoji{font-size:1.4rem;flex-shrink:0}
+.stack-name{font-size:.82rem;font-weight:700;color:var(--text)}
+.stack-role{font-size:.68rem;color:var(--text3);margin-top:.1rem}
+.resource-list{display:flex;flex-direction:column;gap:.5rem}
+.res-item{
+  display:flex;align-items:center;gap:.75rem;
+  padding:.75rem 1rem;background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--radius-sm);transition:var(--tr);
+}
+.res-item:hover{border-color:var(--blue);transform:translateX(3px)}
+.res-icon{font-size:1.1rem;flex-shrink:0}
+.res-name{font-size:.83rem;font-weight:600;color:var(--text)}
+.res-desc{font-size:.7rem;color:var(--text3);margin-top:.1rem}
+.res-type{margin-left:auto;font-size:.65rem;padding:.15rem .5rem;border-radius:50px;background:var(--surface2);color:var(--text3)}
+
+/* DIAGRAM */
+.diagram-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;overflow-x:auto}
+.flow-diagram{display:flex;align-items:center;gap:.5rem;min-width:max-content;flex-wrap:nowrap}
+.flow-node{
+  display:flex;flex-direction:column;align-items:center;gap:.4rem;cursor:pointer;
+}
+.flow-box{
+  width:110px;padding:.65rem .5rem;border-radius:var(--radius-sm);
+  text-align:center;font-size:.72rem;font-weight:700;
+  border:1.5px solid;transition:var(--tr);line-height:1.3;
+}
+.flow-box:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.3)}
+.flow-label{font-size:.62rem;color:var(--text3);text-align:center;max-width:110px}
+.flow-arrow{font-size:1.1rem;color:var(--text3);flex-shrink:0;margin-top:-1rem}
+.f1{color:#60a5fa;border-color:rgba(96,165,250,.4);background:rgba(96,165,250,.1)}
+.f2{color:#34d399;border-color:rgba(52,211,153,.4);background:rgba(52,211,153,.1)}
+.f3{color:#f59e0b;border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.1)}
+.f4{color:#a78bfa;border-color:rgba(167,139,250,.4);background:rgba(167,139,250,.1)}
+.f5{color:#fb7185;border-color:rgba(251,113,133,.4);background:rgba(251,113,133,.1)}
+.f6{color:#38bdf8;border-color:rgba(56,189,248,.4);background:rgba(56,189,248,.1)}
+.f7{color:#4ade80;border-color:rgba(74,222,128,.4);background:rgba(74,222,128,.1)}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;
+  background:var(--surface2);border:1px solid var(--border2);
+  border-radius:var(--radius);padding:.7rem 1.1rem;
+  font-size:.8rem;color:var(--text);
+  box-shadow:var(--shadow);
+  transform:translateY(20px);opacity:0;
+  transition:all .3s ease;pointer-events:none;
+  display:flex;align-items:center;gap:.5rem;
+}
+.toast.show{transform:none;opacity:1}
+
+/* PRINT */
+@media print{
+  .sidebar,.topbar,.menu-toggle,.copy-btn,.save-note-btn,.sidebar-actions{display:none!important}
+  .main{margin-left:0}
+  .stage-body{display:block!important}
+  .tab-pane{display:block!important}
+  body{background:#fff;color:#000}
+}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:none}
+  .main{margin-left:0}
+  .menu-toggle{display:flex}
+  .info-grid{grid-template-columns:1fr}
+  .tools-grid{grid-template-columns:1fr 1fr}
+  .topbar{padding:.7rem 1rem}
+  .content{padding:1.25rem}
+}
+@media(max-width:600px){
+  .tools-grid{grid-template-columns:1fr}
+  .flow-diagram{flex-direction:column}
+  .flow-arrow{transform:rotate(90deg)}
+}
+
+/* KEYWORD CHIPS */
+.kw-cloud{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.75rem}
+.kw-chip{
+  padding:.35rem .8rem;border-radius:50px;
+  font-size:.72rem;font-weight:600;
+  background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);
+  color:var(--blue-l);cursor:default;transition:var(--tr);
+}
+.kw-chip:hover{background:rgba(59,130,246,.2)}
+
+/* AUTOMATION */
+.auto-card{
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);
+  padding:1rem 1.1rem;display:flex;gap:.85rem;margin-bottom:.65rem;
+}
+.auto-icon{font-size:1.5rem;flex-shrink:0;margin-top:.15rem}
+.auto-title{font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:.25rem}
+.auto-desc{font-size:.77rem;color:var(--text2);line-height:1.5}
+.auto-badge{display:inline-flex;margin-top:.4rem;font-size:.62rem;padding:.15rem .5rem;border-radius:50px}
+.auto-easy{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+.auto-med{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.3)}
+.auto-adv{background:rgba(139,92,246,.1);color:var(--violet);border:1px solid rgba(139,92,246,.3)}
+
+/* STAGE NUM COLORS */
+.s1{background:rgba(96,165,250,.15);color:#60a5fa}
+.s2{background:rgba(52,211,153,.15);color:#34d399}
+.s3{background:rgba(245,158,11,.15);color:#f59e0b}
+.s4{background:rgba(167,139,250,.15);color:#a78bfa}
+.s5{background:rgba(251,113,133,.15);color:#fb7185}
+.s6{background:rgba(56,189,248,.15);color:#38bdf8}
+.s7{background:rgba(74,222,128,.15);color:#4ade80}
+
+/* OVERLAY */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;display:none}
+.overlay.open{display:block}
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="app">
+<!-- ═══════ SIDEBAR ═══════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge">⚡ AI Workflow Architect</div>
+    <div class="logo-title">Social Media Lead Generation</div>
+    <div class="logo-sub">Freelancer / Solo Consultant</div>
+  </div>
+  <div class="workflow-meta">
+    <div class="meta-tag"><span class="meta-dot"></span>Facebook Page + Instagram</div>
+    <div class="meta-tag"><span class="meta-dot" style="background:var(--cyan)"></span>Cold DMs + Cold Emails</div>
+    <div class="meta-tag"><span class="meta-dot" style="background:var(--green)"></span>Goal: Generate Leads & Clients</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Overview</div>
+    <div class="nav-item active" onclick="showSection('overview')">
+      <span class="nav-icon">🗺️</span> Workflow Map
+    </div>
+    <div class="nav-item" onclick="showSection('progress')">
+      <span class="nav-icon">📊</span> Progress Tracker
+    </div>
+
+    <div class="nav-section-label">Workflow Stages</div>
+    <div class="nav-item" onclick="showSection('s1')">
+      <span class="nav-icon">🎯</span> Strategy & Positioning
+      <span class="nav-badge s1-badge">1</span>
+    </div>
+    <div class="nav-item" onclick="showSection('s2')">
+      <span class="nav-icon">🔍</span> Audience Research
+    </div>
+    <div class="nav-item" onclick="showSection('s3')">
+      <span class="nav-icon">✍️</span> Content Creation
+    </div>
+    <div class="nav-item" onclick="showSection('s4')">
+      <span class="nav-icon">📣</span> Page & Profile Optimization
+    </div>
+    <div class="nav-item" onclick="showSection('s5')">
+      <span class="nav-icon">💬</span> Cold DMs & Outreach
+    </div>
+    <div class="nav-item" onclick="showSection('s6')">
+      <span class="nav-icon">📧</span> Cold Email Campaigns
+    </div>
+    <div class="nav-item" onclick="showSection('s7')">
+      <span class="nav-icon">🔄</span> Lead Nurturing & Closing
+    </div>
+
+    <div class="nav-section-label">Resources</div>
+    <div class="nav-item" onclick="showSection('summary')">
+      <span class="nav-icon">📋</span> Workflow Summary
+    </div>
+    <div class="nav-item" onclick="showSection('tools-stack')">
+      <span class="nav-icon">🛠️</span> AI Stack
+    </div>
+    <div class="nav-item" onclick="showSection('resources')">
+      <span class="nav-icon">📚</span> Learning Resources
+    </div>
+    <div class="nav-item" onclick="showSection('automation')">
+      <span class="nav-icon">🤖</span> Automation Opportunities
+    </div>
+    <div class="nav-item" onclick="showSection('notes')">
+      <span class="nav-icon">📝</span> My Notes
+    </div>
+    <div class="nav-item" onclick="showSection('bookmarks')">
+      <span class="nav-icon">🔖</span> Bookmarks
+    </div>
+  </nav>
+  <div class="progress-mini">
+    <div class="pm-label"><span>Overall Progress</span><span id="pct-label">0%</span></div>
+    <div class="pm-bar"><div class="pm-fill" id="overall-fill" style="width:0%"></div></div>
+  </div>
+  <div class="sidebar-actions">
+    <button class="sb-btn sb-btn-primary" onclick="window.print()">🖨️ Print</button>
+    <button class="sb-btn sb-btn-ghost" onclick="resetAll()">↺ Reset</button>
+  </div>
+</aside>
+
+<!-- ═══════ MAIN ═══════ -->
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-toggle" onclick="openSidebar()">☰</button>
+      <div>
+        <div class="topbar-title" id="topbar-title">Workflow Map</div>
+        <div class="topbar-breadcrumb">Marketing → Social Media → Lead Generation</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="tb-chip chip-green">● 7 Stages</span>
+      <span class="tb-chip chip-blue">⚡ 40+ AI Tools</span>
+      <span class="tb-chip chip-amber" id="task-chip">☐ 0 Tasks Done</span>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ══════ OVERVIEW ══════ -->
+    <div class="section active" id="section-overview">
+      <div class="page-header">
+        <div class="page-eyebrow">🗺️ Complete End-to-End Workflow</div>
+        <h1 class="page-title">Social Media Lead Generation<br>for Freelancers</h1>
+        <p class="page-desc">A complete AI-powered workflow from positioning your services to closing your first client — across Facebook, Instagram, cold DMs, and cold emails.</p>
+      </div>
+
+      <!-- FLOW DIAGRAM -->
+      <div class="diagram-wrap" style="margin-bottom:1.5rem">
+        <p class="block-title">End-to-End Workflow Flow</p>
+        <div class="flow-diagram">
+          <div class="flow-node" onclick="showSection('s1')">
+            <div class="flow-box f1">🎯 Strategy &amp; Positioning</div>
+            <div class="flow-label">Week 1</div>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node" onclick="showSection('s2')">
+            <div class="flow-box f2">🔍 Audience Research</div>
+            <div class="flow-label">Week 1–2</div>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node" onclick="showSection('s4')">
+            <div class="flow-box f3">📣 Profile Optimization</div>
+            <div class="flow-label">Week 2</div>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node" onclick="showSection('s3')">
+            <div class="flow-box f4">✍️ Content Creation</div>
+            <div class="flow-label">Week 2–4 (ongoing)</div>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node" onclick="showSection('s5')">
+            <div class="flow-box f5">💬 Cold DMs</div>
+            <div class="flow-label">Week 3+ (daily)</div>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node" onclick="showSection('s6')">
+            <div class="flow-box f6">📧 Cold Emails</div>
+            <div class="flow-label">Week 3+ (daily)</div>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node" onclick="showSection('s7')">
+            <div class="flow-box f7">🔄 Nurture &amp; Close</div>
+            <div class="flow-label">Ongoing</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DECISION TREE -->
+      <div class="dtree" style="margin-bottom:1.5rem">
+        <div class="dtree-title">💡 Lead Source Decision Tree — Which channel to prioritize first?</div>
+        <div class="dtree-flow">
+          <div class="dt-node">
+            <div class="dt-box dt-question">Do you have an existing online presence?</div>
+          </div>
+          <div class="dt-arrow">→</div>
+          <div class="dt-node">
+            <div class="dt-label">YES</div>
+            <div class="dt-box dt-yes">Optimize profiles first, then start DMs</div>
+          </div>
+          <div class="dt-arrow" style="margin:0 .25rem">|</div>
+          <div class="dt-node">
+            <div class="dt-label">NO</div>
+            <div class="dt-box dt-no">Build profile + post 3 pieces before outreach</div>
+          </div>
+          <div class="dt-arrow">→</div>
+          <div class="dt-node">
+            <div class="dt-box dt-action">Do you have an email list or prospect database?</div>
+          </div>
+          <div class="dt-arrow">→</div>
+          <div class="dt-node">
+            <div class="dt-label">YES</div>
+            <div class="dt-box dt-yes">Start cold email campaigns immediately</div>
+          </div>
+          <div class="dt-arrow" style="margin:0 .25rem">|</div>
+          <div class="dt-node">
+            <div class="dt-label">NO</div>
+            <div class="dt-box dt-no">Build prospect list via Apollo/Hunter first</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUICK STATS -->
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="info-card-title" style="color:var(--blue-l)">⏱️ Time Investment</div>
+          <div class="info-item"><span class="info-bullet">▸</span>Setup Phase: 1–2 weeks full focus</div>
+          <div class="info-item"><span class="info-bullet">▸</span>Daily Outreach: 1–2 hrs/day minimum</div>
+          <div class="info-item"><span class="info-bullet">▸</span>Content Creation: 3–4 hrs/week</div>
+          <div class="info-item"><span class="info-bullet">▸</span>First lead expected: Week 3–4</div>
+          <div class="info-item"><span class="info-bullet">▸</span>First client expected: Month 1–2</div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-title" style="color:var(--green)">🎯 Realistic Benchmarks</div>
+          <div class="info-item"><span class="info-bullet">▸</span>DM reply rate: 5–15% (cold)</div>
+          <div class="info-item"><span class="info-bullet">▸</span>Cold email open rate: 25–45%</div>
+          <div class="info-item"><span class="info-bullet">▸</span>Email reply rate: 3–8%</div>
+          <div class="info-item"><span class="info-bullet">▸</span>DM → Discovery call: 1–3%</div>
+          <div class="info-item"><span class="info-bullet">▸</span>Send 50 DMs/emails → 1–3 calls</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ PROGRESS ══════ -->
+    <div class="section" id="section-progress">
+      <div class="page-header">
+        <div class="page-eyebrow">📊 Progress Tracker</div>
+        <h1 class="page-title">Your Workflow Progress</h1>
+        <p class="page-desc">Track completion across all 7 stages. Tasks are saved automatically in your browser.</p>
+      </div>
+      <div class="overall-bar" style="margin-bottom:1.5rem">
+        <div class="overall-label"><span>Stage Completion</span><span id="stage-pct">0%</span></div>
+        <div id="stage-bars"></div>
+      </div>
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="info-card-title" style="color:var(--green)">✅ Completed Tasks</div>
+          <div id="done-list" style="font-size:.78rem;color:var(--text3)">No tasks completed yet. Start working through the stages!</div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-title" style="color:var(--amber)">⏳ Pending</div>
+          <div id="pending-count" style="font-size:.78rem;color:var(--text3)">All tasks pending.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ STAGE 1: STRATEGY ══════ -->
+    <div class="section" id="section-s1">
+      <div class="page-header">
+        <div class="page-eyebrow">Stage 1 of 7 · Est. 3–5 hours</div>
+        <h1 class="page-title">🎯 Strategy & Positioning</h1>
+        <p class="page-desc">Before posting or reaching out to anyone, define exactly who you help, what problem you solve, and why someone should choose you.</p>
+      </div>
+      <div class="tab-row" id="tabs-s1">
+        <button class="tab-btn active" onclick="switchTab('s1','objectives')">Objectives</button>
+        <button class="tab-btn" onclick="switchTab('s1','tasks')">Tasks</button>
+        <button class="tab-btn" onclick="switchTab('s1','tools')">AI Tools</button>
+        <button class="tab-btn" onclick="switchTab('s1','prompts')">Prompts</button>
+        <button class="tab-btn" onclick="switchTab('s1','tips')">Best Practices</button>
+        <button class="tab-btn" onclick="switchTab('s1','output')">Expected Output</button>
+      </div>
+      <div class="tab-pane active" id="tab-s1-objectives">
+        <p class="block-title">Objectives</p>
+        <div class="objective-list">
+          <div class="obj-item"><span class="obj-icon">🎯</span>Define your niche and ideal client profile (ICP) with laser precision</div>
+          <div class="obj-item"><span class="obj-icon">💡</span>Craft a unique value proposition (UVP) that differentiates you</div>
+          <div class="obj-item"><span class="obj-icon">📣</span>Create a one-liner pitch you can use across DMs, emails, and bios</div>
+          <div class="obj-item"><span class="obj-icon">🗺️</span>Map your service offerings to specific client pain points</div>
+          <div class="obj-item"><span class="obj-icon">💰</span>Set pricing strategy aligned with your target market</div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s1-tasks">
+        <p class="block-title">Action Tasks</p>
+        <div class="task-list" id="tasks-s1">
+          <div class="task-item" onclick="toggleTask(this,'s1')"><div class="task-cb"></div><div class="task-text">Write down your top 3 skills and the specific outcomes you deliver (not just what you do)</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s1')"><div class="task-cb"></div><div class="task-text">Identify your niche: Industry + Role + Problem (e.g. "I help e-commerce brands reduce cart abandonment")</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s1')"><div class="task-cb"></div><div class="task-text">Write your Ideal Client Profile: describe their industry, size, budget, pain points, goals</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s1')"><div class="task-cb"></div><div class="task-text">Draft 3 variations of your one-liner pitch (for DM, email subject line, and bio)</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s1')"><div class="task-cb"></div><div class="task-text">List 5 specific pain points your ideal client faces daily</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s1')"><div class="task-cb"></div><div class="task-text">Define your service packages and pricing tiers (starter / standard / premium)</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s1')"><div class="task-cb"></div><div class="task-text">Research 3 competitors — note what they do well and where the gap is</div></div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s1-tools">
+        <p class="block-title">Best AI Tools for Strategy</p>
+        <div class="tools-grid">
+          <div class="tool-card recommended"><div class="tool-rec-badge">⭐ Top Pick</div><div class="tool-name">Claude / ChatGPT</div><div class="tool-category">Strategy & Copywriting AI</div><div class="tool-why">Best for brainstorming your UVP, crafting pitch variations, and refining your positioning with detailed back-and-forth prompting.</div><div class="tool-tags"><span class="tool-tag">Free+</span><span class="tool-tag">Positioning</span><span class="tool-tag">Copywriting</span></div></div>
+          <div class="tool-card"><div class="tool-name">Notion AI</div><div class="tool-category">Strategy Documentation</div><div class="tool-why">Organize your ICP, UVP, service packages, and pitch variations in one AI-enhanced workspace.</div><div class="tool-tags"><span class="tool-tag">$10/mo</span><span class="tool-tag">Organization</span></div></div>
+          <div class="tool-card"><div class="tool-name">Perplexity AI</div><div class="tool-category">Market Research</div><div class="tool-why">Research competitors, industry pain points, and pricing benchmarks with cited, real-time results.</div><div class="tool-tags"><span class="tool-tag">Free+</span><span class="tool-tag">Research</span></div></div>
+          <div class="tool-card"><div class="tool-name">Copy.ai</div><div class="tool-category">Positioning Copy</div><div class="tool-why">Generate multiple pitch variations fast using templates built specifically for freelance service positioning.</div><div class="tool-tags"><span class="tool-tag">Free+</span><span class="tool-tag">Copy</span></div></div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s1-prompts">
+        <p class="block-title">AI Prompt Examples</p>
+        <div class="prompt-box">
+          <div class="prompt-label">🎯 Niche Definition Prompt</div>
+          <div class="prompt-text">I am a freelance [YOUR SKILL] with [X] years of experience. I want to niche down to attract better clients. My strongest skills are [SKILL 1, 2, 3]. Help me identify 5 specific niche markets where these skills are highly valuable, and for each one: (1) describe the ideal client, (2) the pain point I solve, (3) a compelling one-liner pitch, (4) estimated budget range these clients typically have.</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+        <div class="prompt-box">
+          <div class="prompt-label">💡 UVP Generator Prompt</div>
+          <div class="prompt-text">Create 5 unique value propositions for a freelance [SERVICE] who specializes in helping [TARGET CLIENT] achieve [OUTCOME]. Each UVP should: be under 15 words, focus on the result not the process, avoid generic terms like "high quality" or "experienced", and be suitable for an Instagram bio or cold DM opener.</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+        <div class="prompt-box">
+          <div class="prompt-label">🔍 Competitor Analysis Prompt</div>
+          <div class="prompt-text">Analyze the positioning of freelance [YOUR NICHE] consultants. What pain points do they typically address? What promises do they make? What are the gaps in their messaging that I could fill to stand out? Give me 3 differentiation angles I could own.</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s1-tips">
+        <p class="block-title">Best Practices & Common Mistakes</p>
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-card-title" style="color:var(--green)">✅ Best Practices</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Niche down — "I help everyone" wins no one</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Position around outcomes, not deliverables</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Speak your client's language, not industry jargon</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Test 2–3 positioning angles before committing</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Price based on value delivered, not hours spent</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-title" style="color:var(--rose)">❌ Common Mistakes</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Listing skills instead of outcomes in your pitch</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Targeting too broad an audience (everyone is no one)</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Skipping this stage and going straight to posting</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Copying competitors' positioning exactly</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Underpricing to "start getting clients"</div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s1-output">
+        <p class="block-title">Expected Outputs</p>
+        <div class="output-row">
+          <span class="output-badge"><span class="ob-icon">📄</span>Ideal Client Profile Doc</span>
+          <span class="output-badge"><span class="ob-icon">💬</span>3 Pitch Variations</span>
+          <span class="output-badge"><span class="ob-icon">🎯</span>Your Niche Statement</span>
+          <span class="output-badge"><span class="ob-icon">💰</span>Pricing Tiers</span>
+          <span class="output-badge"><span class="ob-icon">📋</span>Service Package Descriptions</span>
+          <span class="output-badge"><span class="ob-icon">⚡</span>One-Liner Bio</span>
+        </div>
+        <div style="margin-top:1.25rem">
+          <p class="block-title">Efficiency Tips</p>
+          <div class="info-item" style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:.75rem;margin-bottom:.5rem"><span class="info-bullet">⚡</span>Use Claude to generate 10 ICP variations in 5 minutes, then pick the best one</div>
+          <div class="info-item" style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:.75rem"><span class="info-bullet">⚡</span>Share your pitch draft with 3 trusted people and ask "would you hire someone who says this?"</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ STAGE 2: AUDIENCE RESEARCH ══════ -->
+    <div class="section" id="section-s2">
+      <div class="page-header">
+        <div class="page-eyebrow">Stage 2 of 7 · Est. 4–6 hours</div>
+        <h1 class="page-title">🔍 Audience Research</h1>
+        <p class="page-desc">Find exactly where your ideal clients hang out on Facebook and Instagram, what content they engage with, and what language they use to describe their problems.</p>
+      </div>
+      <div class="tab-row" id="tabs-s2">
+        <button class="tab-btn active" onclick="switchTab('s2','objectives')">Objectives</button>
+        <button class="tab-btn" onclick="switchTab('s2','tasks')">Tasks</button>
+        <button class="tab-btn" onclick="switchTab('s2','tools')">AI Tools</button>
+        <button class="tab-btn" onclick="switchTab('s2','prompts')">Prompts</button>
+        <button class="tab-btn" onclick="switchTab('s2','tips')">Best Practices</button>
+        <button class="tab-btn" onclick="switchTab('s2','output')">Expected Output</button>
+      </div>
+      <div class="tab-pane active" id="tab-s2-objectives">
+        <div class="objective-list">
+          <div class="obj-item"><span class="obj-icon">👥</span>Build a list of 100+ qualified prospects across Facebook and Instagram</div>
+          <div class="obj-item"><span class="obj-icon">📊</span>Identify the top 10 Facebook Groups your ideal clients are active in</div>
+          <div class="obj-item"><span class="obj-icon">💬</span>Collect exact phrases your clients use to describe their pain points</div>
+          <div class="obj-item"><span class="obj-icon">🔎</span>Understand what content performs best in your niche</div>
+          <div class="obj-item"><span class="obj-icon">📧</span>Build a cold email prospect list with verified emails</div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s2-tasks">
+        <div class="task-list" id="tasks-s2">
+          <div class="task-item" onclick="toggleTask(this,'s2')"><div class="task-cb"></div><div class="task-text">Search Facebook for 10+ groups where your ICP is active (use keywords from their job title/industry)</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s2')"><div class="task-cb"></div><div class="task-text">Join 5 most relevant Facebook Groups and observe for 3 days before posting</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s2')"><div class="task-cb"></div><div class="task-text">Collect 20 posts where people are asking for help / complaining — screenshot the exact phrases</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s2')"><div class="task-cb"></div><div class="task-text">Find 20 Instagram accounts of your ideal clients — save their profiles</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s2')"><div class="task-cb"></div><div class="task-text">Use Apollo.io or Hunter.io to build a list of 100 prospects with verified emails</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s2')"><div class="task-cb"></div><div class="task-text">Study top 5 competitors' pages — note what posts get the most engagement</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s2')"><div class="task-cb"></div><div class="task-text">Create a spreadsheet: Name | Platform | Email | Pain Point | Notes | Status</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s2')"><div class="task-cb"></div><div class="task-text">Use AI to analyze collected pain point phrases and group them into 5 core themes</div></div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s2-tools">
+        <p class="block-title">Best AI Tools for Audience Research</p>
+        <div class="tools-grid">
+          <div class="tool-card recommended"><div class="tool-rec-badge">⭐ Top Pick</div><div class="tool-name">Apollo.io</div><div class="tool-category">Prospect Database</div><div class="tool-why">Find and verify emails of decision-makers with filters for industry, job title, company size. Best prospecting tool for cold email.</div><div class="tool-tags"><span class="tool-tag">Free (50/mo)</span><span class="tool-tag">Email Finder</span></div></div>
+          <div class="tool-card recommended"><div class="tool-rec-badge">⭐ Top Pick</div><div class="tool-name">Hunter.io</div><div class="tool-category">Email Finder</div><div class="tool-why">Find verified emails for any domain. Essential for building a clean cold email prospect list.</div><div class="tool-tags"><span class="tool-tag">Free (25/mo)</span><span class="tool-tag">Email</span></div></div>
+          <div class="tool-card"><div class="tool-name">Claude / ChatGPT</div><div class="tool-category">Pain Point Analysis</div><div class="tool-why">Paste in 20 comments/posts from your audience and ask AI to identify patterns, language, and emotional triggers.</div><div class="tool-tags"><span class="tool-tag">Free+</span><span class="tool-tag">Analysis</span></div></div>
+          <div class="tool-card"><div class="tool-name">SparkToro</div><div class="tool-category">Audience Intelligence</div><div class="tool-why">Discover where your audience spends time online, which accounts they follow, and what phrases they use.</div><div class="tool-tags"><span class="tool-tag">$50/mo</span><span class="tool-tag">Insights</span></div></div>
+          <div class="tool-card"><div class="tool-name">PhantomBuster</div><div class="tool-category">Data Scraping</div><div class="tool-why">Automate extraction of group members, page followers, and post commenters from Facebook and Instagram.</div><div class="tool-tags"><span class="tool-tag">$56/mo</span><span class="tool-tag">Automation</span></div></div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s2-prompts">
+        <div class="prompt-box">
+          <div class="prompt-label">👥 Pain Point Extraction Prompt</div>
+          <div class="prompt-text">Here are 20 posts/comments from my target audience (paste them below). Analyze these and: (1) identify the top 5 recurring pain points using their exact language, (2) what emotions are driving these complaints, (3) what outcome do they most want, (4) give me 5 hook phrases I can use in content or outreach that would immediately resonate with them.
+
+[PASTE AUDIENCE POSTS HERE]</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+        <div class="prompt-box">
+          <div class="prompt-label">🔍 Prospect List Prompt</div>
+          <div class="prompt-text">I'm a freelance [YOUR SERVICE] targeting [NICHE]. Give me: (1) 10 specific Facebook Group names I should search for where these clients are active, (2) 10 Instagram hashtags they follow, (3) 5 types of businesses I should search in Apollo.io with exact job titles to target, (4) 5 trigger events that indicate they need my service right now (e.g. new hire, funding round, product launch).</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s2-tips">
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-card-title" style="color:var(--green)">✅ Best Practices</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Use the exact words your audience uses — not your words</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Prioritize warm prospects (those who've commented on competitor pages)</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Verify emails before sending — protects sender reputation</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Track every prospect in a CRM or spreadsheet from day one</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-title" style="color:var(--rose)">❌ Common Mistakes</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Targeting anyone who "might" need your service</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Buying email lists (destroys deliverability)</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Not recording where each prospect came from</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Skipping Facebook Groups — they're goldmines for warm leads</div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s2-output">
+        <div class="output-row">
+          <span class="output-badge"><span class="ob-icon">📊</span>100+ Prospect Spreadsheet</span>
+          <span class="output-badge"><span class="ob-icon">💬</span>Pain Point Language Bank</span>
+          <span class="output-badge"><span class="ob-icon">👥</span>5 FB Groups to Monitor</span>
+          <span class="output-badge"><span class="ob-icon">📧</span>Verified Email List</span>
+          <span class="output-badge"><span class="ob-icon">📱</span>Instagram Target List</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ STAGE 3: CONTENT CREATION ══════ -->
+    <div class="section" id="section-s3">
+      <div class="page-header">
+        <div class="page-eyebrow">Stage 3 of 7 · Ongoing — 3–4 hrs/week</div>
+        <h1 class="page-title">✍️ Content Creation</h1>
+        <p class="page-desc">Create content that positions you as an expert, attracts your ideal clients, and warms up cold prospects before outreach. Content = trust at scale.</p>
+      </div>
+      <div class="tab-row" id="tabs-s3">
+        <button class="tab-btn active" onclick="switchTab('s3','objectives')">Objectives</button>
+        <button class="tab-btn" onclick="switchTab('s3','tasks')">Tasks</button>
+        <button class="tab-btn" onclick="switchTab('s3','tools')">AI Tools</button>
+        <button class="tab-btn" onclick="switchTab('s3','prompts')">Prompts</button>
+        <button class="tab-btn" onclick="switchTab('s3','tips')">Best Practices</button>
+        <button class="tab-btn" onclick="switchTab('s3','output')">Content Calendar</button>
+      </div>
+      <div class="tab-pane active" id="tab-s3-objectives">
+        <div class="objective-list">
+          <div class="obj-item"><span class="obj-icon">📢</span>Post 4–5x per week consistently across Facebook Page and Instagram</div>
+          <div class="obj-item"><span class="obj-icon">🎓</span>Establish authority through educational, insight-driven content</div>
+          <div class="obj-item"><span class="obj-icon">💰</span>Create conversion content that drives DM enquiries directly</div>
+          <div class="obj-item"><span class="obj-icon">♻️</span>Build a content system that takes less than 3 hours/week</div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s3-tasks">
+        <div class="task-list" id="tasks-s3">
+          <div class="task-item" onclick="toggleTask(this,'s3')"><div class="task-cb"></div><div class="task-text">Create a content calendar for the next 4 weeks (use AI to generate 30 post ideas in one session)</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s3')"><div class="task-cb"></div><div class="task-text">Design 5 content pillars: Education | Social Proof | Behind the Scenes | Client Pain Points | Offers</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s3')"><div class="task-cb"></div><div class="task-text">Write and schedule first 2 weeks of posts using Buffer or Meta Business Suite</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s3')"><div class="task-cb"></div><div class="task-text">Create 3 lead-magnet style posts (give real value, end with soft CTA)</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s3')"><div class="task-cb"></div><div class="task-text">Design post graphics using Canva AI — maintain consistent brand colors/fonts</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s3')"><div class="task-cb"></div><div class="task-text">Create 1 "results" post showing a client win (even from a past project)</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s3')"><div class="task-cb"></div><div class="task-text">Post 1 Instagram Reel or Facebook Video weekly (30–60 seconds, no fancy editing needed)</div></div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s3-tools">
+        <p class="block-title">AI Tools for Content Creation</p>
+        <div class="tools-grid">
+          <div class="tool-card recommended"><div class="tool-rec-badge">⭐ Top Pick</div><div class="tool-name">Claude / ChatGPT</div><div class="tool-category">Content Writing</div><div class="tool-why">Generate entire month's worth of posts, captions, hooks, and CTAs in one session. Best for long-form value posts and carousel scripts.</div><div class="tool-tags"><span class="tool-tag">Free+</span><span class="tool-tag">Writing</span></div></div>
+          <div class="tool-card recommended"><div class="tool-rec-badge">⭐ Top Pick</div><div class="tool-name">Canva AI</div><div class="tool-category">Visual Design</div><div class="tool-why">Magic Write + AI image generation + templates. Create professional-looking posts in minutes. Essential for solo freelancers.</div><div class="tool-tags"><span class="tool-tag">Free+</span><span class="tool-tag">Design</span></div></div>
+          <div class="tool-card"><div class="tool-name">Buffer</div><div class="tool-category">Scheduling</div><div class="tool-why">Schedule all your posts for the week in one Sunday session. AI assistant helps optimize posting times.</div><div class="tool-tags"><span class="tool-tag">Free (3 channels)</span><span class="tool-tag">Scheduling</span></div></div>
+          <div class="tool-card"><div class="tool-name">Descript</div><div class="tool-category">Video Editing</div><div class="tool-why">Edit videos by editing text — perfect for creating Reels and Facebook videos without editing experience.</div><div class="tool-tags"><span class="tool-tag">Free+</span><span class="tool-tag">Video</span></div></div>
+          <div class="tool-card"><div class="tool-name">Predis.ai</div><div class="tool-category">AI Post Generator</div><div class="tool-why">Generate complete social media posts (image + caption) from a keyword. Built specifically for social media content.</div><div class="tool-tags"><span class="tool-tag">Free+</span><span class="tool-tag">Posts</span></div></div>
+          <div class="tool-card"><div class="tool-name">Opus Clip</div><div class="tool-category">Video Repurposing</div><div class="tool-why">Turn long videos into short viral clips automatically using AI. Repurpose one video into 10 pieces of content.</div><div class="tool-tags"><span class="tool-tag">Free+</span><span class="tool-tag">Repurpose</span></div></div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s3-prompts">
+        <div class="prompt-box">
+          <div class="prompt-label">📅 30-Day Content Calendar Prompt</div>
+          <div class="prompt-text">I'm a freelance [YOUR SERVICE] targeting [YOUR NICHE]. Create a 30-day social media content plan for Facebook and Instagram with: 5 posts per week, varying across these pillars: (1) Educational tips, (2) Client pain points + solution, (3) Social proof / results, (4) Personal story / behind the scenes, (5) Direct offer with CTA. For each post give me: day, pillar type, hook sentence, main point, and CTA. Make the hooks scroll-stopping and written in conversational language.</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+        <div class="prompt-box">
+          <div class="prompt-label">🪝 Hook Generator Prompt</div>
+          <div class="prompt-text">Write 20 scroll-stopping first lines (hooks) for social media posts about [TOPIC]. My audience is [NICHE]. The hooks should: create curiosity or urgency, be under 10 words, avoid clickbait, and feel like something a real person would say. Mix formats: questions, bold statements, counter-intuitive observations, and "here's what nobody tells you" style openers.</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+        <div class="prompt-box">
+          <div class="prompt-label">🎯 Conversion Post Prompt</div>
+          <div class="prompt-text">Write a Facebook / Instagram post that educates my audience about [PAIN POINT] and naturally leads them to want to DM me. Structure: Hook → The Problem (in their language) → The Hidden Reason → The Solution Framework → Proof or example → Soft CTA asking them to DM "FREE" or comment a keyword. Keep it under 200 words. No hard selling. Sound human.</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s3-tips">
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-card-title" style="color:var(--green)">✅ Best Practices</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Batch create content in 1 session/week — don't post daily from scratch</div>
+            <div class="info-item"><span class="good-bullet">✓</span>First 3 lines decide whether they keep reading — spend 50% of writing time on the hook</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Use 80% value, 20% offer — don't pitch every post</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Reply to every comment within 2 hours — boosts reach massively</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Repurpose: one idea → FB post → IG carousel → Story → Reel script</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-title" style="color:var(--rose)">❌ Common Mistakes</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Posting inconsistently — 3 days then silent for 2 weeks</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Writing about what YOU do vs what THEY get</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Using stock photos — real photos get 3× more engagement</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>No CTA at the end of posts</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Over-polished corporate content — be human, be specific</div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s3-output">
+        <p class="block-title">Weekly Content Calendar Template</p>
+        <div style="overflow-x:auto">
+          <table class="comp-table">
+            <thead><tr><th>Day</th><th>Pillar</th><th>Format</th><th>Platform</th><th>Goal</th></tr></thead>
+            <tbody>
+              <tr><td>Monday</td><td>Education</td><td>Carousel / List Post</td><td>FB + IG</td><td>Awareness + Saves</td></tr>
+              <tr><td>Tuesday</td><td>Pain Point</td><td>Story-style text post</td><td>Facebook</td><td>Comments + DMs</td></tr>
+              <tr><td>Wednesday</td><td>Social Proof</td><td>Graphic + caption</td><td>FB + IG</td><td>Trust building</td></tr>
+              <tr><td>Thursday</td><td>Personal Story</td><td>Video Reel (30–60s)</td><td>Instagram</td><td>Reach + Followers</td></tr>
+              <tr><td>Friday</td><td>Soft Offer</td><td>Text post with CTA</td><td>FB + IG</td><td>Leads + DMs</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ STAGE 4: PROFILE OPTIMIZATION ══════ -->
+    <div class="section" id="section-s4">
+      <div class="page-header">
+        <div class="page-eyebrow">Stage 4 of 7 · Est. 3–4 hours</div>
+        <h1 class="page-title">📣 Page & Profile Optimization</h1>
+        <p class="page-desc">Your Facebook Page and Instagram profile are your digital storefront. Optimize them so that when prospects visit after seeing your content or DM, they immediately understand your value.</p>
+      </div>
+      <div class="tab-row" id="tabs-s4">
+        <button class="tab-btn active" onclick="switchTab('s4','tasks')">Tasks</button>
+        <button class="tab-btn" onclick="switchTab('s4','tools')">AI Tools</button>
+        <button class="tab-btn" onclick="switchTab('s4','prompts')">Prompts</button>
+        <button class="tab-btn" onclick="switchTab('s4','tips')">Checklist</button>
+      </div>
+      <div class="tab-pane active" id="tab-s4-tasks">
+        <div class="task-list" id="tasks-s4">
+          <div class="task-item" onclick="toggleTask(this,'s4')"><div class="task-cb"></div><div class="task-text">Facebook Page: Update name to include your service keyword (e.g. "Ali Khan | Social Media Consultant")</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s4')"><div class="task-cb"></div><div class="task-text">Write a keyword-rich Facebook Page description that explains who you help and what result you deliver</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s4')"><div class="task-cb"></div><div class="task-text">Add a clear Call-To-Action button on your Facebook Page (Book Now / Contact / Send Message)</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s4')"><div class="task-cb"></div><div class="task-text">Create a professional Facebook cover image that communicates your value proposition visually</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s4')"><div class="task-cb"></div><div class="task-text">Instagram Bio: Line 1 = Who you help | Line 2 = What result | Line 3 = CTA with link</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s4')"><div class="task-cb"></div><div class="task-text">Set up Instagram link-in-bio (Linktree or Beacons) with: Portfolio, Book a Call, Contact Form</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s4')"><div class="task-cb"></div><div class="task-text">Create 5 Instagram Highlights: Services | Results | About | Testimonials | FAQ</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s4')"><div class="task-cb"></div><div class="task-text">Set up Facebook auto-reply for new DMs (instant response increases conversion by 30%)</div></div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s4-tools">
+        <div class="tools-grid">
+          <div class="tool-card recommended"><div class="tool-rec-badge">⭐ Top Pick</div><div class="tool-name">Canva AI</div><div class="tool-category">Profile Graphics</div><div class="tool-why">Create cover photos, highlight covers, and profile picture frames in minutes using pre-built templates and AI-generated backgrounds.</div><div class="tool-tags"><span class="tool-tag">Free+</span></div></div>
+          <div class="tool-card"><div class="tool-name">Beacons.ai</div><div class="tool-category">Link-in-Bio</div><div class="tool-why">AI-powered link-in-bio with built-in booking, portfolio display, and lead capture forms. Better than Linktree for freelancers.</div><div class="tool-tags"><span class="tool-tag">Free+</span></div></div>
+          <div class="tool-card"><div class="tool-name">Claude / ChatGPT</div><div class="tool-category">Bio Copywriting</div><div class="tool-why">Generate and refine your bio, page description, and auto-reply message to maximize profile-to-DM conversion.</div><div class="tool-tags"><span class="tool-tag">Free+</span></div></div>
+          <div class="tool-card"><div class="tool-name">Meta Business Suite</div><div class="tool-category">Auto-Reply Setup</div><div class="tool-why">Set up instant auto-replies, away messages, and FAQ responses for your Facebook Page and Instagram DMs.</div><div class="tool-tags"><span class="tool-tag">Free</span></div></div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s4-prompts">
+        <div class="prompt-box">
+          <div class="prompt-label">📱 Instagram Bio Prompt</div>
+          <div class="prompt-text">Write 5 Instagram bio variations for a freelance [SERVICE] who helps [NICHE] achieve [RESULT]. Each bio must be under 150 characters, have 3 lines: (1) who I help + what I do, (2) specific result/outcome with a number if possible, (3) CTA with emoji. No generic phrases like "passionate" or "dedicated". Be specific and results-focused.</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+        <div class="prompt-box">
+          <div class="prompt-label">💬 DM Auto-Reply Prompt</div>
+          <div class="prompt-text">Write an auto-reply message for my Facebook/Instagram DMs. It should: (1) greet them warmly, (2) confirm I've received their message, (3) tell them I'll respond within [X hours], (4) give them something useful while they wait (a tip, a link, or a question to think about), (5) feel human not robotic. Keep it under 80 words. I am a [SERVICE] helping [NICHE].</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s4-tips">
+        <p class="block-title">Profile Optimization Checklist</p>
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-card-title" style="color:var(--blue-l)">📘 Facebook Page</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Keyword in page name</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Professional profile photo (your face, not a logo)</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Cover image with UVP text</div>
+            <div class="info-item"><span class="good-bullet">✓</span>CTA button configured</div>
+            <div class="info-item"><span class="good-bullet">✓</span>About section complete with niche keywords</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Auto-reply message set up</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Pinned post: best performing or intro post</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-title" style="color:var(--violet)">📸 Instagram</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Business account (not personal)</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Name field has keyword (searchable)</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Bio: 3-line formula complete</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Link-in-bio set up</div>
+            <div class="info-item"><span class="good-bullet">✓</span>5+ Story Highlights with covers</div>
+            <div class="info-item"><span class="good-bullet">✓</span>9+ posts on grid before outreach</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Contact email in profile</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ STAGE 5: COLD DMs ══════ -->
+    <div class="section" id="section-s5">
+      <div class="page-header">
+        <div class="page-eyebrow">Stage 5 of 7 · Daily — 45–60 min/day</div>
+        <h1 class="page-title">💬 Cold DMs & Social Outreach</h1>
+        <p class="page-desc">Send personalized, non-spammy direct messages on Facebook and Instagram that open real conversations — not pitches. The goal of a cold DM is to start a conversation, not close a sale.</p>
+      </div>
+      <div class="tab-row" id="tabs-s5">
+        <button class="tab-btn active" onclick="switchTab('s5','objectives')">Objectives</button>
+        <button class="tab-btn" onclick="switchTab('s5','tasks')">Daily Tasks</button>
+        <button class="tab-btn" onclick="switchTab('s5','tools')">AI Tools</button>
+        <button class="tab-btn" onclick="switchTab('s5','prompts')">DM Templates</button>
+        <button class="tab-btn" onclick="switchTab('s5','tips')">Best Practices</button>
+        <button class="tab-btn" onclick="switchTab('s5','output')">Metrics</button>
+      </div>
+      <div class="tab-pane active" id="tab-s5-objectives">
+        <div class="objective-list">
+          <div class="obj-item"><span class="obj-icon">💬</span>Send 10–20 personalized DMs per day across Facebook and Instagram</div>
+          <div class="obj-item"><span class="obj-icon">🤝</span>Start genuine conversations — not sales pitches</div>
+          <div class="obj-item"><span class="obj-icon">📞</span>Convert 1–3 conversations per week into discovery calls</div>
+          <div class="obj-item"><span class="obj-icon">🔥</span>Warm up cold prospects through engagement before DMing</div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s5-tasks">
+        <div class="task-list" id="tasks-s5">
+          <div class="task-item" onclick="toggleTask(this,'s5')"><div class="task-cb"></div><div class="task-text">Engage (like + meaningful comment) on 10 target accounts' posts before DMing</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s5')"><div class="task-cb"></div><div class="task-text">Send 10–15 personalized DMs on Instagram (use Comment → DM flow for warmer approach)</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s5')"><div class="task-cb"></div><div class="task-text">Send 5–10 Facebook DMs to Group members who posted about problems you solve</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s5')"><div class="task-cb"></div><div class="task-text">Follow up on all unanswered DMs from 3–5 days ago (one follow-up only)</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s5')"><div class="task-cb"></div><div class="task-text">Update CRM/spreadsheet with all DM statuses: Sent | Replied | Call Booked | Not Interested</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s5')"><div class="task-cb"></div><div class="task-text">Post a valuable comment in 2–3 Facebook Groups daily (builds visibility + warm leads)</div></div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s5-tools">
+        <div class="tools-grid">
+          <div class="tool-card recommended"><div class="tool-rec-badge">⭐ Top Pick</div><div class="tool-name">ManyChat</div><div class="tool-category">DM Automation</div><div class="tool-why">Automate Instagram DM flows triggered by story replies, post comments, or keywords. Perfect for "comment FREE to get the guide" campaigns.</div><div class="tool-tags"><span class="tool-tag">Free+</span><span class="tool-tag">Automation</span></div></div>
+          <div class="tool-card"><div class="tool-name">Claude / ChatGPT</div><div class="tool-category">DM Personalizer</div><div class="tool-why">Paste a prospect's bio/post and generate a hyper-personalized opening DM in seconds. Never send a generic message again.</div><div class="tool-tags"><span class="tool-tag">Free+</span></div></div>
+          <div class="tool-card"><div class="tool-name">Expandi.io</div><div class="tool-category">Outreach Automation</div><div class="tool-why">Automate and sequence cold DM campaigns with smart personalization and safe daily limits to avoid account restrictions.</div><div class="tool-tags"><span class="tool-tag">$99/mo</span></div></div>
+          <div class="tool-card"><div class="tool-name">Notion / Sheets</div><div class="tool-category">DM Tracker</div><div class="tool-why">Track every DM sent, response received, and follow-up needed. Discipline in tracking = higher conversion rates.</div><div class="tool-tags"><span class="tool-tag">Free</span></div></div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s5-prompts">
+        <p class="block-title">AI-Generated DM Templates</p>
+        <div class="prompt-box">
+          <div class="prompt-label">💬 Cold DM — Comment-to-DM (Warmest)</div>
+          <div class="prompt-text">Hey [NAME] — loved your comment on [THEIR POST/GROUP POST], especially the part about [SPECIFIC DETAIL]. Curious — are you currently [FACING THE PROBLEM YOU SOLVE]? I've been helping [NICHE] with exactly this and had some thoughts. No pitch, just wanted to share what's worked. Worth a quick chat?</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+        <div class="prompt-box">
+          <div class="prompt-label">💬 Cold DM — Instagram Profile Visit</div>
+          <div class="prompt-text">Hey [NAME]! Came across your page and noticed you're doing [WHAT THEY DO] — really like how you [SPECIFIC GENUINE COMPLIMENT]. Quick question — are you currently handling [SPECIFIC PAIN POINT] yourself or do you have someone helping with that? Asking because I've been working with [NICHE] on this exact thing and the results have been really solid.</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+        <div class="prompt-box">
+          <div class="prompt-label">💬 Facebook Group DM — Problem Post Response</div>
+          <div class="prompt-text">Hey [NAME] — saw your post in [GROUP NAME] about [THEIR PROBLEM]. That's a really common challenge in [NICHE]. I've actually put together a quick [RESOURCE/STRATEGY] that's helped a few people with this exact issue — happy to share it with you if you're open to it? No strings attached.</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+        <div class="prompt-box">
+          <div class="prompt-label">🤖 AI Personalization Prompt</div>
+          <div class="prompt-text">Here is a prospect's Instagram bio and recent posts: [PASTE BIO + 2–3 POSTS]. Write a personalized cold DM opener (first 2 sentences only) that: references something specific from their content, feels genuinely curious not salesy, and naturally leads into a conversation about [THE PROBLEM I SOLVE]. Do not mention my services in the first message.</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s5-tips">
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-card-title" style="color:var(--green)">✅ DM Best Practices</div>
+            <div class="info-item"><span class="good-bullet">✓</span>First message = start a conversation, NOT pitch your service</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Engage on their content for 2–3 days before DMing (warm approach)</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Reference something specific — shows you're not copy-pasting</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Keep first DM under 3 sentences</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Send max 20 DMs/day on Instagram (avoid restriction)</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Follow up exactly once after 4–5 days if no reply</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-title" style="color:var(--rose)">❌ DM Mistakes to Avoid</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>"Hi, I'm a [SERVICE], I can help you grow..." — instant delete</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Copy-pasting the same DM to 50 people</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Pitching in the first message</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Sending DMs without engaging first</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Following up more than once</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Ignoring replies for more than 24 hours</div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s5-output">
+        <p class="block-title">Weekly DM Metrics to Track</p>
+        <div style="overflow-x:auto">
+          <table class="comp-table">
+            <thead><tr><th>Metric</th><th>Target</th><th>Good</th><th>Needs Work</th></tr></thead>
+            <tbody>
+              <tr><td>DMs sent/day</td><td>15–20</td><td class="best">15+</td><td class="bad">&lt;5</td></tr>
+              <tr><td>Reply rate</td><td>10–15%</td><td class="best">15%+</td><td class="bad">&lt;5%</td></tr>
+              <tr><td>Conversation → Call</td><td>5–10%</td><td class="best">10%+</td><td class="bad">&lt;2%</td></tr>
+              <tr><td>Calls booked/week</td><td>2–3</td><td class="best">3+</td><td class="bad">0–1</td></tr>
+              <tr><td>Follow-up sent</td><td>100% of unreplied</td><td class="best">All</td><td class="ok">Some</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ STAGE 6: COLD EMAIL ══════ -->
+    <div class="section" id="section-s6">
+      <div class="page-header">
+        <div class="page-eyebrow">Stage 6 of 7 · Daily — 30–45 min setup, then automated</div>
+        <h1 class="page-title">📧 Cold Email Campaigns</h1>
+        <p class="page-desc">Cold email is still the highest ROI outreach channel when done right. Build hyper-personalized sequences that feel human, not mass-blasted.</p>
+      </div>
+      <div class="tab-row" id="tabs-s6">
+        <button class="tab-btn active" onclick="switchTab('s6','objectives')">Objectives</button>
+        <button class="tab-btn" onclick="switchTab('s6','tasks')">Tasks</button>
+        <button class="tab-btn" onclick="switchTab('s6','tools')">AI Tools</button>
+        <button class="tab-btn" onclick="switchTab('s6','prompts')">Email Templates</button>
+        <button class="tab-btn" onclick="switchTab('s6','tips')">Best Practices</button>
+        <button class="tab-btn" onclick="switchTab('s6','output')">Sequence Map</button>
+      </div>
+      <div class="tab-pane active" id="tab-s6-objectives">
+        <div class="objective-list">
+          <div class="obj-item"><span class="obj-icon">📧</span>Send 20–30 personalized cold emails per day to verified prospects</div>
+          <div class="obj-item"><span class="obj-icon">📈</span>Achieve 35%+ open rate and 5%+ reply rate on campaigns</div>
+          <div class="obj-item"><span class="obj-icon">🔄</span>Run 3-step automated follow-up sequences for every prospect</div>
+          <div class="obj-item"><span class="obj-icon">📞</span>Book 2+ discovery calls per week from email alone</div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s6-tasks">
+        <div class="task-list" id="tasks-s6">
+          <div class="task-item" onclick="toggleTask(this,'s6')"><div class="task-cb"></div><div class="task-text">Set up a dedicated outreach email (not your main email) — e.g. yourname@yourdomain.com</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s6')"><div class="task-cb"></div><div class="task-text">Warm up your email domain for 2 weeks using Mailwarm or Lemwarm before sending</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s6')"><div class="task-cb"></div><div class="task-text">Import 100 verified prospect emails into Instantly or Lemlist</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s6')"><div class="task-cb"></div><div class="task-text">Write Email 1 (initial outreach), Email 2 (follow-up), Email 3 (final breakup email)</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s6')"><div class="task-cb"></div><div class="task-text">Set up personalization variables: {{firstName}}, {{company}}, {{pain point}}</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s6')"><div class="task-cb"></div><div class="task-text">A/B test 2 subject lines on first 20 sends — pick winner for the rest</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s6')"><div class="task-cb"></div><div class="task-text">Check replies daily and respond within 2 hours during business hours</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s6')"><div class="task-cb"></div><div class="task-text">Review weekly stats: open rate, reply rate, click rate — optimize underperforming sequences</div></div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s6-tools">
+        <div class="tools-grid">
+          <div class="tool-card recommended"><div class="tool-rec-badge">⭐ Top Pick</div><div class="tool-name">Instantly.ai</div><div class="tool-category">Cold Email Automation</div><div class="tool-why">Best cold email tool for freelancers. Unlimited email accounts, built-in warmup, AI personalization, and sequence automation. $37/mo.</div><div class="tool-tags"><span class="tool-tag">$37/mo</span><span class="tool-tag">Automation</span></div></div>
+          <div class="tool-card recommended"><div class="tool-rec-badge">⭐ Top Pick</div><div class="tool-name">Apollo.io</div><div class="tool-category">Prospecting + Email</div><div class="tool-why">Find prospects AND send cold email sequences in one tool. Built-in email finder + sequencer + AI writing assistant.</div><div class="tool-tags"><span class="tool-tag">Free+</span><span class="tool-tag">All-in-one</span></div></div>
+          <div class="tool-card"><div class="tool-name">Lemlist</div><div class="tool-category">Personalized Email</div><div class="tool-why">Add personalized images and videos to cold emails automatically. Dramatically improves reply rates for creative niches.</div><div class="tool-tags"><span class="tool-tag">$59/mo</span></div></div>
+          <div class="tool-card"><div class="tool-name">Lemwarm / Mailwarm</div><div class="tool-category">Email Warmup</div><div class="tool-why">Automatically warm up your email domain before sending campaigns. Prevents landing in spam. Non-negotiable for cold email.</div><div class="tool-tags"><span class="tool-tag">$29/mo</span></div></div>
+          <div class="tool-card"><div class="tool-name">Claude / ChatGPT</div><div class="tool-category">Email Copywriting</div><div class="tool-why">Generate highly personalized cold email copy, subject line variations, and full 3-email sequences in minutes.</div><div class="tool-tags"><span class="tool-tag">Free+</span></div></div>
+          <div class="tool-card"><div class="tool-name">NeverBounce</div><div class="tool-category">Email Verification</div><div class="tool-why">Clean your email list before sending. Remove invalid/risky emails to protect your sender score.</div><div class="tool-tags"><span class="tool-tag">Pay per use</span></div></div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s6-prompts">
+        <p class="block-title">Cold Email Templates</p>
+        <div class="prompt-box">
+          <div class="prompt-label">📧 Email 1 — Initial Outreach</div>
+          <div class="prompt-text">Subject: Quick question about [THEIR COMPANY/WORK]
+
+Hey {{firstName}},
+
+Noticed you're running [WHAT THEY DO] at [COMPANY] — specifically your [SOMETHING SPECIFIC YOU NOTICED].
+
+Quick question: are you currently [PAIN POINT FRAMED AS QUESTION]?
+
+I've been helping [SIMILAR BUSINESSES] solve this by [VERY BRIEF METHOD], and most see [SPECIFIC RESULT] within [TIMEFRAME].
+
+Worth a 15-min call this week to see if it could work for you?
+
+[YOUR NAME]</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+        <div class="prompt-box">
+          <div class="prompt-label">📧 Email 2 — Follow-Up (Day 4)</div>
+          <div class="prompt-text">Subject: Re: Quick question about [THEIR COMPANY]
+
+Hey {{firstName}},
+
+Just wanted to bump this up in case it got buried.
+
+In case it helps: [ONE SPECIFIC TIP they can use right now related to their pain point].
+
+That alone usually [SMALL RESULT]. The work I do with clients takes this much further.
+
+Still interested in that 15-min chat?
+
+[YOUR NAME]</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+        <div class="prompt-box">
+          <div class="prompt-label">📧 Email 3 — Breakup Email (Day 9)</div>
+          <div class="prompt-text">Subject: Should I close the loop?
+
+Hey {{firstName}},
+
+I don't want to keep pinging you if the timing isn't right.
+
+If [PAIN POINT] isn't a priority right now, totally understand — I'll close the loop on my end.
+
+But if it is something you'd like to tackle in the next 60 days, I'm happy to share what's working for others in [THEIR NICHE].
+
+Either way, hope [THEIR COMPANY] continues to grow!
+
+[YOUR NAME]</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+        <div class="prompt-box">
+          <div class="prompt-label">🤖 AI Email Generator Prompt</div>
+          <div class="prompt-text">Write a 3-email cold email sequence for a freelance [SERVICE] targeting [NICHE]. The prospect is a [JOB TITLE] at a [COMPANY TYPE]. Their main pain point is [PAIN POINT]. My result/proof is [SPECIFIC RESULT]. Emails should be: under 100 words each, conversational not corporate, no buzzwords, subject lines under 7 words, and end with one soft CTA. Include a "breakup" email for email 3.</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s6-tips">
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-card-title" style="color:var(--green)">✅ Cold Email Best Practices</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Subject line = curiosity, not clickbait. Under 7 words.</div>
+            <div class="info-item"><span class="good-bullet">✓</span>First line must be about THEM, not you</div>
+            <div class="info-item"><span class="good-bullet">✓</span>One CTA per email — one action only</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Plain text emails outperform HTML templates for cold outreach</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Send between 7am–10am in recipient's timezone</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Never send more than 30 emails/day per inbox when starting</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-title" style="color:var(--rose)">❌ Cold Email Killers</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>"I hope this email finds you well" — delete instantly</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Long emails — keep it under 100 words</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Talking about yourself in email 1</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Sending from a new/unwarmed domain</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>No follow-up (80% of deals happen after follow-up 2–3)</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Using unverified email lists</div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s6-output">
+        <p class="block-title">3-Step Email Sequence Map</p>
+        <div class="dtree" style="margin-bottom:1rem">
+          <div class="dtree-flow" style="flex-direction:column;gap:.5rem">
+            <div style="display:flex;align-items:center;gap:.75rem">
+              <div class="dt-box dt-question" style="max-width:none;width:100%">📧 Email 1 — Initial Outreach (Day 0): Hyper-personalized, pain-point focused, soft CTA to book a call</div>
+            </div>
+            <div style="padding-left:1rem;color:var(--text3);font-size:.75rem">⬇ If no reply in 4 days →</div>
+            <div style="display:flex;align-items:center;gap:.75rem">
+              <div class="dt-box dt-yes" style="max-width:none;width:100%">📧 Email 2 — Value Follow-Up (Day 4): Give one free tip, restate your offer, softer CTA</div>
+            </div>
+            <div style="padding-left:1rem;color:var(--text3);font-size:.75rem">⬇ If no reply in 5 more days →</div>
+            <div style="display:flex;align-items:center;gap:.75rem">
+              <div class="dt-box dt-no" style="max-width:none;width:100%">📧 Email 3 — Breakup Email (Day 9): Close the loop, leave door open, no pressure</div>
+            </div>
+            <div style="padding-left:1rem;color:var(--text3);font-size:.75rem">⬇ If they reply "not now" →</div>
+            <div style="display:flex;align-items:center;gap:.75rem">
+              <div class="dt-box dt-action" style="max-width:none;width:100%">🗓 Re-engage in 30 days with a relevant insight or case study</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ STAGE 7: NURTURE & CLOSE ══════ -->
+    <div class="section" id="section-s7">
+      <div class="page-header">
+        <div class="page-eyebrow">Stage 7 of 7 · When conversations begin</div>
+        <h1 class="page-title">🔄 Lead Nurturing & Closing</h1>
+        <p class="page-desc">Once someone replies — whether via DM or email — your job is to move them from "interested" to "ready to pay." This stage is about building trust, running a discovery call, and presenting your offer confidently.</p>
+      </div>
+      <div class="tab-row" id="tabs-s7">
+        <button class="tab-btn active" onclick="switchTab('s7','tasks')">Tasks</button>
+        <button class="tab-btn" onclick="switchTab('s7','tools')">AI Tools</button>
+        <button class="tab-btn" onclick="switchTab('s7','prompts')">Scripts & Prompts</button>
+        <button class="tab-btn" onclick="switchTab('s7','tips')">Best Practices</button>
+        <button class="tab-btn" onclick="switchTab('s7','output')">Closing Metrics</button>
+      </div>
+      <div class="tab-pane active" id="tab-s7-tasks">
+        <div class="task-list" id="tasks-s7">
+          <div class="task-item" onclick="toggleTask(this,'s7')"><div class="task-cb"></div><div class="task-text">Set up a Calendly booking link for free 20-min discovery calls</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s7')"><div class="task-cb"></div><div class="task-text">Prepare your discovery call framework: ask 5 key questions before pitching anything</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s7')"><div class="task-cb"></div><div class="task-text">Create a simple one-page proposal template (Notion or Google Docs) for quick customization</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s7')"><div class="task-cb"></div><div class="task-text">Build a "case study" slide or post from your best past project (even personal projects count)</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s7')"><div class="task-cb"></div><div class="task-text">Set up payment links via Stripe or Payoneer (for international clients)</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s7')"><div class="task-cb"></div><div class="task-text">After each call — send a follow-up within 2 hours with recap + proposal</div></div>
+          <div class="task-item" onclick="toggleTask(this,'s7')"><div class="task-cb"></div><div class="task-text">Ask every closed client for a testimonial within 2 weeks of starting work</div></div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s7-tools">
+        <div class="tools-grid">
+          <div class="tool-card recommended"><div class="tool-rec-badge">⭐ Top Pick</div><div class="tool-name">Calendly</div><div class="tool-category">Call Booking</div><div class="tool-why">Send prospects a booking link instead of going back and forth on timing. Free plan is enough for solo freelancers.</div><div class="tool-tags"><span class="tool-tag">Free+</span></div></div>
+          <div class="tool-card"><div class="tool-name">Claude / ChatGPT</div><div class="tool-category">Proposal Writing</div><div class="tool-why">Generate a customized proposal for each client in minutes based on their specific pain points discussed on the call.</div><div class="tool-tags"><span class="tool-tag">Free+</span></div></div>
+          <div class="tool-card"><div class="tool-name">Notion</div><div class="tool-category">CRM / Proposals</div><div class="tool-why">Track all leads through your pipeline stages and use it as a lightweight CRM for solo freelancers.</div><div class="tool-tags"><span class="tool-tag">Free+</span></div></div>
+          <div class="tool-card"><div class="tool-name">Loom</div><div class="tool-category">Video Proposals</div><div class="tool-why">Send a 3-min personalized video proposal after the call. Video proposals close 4× better than text ones.</div><div class="tool-tags"><span class="tool-tag">Free+</span></div></div>
+          <div class="tool-card"><div class="tool-name">Stripe / Payoneer</div><div class="tool-category">Payments</div><div class="tool-why">Accept payments professionally. Send an invoice or payment link immediately when a client says yes.</div><div class="tool-tags"><span class="tool-tag">% fee only</span></div></div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s7-prompts">
+        <div class="prompt-box">
+          <div class="prompt-label">📞 Discovery Call Framework (5 Questions)</div>
+          <div class="prompt-text">Ask these 5 questions before presenting anything:
+
+1. "What's the #1 challenge you're facing with [RELEVANT AREA] right now?"
+2. "How long has this been a problem, and what have you tried so far?"
+3. "What would solving this mean for your business in the next 6 months?"
+4. "What's stopping you from solving it yourself / with your current team?"
+5. "If we could fix this, what does success look like to you?"
+
+Then: "Based on what you've shared, here's exactly how I'd approach this for you..."</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+        <div class="prompt-box">
+          <div class="prompt-label">📄 Proposal Generator Prompt</div>
+          <div class="prompt-text">Write a one-page freelance proposal for a client who: is a [JOB TITLE] at [COMPANY TYPE], their main problem is [PAIN POINT], they want to achieve [GOAL], and their budget range is [BUDGET]. My proposed solution is [YOUR APPROACH]. Include: Executive Summary, The Problem, My Proposed Solution (3 steps), What's Included, Investment, Timeline, and Next Steps. Keep it concise, confident, and results-focused. No fluff.</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+        <div class="prompt-box">
+          <div class="prompt-label">💬 Post-Call Follow-Up Email</div>
+          <div class="prompt-text">Write a post-discovery-call follow-up email for a potential client. The call covered: [THEIR PAIN POINTS], [WHAT I PROPOSED], [AGREED NEXT STEP]. The email should: (1) open by referencing 1 specific thing they said, (2) recap the core problem and my solution in 2 sentences, (3) attach/link the proposal, (4) give a clear deadline ("I can hold this spot until [DATE]"), (5) end with an easy yes/no question. Under 120 words.</div>
+          <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s7-tips">
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-card-title" style="color:var(--green)">✅ Closing Best Practices</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Listen 70%, talk 30% on discovery calls</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Always send the proposal same day, within 2 hours</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Video proposals (Loom) close 4× better than PDFs</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Require a deposit (50%) before starting any work</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Follow up on proposals if no response after 48 hours</div>
+            <div class="info-item"><span class="good-bullet">✓</span>Collect testimonials immediately after results are delivered</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-title" style="color:var(--rose)">❌ Closing Mistakes</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Pitching before fully understanding their problem</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Sending a proposal days after the call</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Reducing price immediately when they hesitate</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Working without a contract or deposit</div>
+            <div class="info-item"><span class="warn-bullet">✗</span>Forgetting to follow up after sending the proposal</div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tab-s7-output">
+        <p class="block-title">Pipeline Conversion Funnel</p>
+        <div style="overflow-x:auto">
+          <table class="comp-table">
+            <thead><tr><th>Stage</th><th>Benchmark</th><th>Your Goal</th></tr></thead>
+            <tbody>
+              <tr><td>DMs / Emails Sent</td><td>100/week</td><td>100+ contacts/week</td></tr>
+              <tr><td>Replies Received</td><td>8–12%</td><td>8–15 replies/week</td></tr>
+              <tr><td>Discovery Calls Booked</td><td>20–30% of replies</td><td>2–4 calls/week</td></tr>
+              <tr><td>Proposals Sent</td><td>80% of calls</td><td>2–3 proposals/week</td></tr>
+              <tr><td>Clients Closed</td><td>20–40% of proposals</td><td>1 client/week at scale</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ WORKFLOW SUMMARY ══════ -->
+    <div class="section" id="section-summary">
+      <div class="page-header">
+        <div class="page-eyebrow">📋 Final Overview</div>
+        <h1 class="page-title">Workflow Summary</h1>
+      </div>
+      <div class="summary-hero">
+        <div class="page-eyebrow">🎯 Your Workflow at a Glance</div>
+        <h2 style="font-size:1.3rem;font-weight:700;color:var(--text);margin-bottom:.5rem">Social Media Lead Generation for Freelancers</h2>
+        <p style="font-size:.85rem;color:var(--text2);line-height:1.6">Facebook Page + Instagram + Cold DMs + Cold Email → Discovery Calls → Paying Clients</p>
+        <div class="sum-grid">
+          <div class="sum-stat"><div class="sum-num">7</div><div class="sum-lbl">Workflow Stages</div></div>
+          <div class="sum-stat"><div class="sum-num">40+</div><div class="sum-lbl">AI Tools Covered</div></div>
+          <div class="sum-stat"><div class="sum-num">20+</div><div class="sum-lbl">AI Prompts</div></div>
+          <div class="sum-stat"><div class="sum-num">8–12</div><div class="sum-lbl">Hrs to Set Up</div></div>
+          <div class="sum-stat"><div class="sum-num">Week 3</div><div class="sum-lbl">First Lead Expected</div></div>
+          <div class="sum-stat"><div class="sum-num">Month 1–2</div><div class="sum-lbl">First Client Expected</div></div>
+        </div>
+      </div>
+      <p class="block-title" style="margin-bottom:.75rem">Stage Timeline</p>
+      <div style="overflow-x:auto;margin-bottom:1.5rem">
+        <table class="comp-table">
+          <thead><tr><th>Stage</th><th>When</th><th>Time Required</th><th>Priority</th></tr></thead>
+          <tbody>
+            <tr><td>🎯 Strategy & Positioning</td><td>Week 1</td><td>3–5 hours (once)</td><td class="best">Critical First</td></tr>
+            <tr><td>🔍 Audience Research</td><td>Week 1–2</td><td>4–6 hours (once)</td><td class="best">Critical</td></tr>
+            <tr><td>📣 Profile Optimization</td><td>Week 2</td><td>3–4 hours (once)</td><td class="best">Critical</td></tr>
+            <tr><td>✍️ Content Creation</td><td>Week 2 → ongoing</td><td>3–4 hrs/week</td><td class="ok">High</td></tr>
+            <tr><td>💬 Cold DMs</td><td>Week 3 → daily</td><td>45–60 min/day</td><td class="best">Critical</td></tr>
+            <tr><td>📧 Cold Email</td><td>Week 3 → daily</td><td>30 min/day (then automated)</td><td class="best">Critical</td></tr>
+            <tr><td>🔄 Nurture & Close</td><td>When leads come in</td><td>As needed</td><td class="ok">Revenue Stage</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="block-title" style="margin-bottom:.75rem">Additional AI Prompts</p>
+      <div class="prompt-box">
+        <div class="prompt-label">🔥 Monthly Review Prompt</div>
+        <div class="prompt-text">I am a freelance [SERVICE] who has been doing social media outreach for [X weeks]. Here are my weekly stats: DMs sent: [X], Replies: [X], Calls booked: [X], Clients closed: [X]. My current content engagement is [LOW/MED/HIGH]. Analyze my conversion funnel, identify the weakest link, and give me 3 specific actions to take this week to improve my results.</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-label">📊 Testimonial Request Prompt</div>
+        <div class="prompt-text">Write a casual WhatsApp/DM message asking a happy client for a testimonial. It should feel personal not scripted, remind them of the specific result we achieved together ([RESULT]), and give them 3 short questions to answer if they don't know what to write: (1) What was the situation before working with me? (2) What result did we achieve? (3) Who would you recommend me to?</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-label">🤝 Referral Request Prompt</div>
+        <div class="prompt-text">Write a message to a past or current client asking for referrals. It should: feel natural and grateful, not transactional, remind them of the result we achieved, describe in 1 sentence exactly who my ideal referral is, and offer a small incentive (discount on next project / finder's fee). Keep it under 80 words.</div>
+        <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+      </div>
+      <p class="block-title" style="margin-bottom:.75rem">Search Keywords to Learn More</p>
+      <div class="kw-cloud">
+        <span class="kw-chip">cold DM strategy freelancer</span>
+        <span class="kw-chip">cold email for freelancers</span>
+        <span class="kw-chip">Facebook Page lead generation</span>
+        <span class="kw-chip">Instagram outreach tutorial</span>
+        <span class="kw-chip">freelance client acquisition</span>
+        <span class="kw-chip">discovery call script</span>
+        <span class="kw-chip">Apollo.io tutorial</span>
+        <span class="kw-chip">Instantly.ai cold email</span>
+        <span class="kw-chip">ManyChat Instagram DMs</span>
+        <span class="kw-chip">social selling B2B</span>
+        <span class="kw-chip">freelance proposal template</span>
+        <span class="kw-chip">lead nurturing sequence</span>
+        <span class="kw-chip">content marketing freelancer</span>
+        <span class="kw-chip">email warm up domain</span>
+        <span class="kw-chip">prospect list building</span>
+        <span class="kw-chip">social proof for freelancers</span>
+      </div>
+    </div>
+
+    <!-- ══════ AI STACK ══════ -->
+    <div class="section" id="section-tools-stack">
+      <div class="page-header">
+        <div class="page-eyebrow">🛠️ Recommended</div>
+        <h1 class="page-title">Your Complete AI Stack</h1>
+        <p class="page-desc">The minimum viable tool stack to run this entire workflow as a solo freelancer — prioritized by impact and cost.</p>
+      </div>
+      <p class="block-title" style="margin-bottom:.75rem">Free Tier Stack (Start Here)</p>
+      <div class="stack-grid" style="margin-bottom:1.5rem">
+        <div class="stack-item"><span class="stack-emoji">🤖</span><div><div class="stack-name">Claude / ChatGPT</div><div class="stack-role">Content + Prompts + Copy</div></div></div>
+        <div class="stack-item"><span class="stack-emoji">🎨</span><div><div class="stack-name">Canva AI</div><div class="stack-role">Graphics + Visual Posts</div></div></div>
+        <div class="stack-item"><span class="stack-emoji">📅</span><div><div class="stack-name">Buffer (Free)</div><div class="stack-role">Post Scheduling</div></div></div>
+        <div class="stack-item"><span class="stack-emoji">🔍</span><div><div class="stack-name">Apollo.io (Free)</div><div class="stack-role">Prospect Finder</div></div></div>
+        <div class="stack-item"><span class="stack-emoji">✉️</span><div><div class="stack-name">Hunter.io (Free)</div><div class="stack-role">Email Finder</div></div></div>
+        <div class="stack-item"><span class="stack-emoji">📆</span><div><div class="stack-name">Calendly (Free)</div><div class="stack-role">Call Booking</div></div></div>
+        <div class="stack-item"><span class="stack-emoji">🔗</span><div><div class="stack-name">Beacons.ai</div><div class="stack-role">Link in Bio</div></div></div>
+        <div class="stack-item"><span class="stack-emoji">📊</span><div><div class="stack-name">Google Sheets</div><div class="stack-role">CRM + Tracking</div></div></div>
+      </div>
+      <p class="block-title" style="margin-bottom:.75rem">Paid Stack (Once You're Earning)</p>
+      <div class="stack-grid" style="margin-bottom:1.5rem">
+        <div class="stack-item"><span class="stack-emoji">📧</span><div><div class="stack-name">Instantly.ai</div><div class="stack-role">Cold Email Automation — $37/mo</div></div></div>
+        <div class="stack-item"><span class="stack-emoji">🔥</span><div><div class="stack-name">Lemwarm</div><div class="stack-role">Email Warmup — $29/mo</div></div></div>
+        <div class="stack-item"><span class="stack-emoji">💬</span><div><div class="stack-name">ManyChat</div><div class="stack-role">DM Automation — $15/mo</div></div></div>
+        <div class="stack-item"><span class="stack-emoji">📹</span><div><div class="stack-name">Loom</div><div class="stack-role">Video Proposals — Free+</div></div></div>
+        <div class="stack-item"><span class="stack-emoji">🧠</span><div><div class="stack-name">Notion AI</div><div class="stack-role">CRM + Notes + Proposals — $10/mo</div></div></div>
+        <div class="stack-item"><span class="stack-emoji">📊</span><div><div class="stack-name">Perplexity Pro</div><div class="stack-role">Deep Research — $20/mo</div></div></div>
+      </div>
+      <div class="info-card" style="margin-bottom:1rem">
+        <div class="info-card-title" style="color:var(--amber)">💡 Stack Recommendation</div>
+        <div class="info-item"><span class="info-bullet">▸</span><strong>Month 1:</strong> Use only free tools — Claude, Canva, Buffer, Apollo free, Google Sheets</div>
+        <div class="info-item"><span class="info-bullet">▸</span><strong>After first client ($):</strong> Add Instantly.ai + Lemwarm for cold email scale</div>
+        <div class="info-item"><span class="info-bullet">▸</span><strong>After $1k/mo:</strong> Add ManyChat + Notion AI for automation and organization</div>
+      </div>
+    </div>
+
+    <!-- ══════ RESOURCES ══════ -->
+    <div class="section" id="section-resources">
+      <div class="page-header">
+        <div class="page-eyebrow">📚 Learning</div>
+        <h1 class="page-title">Resources & Communities</h1>
+      </div>
+      <p class="block-title" style="margin-bottom:.75rem">Learning Resources</p>
+      <div class="resource-list" style="margin-bottom:1.5rem">
+        <div class="res-item"><span class="res-icon">📺</span><div><div class="res-name">Alex Hormozi — $100M Leads</div><div class="res-desc">Best free resource on client acquisition and lead generation for service businesses</div></div><span class="res-type">Book / YouTube</span></div>
+        <div class="res-item"><span class="res-icon">📺</span><div><div class="res-name">Cold Email Wizard (YouTube)</div><div class="res-desc">Most practical cold email tutorials for freelancers and agencies</div></div><span class="res-type">YouTube</span></div>
+        <div class="res-item"><span class="res-icon">📘</span><div><div class="res-name">Justin Welsh's LinkedIn Newsletter</div><div class="res-desc">Solo freelancer content strategy and personal brand growth tactics</div></div><span class="res-type">Newsletter</span></div>
+        <div class="res-item"><span class="res-icon">📺</span><div><div class="res-name">Iman Gadzhi — Agency Incubator (YouTube)</div><div class="res-desc">Client acquisition and social media outreach for solo service providers</div></div><span class="res-type">YouTube</span></div>
+        <div class="res-item"><span class="res-icon">📗</span><div><div class="res-name">The Lean Startup — Eric Ries</div><div class="res-desc">Think like a product about your freelance services — iterate based on market feedback</div></div><span class="res-type">Book</span></div>
+        <div class="res-item"><span class="res-icon">🎙️</span><div><div class="res-name">My First Million Podcast</div><div class="res-desc">Business ideas, lead generation tactics, and solo entrepreneur strategies</div></div><span class="res-type">Podcast</span></div>
+      </div>
+      <p class="block-title" style="margin-bottom:.75rem">Communities to Join</p>
+      <div class="resource-list">
+        <div class="res-item"><span class="res-icon">👥</span><div><div class="res-name">IndieHackers.com</div><div class="res-desc">Community of solo founders and freelancers sharing revenue, tactics, and growth stories</div></div><span class="res-type">Forum</span></div>
+        <div class="res-item"><span class="res-icon">👥</span><div><div class="res-name">Reddit: r/freelance, r/Entrepreneur</div><div class="res-desc">Peer advice, client horror stories, and tactical tips from working freelancers</div></div><span class="res-type">Reddit</span></div>
+        <div class="res-item"><span class="res-icon">💬</span><div><div class="res-name">Facebook: Freelancers & Agency Owners</div><div class="res-desc">Active FB groups for freelance client acquisition — also a great place to find prospects!</div></div><span class="res-type">Facebook Group</span></div>
+        <div class="res-item"><span class="res-icon">💼</span><div><div class="res-name">LinkedIn Newsletters in Your Niche</div><div class="res-desc">Follow and engage with niche-specific LinkedIn newsletters to stay current and visible</div></div><span class="res-type">LinkedIn</span></div>
+      </div>
+    </div>
+
+    <!-- ══════ AUTOMATION ══════ -->
+    <div class="section" id="section-automation">
+      <div class="page-header">
+        <div class="page-eyebrow">🤖 Future Opportunities</div>
+        <h1 class="page-title">Automation Opportunities</h1>
+        <p class="page-desc">Once your manual workflow is proven and generating clients, here's how to scale it with AI automation — without losing the personal touch.</p>
+      </div>
+      <div class="auto-card">
+        <span class="auto-icon">💬</span>
+        <div>
+          <div class="auto-title">ManyChat Instagram DM Funnel</div>
+          <div class="auto-desc">Set up keyword-triggered DM sequences. When someone comments "FREE" on your post, they auto-receive your lead magnet via DM, followed by a soft pitch sequence — all automated.</div>
+          <span class="auto-badge auto-easy">Easy — $15/mo</span>
+        </div>
+      </div>
+      <div class="auto-card">
+        <span class="auto-icon">📧</span>
+        <div>
+          <div class="auto-title">Cold Email Sequence Automation (Instantly.ai)</div>
+          <div class="auto-desc">Import 100 verified emails weekly, and Instantly auto-sends your 3-step personalized sequence with delays, A/B testing, and smart inbox rotation.</div>
+          <span class="auto-badge auto-easy">Easy — $37/mo</span>
+        </div>
+      </div>
+      <div class="auto-card">
+        <span class="auto-icon">🔄</span>
+        <div>
+          <div class="auto-title">Content Repurposing Pipeline (Make.com)</div>
+          <div class="auto-desc">Automatically take your best-performing post → run it through Claude API → generate 5 repurposed variants → schedule to Buffer. One post becomes a week of content.</div>
+          <span class="auto-badge auto-med">Intermediate — $9/mo + API</span>
+        </div>
+      </div>
+      <div class="auto-card">
+        <span class="auto-icon">🔍</span>
+        <div>
+          <div class="auto-title">Prospect Monitoring (PhantomBuster + Sheets)</div>
+          <div class="auto-desc">Auto-scrape new members from target Facebook Groups weekly. New members = warm prospects who just raised their hand by joining a relevant community.</div>
+          <span class="auto-badge auto-med">Intermediate — $56/mo</span>
+        </div>
+      </div>
+      <div class="auto-card">
+        <span class="auto-icon">📊</span>
+        <div>
+          <div class="auto-title">AI-Powered CRM (Notion AI + Zapier)</div>
+          <div class="auto-desc">Auto-add leads to your Notion CRM when they reply to emails, auto-tag by stage, and trigger follow-up reminders. Your pipeline manages itself.</div>
+          <span class="auto-badge auto-med">Intermediate — $20/mo</span>
+        </div>
+      </div>
+      <div class="auto-card">
+        <span class="auto-icon">🤖</span>
+        <div>
+          <div class="auto-title">AI Sales Assistant Chatbot (Voiceflow + Instagram)</div>
+          <div class="auto-desc">Build a custom AI assistant that answers FAQs, qualifies leads, and books discovery calls — all via Instagram DMs. Handles initial conversations 24/7.</div>
+          <span class="auto-badge auto-adv">Advanced — $50+/mo</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ NOTES ══════ -->
+    <div class="section" id="section-notes">
+      <div class="page-header">
+        <div class="page-eyebrow">📝 Personal Workspace</div>
+        <h1 class="page-title">My Notes</h1>
+        <p class="page-desc">Your private notes are saved locally in your browser and never sent anywhere.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1rem">
+        <div>
+          <p style="font-size:.75rem;color:var(--text3);margin-bottom:.4rem">Strategy & Positioning Notes</p>
+          <textarea class="notes-area" id="note-strategy" placeholder="Your niche, UVP, pitch ideas..." oninput="saveNote('strategy',this.value)"></textarea>
+        </div>
+        <div>
+          <p style="font-size:.75rem;color:var(--text3);margin-bottom:.4rem">Prospect & Outreach Notes</p>
+          <textarea class="notes-area" id="note-outreach" placeholder="Prospects to follow up, DM ideas, what's working..." oninput="saveNote('outreach',this.value)"></textarea>
+        </div>
+        <div>
+          <p style="font-size:.75rem;color:var(--text3);margin-bottom:.4rem">Content Ideas</p>
+          <textarea class="notes-area" id="note-content" placeholder="Post ideas, hooks, topics to cover..." oninput="saveNote('content',this.value)"></textarea>
+        </div>
+        <div>
+          <p style="font-size:.75rem;color:var(--text3);margin-bottom:.4rem">General Notes</p>
+          <textarea class="notes-area" id="note-general" placeholder="Anything else — lessons learned, wins, blockers..." oninput="saveNote('general',this.value)"></textarea>
+        </div>
+        <button class="save-note-btn" onclick="showToast('✅ Notes saved!')">Save All Notes</button>
+      </div>
+    </div>
+
+    <!-- ══════ BOOKMARKS ══════ -->
+    <div class="section" id="section-bookmarks">
+      <div class="page-header">
+        <div class="page-eyebrow">🔖 Saved Sections</div>
+        <h1 class="page-title">Bookmarks</h1>
+        <p class="page-desc">Quick access to sections you've bookmarked.</p>
+      </div>
+      <div class="bookmark-list" id="bookmark-list">
+        <div style="font-size:.82rem;color:var(--text3);padding:1rem;text-align:center">
+          No bookmarks yet. Right-click any section header to bookmark it, or use the bookmark buttons that appear when hovering stage titles.
+        </div>
+      </div>
+      <div style="margin-top:1.5rem">
+        <p class="block-title" style="margin-bottom:.75rem">Quick Links</p>
+        <div style="display:flex;flex-wrap:wrap;gap:.5rem">
+          <button class="tb-chip chip-blue" onclick="showSection('s1')">🎯 Strategy</button>
+          <button class="tb-chip chip-blue" onclick="showSection('s5')">💬 DM Templates</button>
+          <button class="tb-chip chip-blue" onclick="showSection('s6')">📧 Email Templates</button>
+          <button class="tb-chip chip-blue" onclick="showSection('s7')">📞 Discovery Call</button>
+          <button class="tb-chip chip-blue" onclick="showSection('tools-stack')">🛠️ AI Stack</button>
+          <button class="tb-chip chip-blue" onclick="showSection('automation')">🤖 Automation</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════
+// STATE
+// ═══════════════════════════════════
+const LS_KEY = 'ai_wf_v1';
+let appState = {
+  tasks: {},
+  notes: {},
+  currentSection: 'overview'
+};
+
+// Load from localStorage
+try {
+  const saved = localStorage.getItem(LS_KEY);
+  if(saved) appState = {...appState, ...JSON.parse(saved)};
+} catch(e){}
+
+function saveState(){
+  try { localStorage.setItem(LS_KEY, JSON.stringify(appState)); } catch(e){}
+}
+
+// ═══════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════
+const titles = {
+  overview:'Workflow Map', progress:'Progress Tracker',
+  s1:'Strategy & Positioning', s2:'Audience Research',
+  s3:'Content Creation', s4:'Profile Optimization',
+  s5:'Cold DMs & Outreach', s6:'Cold Email Campaigns',
+  s7:'Lead Nurturing & Closing', summary:'Workflow Summary',
+  'tools-stack':'AI Stack', resources:'Resources',
+  automation:'Automation', notes:'My Notes', bookmarks:'Bookmarks'
+};
+
+function showSection(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const sec = document.getElementById('section-'+id);
+  if(sec) sec.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    if(n.getAttribute('onclick') && n.getAttribute('onclick').includes("'"+id+"'"))
+      n.classList.add('active');
+  });
+  document.getElementById('topbar-title').textContent = titles[id] || id;
+  appState.currentSection = id;
+  saveState();
+  closeSidebar();
+  updateProgress();
+}
+
+// ═══════════════════════════════════
+// SIDEBAR MOBILE
+// ═══════════════════════════════════
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+// ═══════════════════════════════════
+// TABS
+// ═══════════════════════════════════
+function switchTab(stageId, tabId){
+  const row = document.getElementById('tabs-'+stageId);
+  if(!row) return;
+  row.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  // Find clicked button
+  const btns = row.querySelectorAll('.tab-btn');
+  btns.forEach(b=>{
+    if(b.getAttribute('onclick') && b.getAttribute('onclick').includes("'"+tabId+"'"))
+      b.classList.add('active');
+  });
+  // Hide all panes in this stage section
+  const section = document.getElementById('section-'+stageId);
+  if(section) section.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  const pane = document.getElementById('tab-'+stageId+'-'+tabId);
+  if(pane) pane.classList.add('active');
+}
+
+// ═══════════════════════════════════
+// TASKS
+// ═══════════════════════════════════
+function toggleTask(el, stageId){
+  el.classList.toggle('done');
+  const text = el.querySelector('.task-text')?.textContent?.trim() || '';
+  const key = stageId+'_'+text.slice(0,30);
+  appState.tasks[key] = el.classList.contains('done');
+  saveState();
+  updateProgress();
+}
+
+function restoreTasks(){
+  document.querySelectorAll('.task-item').forEach(el=>{
+    const text = el.querySelector('.task-text')?.textContent?.trim() || '';
+    const stageId = el.closest('[id^="section-"]')?.id?.replace('section-','') || '';
+    const key = stageId+'_'+text.slice(0,30);
+    if(appState.tasks[key]) el.classList.add('done');
+  });
+}
+
+// ═══════════════════════════════════
+// PROGRESS
+// ═══════════════════════════════════
+const stageIds = ['s1','s2','s3','s4','s5','s6','s7'];
+const stageNames = {
+  s1:'Strategy', s2:'Research', s3:'Content',
+  s4:'Profile', s5:'Cold DMs', s6:'Cold Email', s7:'Closing'
+};
+
+function updateProgress(){
+  let totalTasks = 0, doneTasks = 0;
+  const stageProgress = {};
+
+  stageIds.forEach(sid=>{
+    const section = document.getElementById('section-'+sid);
+    if(!section){ stageProgress[sid]=0; return; }
+    const tasks = section.querySelectorAll('.task-item');
+    const done  = section.querySelectorAll('.task-item.done');
+    totalTasks += tasks.length;
+    doneTasks  += done.length;
+    stageProgress[sid] = tasks.length>0 ? Math.round((done.length/tasks.length)*100) : 0;
+  });
+
+  const pct = totalTasks>0 ? Math.round((doneTasks/totalTasks)*100) : 0;
+  document.getElementById('overall-fill').style.width = pct+'%';
+  document.getElementById('pct-label').textContent = pct+'%';
+  document.getElementById('task-chip').textContent = `☐ ${doneTasks} Tasks Done`;
+
+  // Stage bars
+  const barsEl = document.getElementById('stage-bars');
+  const stgPct = document.getElementById('stage-pct');
+  if(barsEl){
+    barsEl.innerHTML = '';
+    const colors = ['#60a5fa','#34d399','#f59e0b','#a78bfa','#fb7185','#38bdf8','#4ade80'];
+    stageIds.forEach((sid,i)=>{
+      const p = stageProgress[sid];
+      barsEl.innerHTML += `<div class="stage-bar-row">
+        <span class="sbr-name">${stageNames[sid]}</span>
+        <div class="sbr-track"><div class="sbr-fill" style="width:${p}%;background:${colors[i]}"></div></div>
+        <span class="sbr-pct">${p}%</span>
+      </div>`;
+    });
+    if(stgPct) stgPct.textContent = pct+'%';
+  }
+
+  // Update progress section done/pending
+  const doneEl = document.getElementById('done-list');
+  const pendEl = document.getElementById('pending-count');
+  if(doneEl){
+    const doneKeys = Object.entries(appState.tasks).filter(([k,v])=>v).map(([k])=>k);
+    if(doneKeys.length===0){
+      doneEl.textContent='No tasks completed yet. Start working through the stages!';
+    } else {
+      doneEl.innerHTML = doneKeys.slice(0,8).map(k=>`<div class="info-item"><span style="color:var(--green)">✓</span>${k.split('_').slice(1).join(' ')}</div>`).join('');
+      if(doneKeys.length>8) doneEl.innerHTML += `<div style="font-size:.72rem;color:var(--text3);margin-top:.4rem">...and ${doneKeys.length-8} more</div>`;
+    }
+  }
+  if(pendEl){
+    const pending = totalTasks - doneTasks;
+    pendEl.textContent = pending>0 ? `${pending} tasks remaining across all stages.` : '🎉 All tasks completed!';
+  }
+}
+
+// ═══════════════════════════════════
+// NOTES
+// ═══════════════════════════════════
+function saveNote(key, val){
+  appState.notes[key] = val;
+  saveState();
+}
+
+function restoreNotes(){
+  Object.entries(appState.notes).forEach(([k,v])=>{
+    const el = document.getElementById('note-'+k);
+    if(el) el.value = v;
+  });
+}
+
+// ═══════════════════════════════════
+// COPY PROMPT
+// ═══════════════════════════════════
+function copyPrompt(btn){
+  const box = btn.closest('.prompt-box');
+  const text = box?.querySelector('.prompt-text')?.textContent || '';
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(()=>{
+      btn.textContent = '✓ Copied!';
+      setTimeout(()=>btn.textContent='Copy', 2000);
+      showToast('📋 Prompt copied to clipboard!');
+    });
+  }
+}
+
+// ═══════════════════════════════════
+// TOAST
+// ═══════════════════════════════════
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+// ═══════════════════════════════════
+// RESET
+// ═══════════════════════════════════
+function resetAll(){
+  if(!confirm('Reset all progress, tasks, and notes? This cannot be undone.')) return;
+  localStorage.removeItem(LS_KEY);
+  location.reload();
+}
+
+// ═══════════════════════════════════
+// STAGE CARD TOGGLE (if used)
+// ═══════════════════════════════════
+document.querySelectorAll('.stage-header').forEach(h=>{
+  h.addEventListener('click',()=>{
+    const body = h.nextElementSibling;
+    const toggle = h.querySelector('.stage-toggle');
+    h.classList.toggle('open');
+    if(body) body.classList.toggle('open');
+    if(toggle) toggle.classList.toggle('open');
+  });
+});
+
+// ═══════════════════════════════════
+// INIT
+// ═══════════════════════════════════
+window.addEventListener('DOMContentLoaded',()=>{
+  restoreTasks();
+  restoreNotes();
+  updateProgress();
+  // Restore last section
+  if(appState.currentSection && appState.currentSection !== 'overview'){
+    showSection(appState.currentSection);
+  }
+});
+</script>
+</body>
+</html>
