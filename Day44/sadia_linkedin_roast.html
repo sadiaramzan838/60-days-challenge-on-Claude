@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>sadia_profile.diff — LinkedIn Optimization Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#12141C;
+    --surface:#1B1E2A;
+    --surface-2:#232838;
+    --border:#2E3346;
+    --text:#EDEDF2;
+    --text-dim:#9CA3B8;
+    --removed:#F2726C;
+    --removed-bg:rgba(242,114,108,0.09);
+    --added:#4FD69C;
+    --added-bg:rgba(79,214,156,0.09);
+    --accent:#F5B942;
+    --accent-2:#7C9CFF;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    line-height:1.6;
+    padding:0 0 80px;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 20px;}
+  h1,h2,h3{font-family:'Space Grotesk', sans-serif;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+
+  /* Terminal tab header */
+  .tabbar{
+    background:var(--surface);
+    border-bottom:1px solid var(--border);
+    padding:14px 20px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .dot{width:10px; height:10px; border-radius:50%;}
+  .dot.r{background:#F2726C;} .dot.y{background:#F5B942;} .dot.g{background:#4FD69C;}
+  .tabname{margin-left:14px; font-family:'IBM Plex Mono', monospace; font-size:13px; color:var(--text-dim);}
+
+  header.hero{
+    padding:56px 20px 40px;
+    text-align:center;
+    border-bottom:1px solid var(--border);
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    color:var(--accent-2);
+    font-size:13px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  header.hero h1{
+    font-size:clamp(28px,5vw,42px);
+    font-weight:700;
+    margin-bottom:14px;
+  }
+  header.hero p{
+    color:var(--text-dim);
+    max-width:600px;
+    margin:0 auto;
+    font-size:16px;
+  }
+  .score-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:24px;
+    margin-top:40px;
+    flex-wrap:wrap;
+  }
+  .score-block{text-align:center;}
+  .score-num{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:56px;
+    font-weight:700;
+    line-height:1;
+  }
+  .score-block.before .score-num{color:var(--removed);}
+  .score-block.after .score-num{color:var(--added);}
+  .score-label{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--text-dim); margin-top:8px; text-transform:uppercase; letter-spacing:0.06em;}
+  .arrow{font-size:28px; color:var(--accent);}
+
+  section{padding:56px 0;}
+  section.alt{background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border);}
+  .section-head{margin-bottom:32px;}
+  .section-head .eyebrow{margin-bottom:8px;}
+  .section-head h2{font-size:clamp(22px,4vw,30px);}
+  .section-head p{color:var(--text-dim); margin-top:8px; font-size:15px;}
+
+  /* Report cards */
+  .callout{
+    background:var(--removed-bg);
+    border:1px solid rgba(242,114,108,0.25);
+    border-radius:10px;
+    padding:18px 20px;
+    margin-bottom:32px;
+    font-size:14.5px;
+  }
+  .callout .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--removed);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    margin-bottom:8px;
+    display:block;
+  }
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:24px;
+    margin-bottom:20px;
+  }
+  .card-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:16px;
+    margin-bottom:16px;
+    flex-wrap:wrap;
+  }
+  .card-top h3{font-size:18px;}
+  .badge{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    padding:6px 14px;
+    border-radius:20px;
+    white-space:nowrap;
+  }
+  .b-low{background:rgba(242,114,108,0.15); color:var(--removed);}
+  .b-mid{background:rgba(245,185,66,0.15); color:var(--accent);}
+  .b-high{background:rgba(79,214,156,0.15); color:var(--added);}
+  .reaction{
+    font-style:italic;
+    color:var(--text-dim);
+    font-size:14px;
+    margin-bottom:16px;
+    padding-left:12px;
+    border-left:2px solid var(--accent);
+  }
+  .card-row{margin-bottom:10px; font-size:14.5px;}
+  .card-row .icon{margin-right:6px;}
+  .card-row b{color:var(--text);}
+
+  /* Diff blocks */
+  .diff{
+    background:#0E1016;
+    border:1px solid var(--border);
+    border-radius:10px;
+    overflow:hidden;
+    margin-bottom:24px;
+  }
+  .diff-file{
+    background:var(--surface-2);
+    padding:10px 16px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    color:var(--text-dim);
+    border-bottom:1px solid var(--border);
+  }
+  .diff-line{
+    display:flex;
+    padding:10px 16px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13.5px;
+    line-height:1.6;
+    border-left:3px solid transparent;
+  }
+  .diff-line.removed{background:var(--removed-bg); border-left-color:var(--removed); color:#F3B4B0;}
+  .diff-line.added{background:var(--added-bg); border-left-color:var(--added); color:#B7EFD5;}
+  .diff-line.note{background:rgba(245,185,66,0.06); border-left-color:var(--accent); color:var(--text-dim); font-style:italic;}
+  .diff-sym{margin-right:12px; font-weight:600; flex-shrink:0;}
+
+  /* Headline tabs */
+  .tabs{display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap;}
+  .tab-btn{
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--text-dim);
+    padding:9px 16px;
+    border-radius:8px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    cursor:pointer;
+    transition:all 0.15s;
+  }
+  .tab-btn.active{background:var(--accent); color:#12141C; border-color:var(--accent); font-weight:600;}
+  .tab-btn:hover:not(.active){border-color:var(--accent-2); color:var(--text);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+  .headline-box{
+    background:var(--added-bg);
+    border:1px solid rgba(79,214,156,0.25);
+    border-radius:10px;
+    padding:20px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:15px;
+    color:var(--added);
+    margin-bottom:14px;
+  }
+  .headline-why{color:var(--text-dim); font-size:14px;}
+
+  .copy-btn{
+    background:transparent;
+    border:1px solid var(--border);
+    color:var(--text-dim);
+    padding:7px 14px;
+    border-radius:6px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    cursor:pointer;
+    margin-top:10px;
+    transition:all 0.15s;
+  }
+  .copy-btn:hover{border-color:var(--accent-2); color:var(--accent-2);}
+  .copy-btn.copied{border-color:var(--added); color:var(--added);}
+
+  /* Skills lists */
+  .skills-grid{display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+  @media(max-width:640px){.skills-grid{grid-template-columns:1fr;}}
+  .skill-list h4{font-family:'IBM Plex Mono', monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:12px; color:var(--text-dim);}
+  .skill-list ol, .skill-list ul{list-style:none;}
+  .skill-list li{
+    padding:9px 12px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:7px;
+    margin-bottom:7px;
+    font-size:14px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .skill-list li .num{font-family:'IBM Plex Mono', monospace; color:var(--accent); font-size:12px; width:18px;}
+  .pin{background:rgba(245,185,66,0.1); border-color:rgba(245,185,66,0.3);}
+
+  /* Scorecard bars */
+  .bar-row{margin-bottom:22px;}
+  .bar-label{display:flex; justify-content:space-between; font-size:14px; margin-bottom:8px;}
+  .bar-label .name{font-weight:600;}
+  .bar-label .nums{font-family:'IBM Plex Mono', monospace; font-size:13px;}
+  .bar-label .nums .b{color:var(--removed);}
+  .bar-label .nums .a{color:var(--added);}
+  .bar-track{
+    height:10px;
+    background:var(--surface-2);
+    border-radius:6px;
+    overflow:hidden;
+    position:relative;
+  }
+  .bar-fill-before{
+    position:absolute; top:0; left:0; height:100%;
+    background:var(--removed); opacity:0.5; border-radius:6px;
+    width:0%; transition:width 1.2s ease;
+  }
+  .bar-fill-after{
+    position:absolute; top:0; left:0; height:100%;
+    background:var(--added); border-radius:6px;
+    width:0%; transition:width 1.2s ease 0.2s;
+  }
+  .overall-bar{margin-top:32px; padding-top:24px; border-top:1px dashed var(--border);}
+
+  /* 7-day plan */
+  .day{
+    display:flex;
+    gap:20px;
+    padding:22px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .day:last-child{border-bottom:none;}
+  .day-num{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:22px;
+    color:var(--accent);
+    width:56px;
+    flex-shrink:0;
+  }
+  .day-num span{display:block; font-family:'IBM Plex Mono', monospace; font-size:10px; color:var(--text-dim); font-weight:400; margin-top:2px;}
+  .day-content h4{font-size:16px; margin-bottom:8px;}
+  .day-content p{color:var(--text-dim); font-size:14px; margin-bottom:10px;}
+  .day-box{
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:14px 16px;
+    font-size:13.5px;
+    margin-top:8px;
+  }
+  .day-box.mono{font-family:'IBM Plex Mono', monospace; color:var(--accent-2);}
+  .checklist li{list-style:none; padding:4px 0; font-size:14px; color:var(--text-dim);}
+  .checklist li:before{content:"☐ "; color:var(--accent); margin-right:4px;}
+
+  /* Summary card */
+  .summary-card{
+    background:linear-gradient(145deg, var(--surface) 0%, var(--surface-2) 100%);
+    border:1px solid var(--accent);
+    border-radius:16px;
+    padding:36px;
+    text-align:left;
+    position:relative;
+  }
+  .summary-card .eyebrow{color:var(--accent);}
+  .summary-card h3{font-size:20px; margin-bottom:20px;}
+  .summary-score{
+    display:flex;
+    gap:16px;
+    align-items:center;
+    margin:20px 0;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:15px;
+  }
+  .summary-score .big{font-family:'Space Grotesk', sans-serif; font-size:32px; font-weight:700;}
+  .summary-list{margin:16px 0; padding-left:0;}
+  .summary-list li{list-style:none; padding:6px 0 6px 26px; position:relative; font-size:14.5px;}
+  .summary-list li:before{content:attr(data-n); position:absolute; left:0; font-family:'IBM Plex Mono', monospace; color:var(--removed); font-weight:600;}
+  .summary-highlight{
+    background:rgba(245,185,66,0.1);
+    border-left:3px solid var(--accent);
+    padding:14px 16px;
+    border-radius:0 8px 8px 0;
+    font-size:14.5px;
+    margin-top:16px;
+  }
+
+  footer{text-align:center; padding:40px 20px 0; color:var(--text-dim); font-size:13px; font-family:'IBM Plex Mono', monospace;}
+</style>
+</head>
+<body>
+
+<div class="tabbar">
+  <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+  <span class="tabname">sadia_ramzan_profile.diff</span>
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">// LinkedIn Optimization Report</div>
+    <h1>Sadia, your profile isn't broken.<br>It's just unfinished.</h1>
+    <p>You've done the hard part — 5 real internships, live projects, daily practice. Your profile just isn't telling recruiters any of it. Here's the full roast, rebuild, and 7-day plan to fix that.</p>
+    <div class="score-row">
+      <div class="score-block before">
+        <div class="score-num">38</div>
+        <div class="score-label">Before / 100</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="score-block after">
+        <div class="score-num">86</div>
+        <div class="score-label">After / 100</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- PART 1: ROAST -->
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow mono">// Part 1</div>
+      <h2>The Roast — Profile Report Card</h2>
+      <p>What a recruiter actually thinks in the first 3 seconds. No sugarcoating.</p>
+    </div>
+
+    <div class="callout">
+      <span class="tag">⚠ Biggest finding</span>
+      Your LinkedIn export shows a Summary and Education section — <b>but no Experience section at all.</b> You have 5 real internship certificates. A recruiter scrolling your profile right now sees zero proof of any of them. This alone is probably costing you more interviews than anything else on this page.
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <h3>1. Headline</h3>
+        <div class="badge b-mid">6/10</div>
+      </div>
+      <div class="reaction">"Okay, a student who wants to be a frontend dev. Next profile."</div>
+      <div class="card-row">❌ <b>The problem:</b> "Frontend Developer | CS Student | Aspiring MERN Stack Developer" — the word <span class="mono">Aspiring</span> quietly tells the recruiter "not qualified yet." It's honest, but it undersells you.</div>
+      <div class="card-row">🧠 <b>Why it hurts:</b> Recruiters skim headlines to decide search relevance. "Aspiring" doesn't match search filters like "React Developer" or "Frontend Developer" — it reads as a hedge, not a title.</div>
+      <div class="card-row">🔍 <b>Invisible cost:</b> You don't show up as confidently in recruiter keyword searches, and the headline gives zero proof (no tech stack proof, no differentiator).</div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <h3>2. About — First 2 Lines (the hook)</h3>
+        <div class="badge b-low">4/10</div>
+      </div>
+      <div class="reaction">"Another 'I'm a dedicated CS student' opener. *scrolls past*"</div>
+      <div class="card-row">❌ <b>The problem:</b> "I'm Sadia Ramzan, a dedicated Computer Science student with a strong interest in both web development and graphic design." LinkedIn already shows your name and headline right above this — repeating it wastes your most valuable real estate.</div>
+      <div class="card-row">🧠 <b>Why it hurts:</b> The first 2 lines are the ONLY thing visible before "see more." If they don't earn a click, the rest of your (actually good) story never gets read.</div>
+      <div class="card-row">🔍 <b>Invisible cost:</b> Recruiters bounce before reaching your real skills and internships, which are buried further down.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <h3>3. About — Full Section</h3>
+        <div class="badge b-mid">5/10</div>
+      </div>
+      <div class="reaction">"Sweet, earnest, but no proof. Sounds like every other CS student."</div>
+      <div class="card-row">❌ <b>The problem:</b> Phrases like "I enjoy turning ideas into..." and "My goal is to gain hands-on experience" are soft and passive. There isn't a single number, project name, or result anywhere in it.</div>
+      <div class="card-row">🧠 <b>Why it hurts:</b> Recruiters scan for evidence, not intentions. "I enjoy design" tells them nothing about whether you're good at it.</div>
+      <div class="card-row">🔍 <b>Invisible cost:</b> Your 5 internships, your portfolio site, your certificates — none of it is mentioned here. This section undersells everything you've actually built.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <h3>4. Experience</h3>
+        <div class="badge b-low">2/10</div>
+      </div>
+      <div class="reaction">"No experience listed. Moving on to the next candidate."</div>
+      <div class="card-row">❌ <b>The problem:</b> Your profile export has no Experience section. Your 3+ internships (SoftGrowTech, DevelopersHub Corporation, Apexcify Technologies) only exist as feed posts with certificate images — not as structured, searchable Experience entries.</div>
+      <div class="card-row">🧠 <b>Why it hurts:</b> Recruiters filter and search by the Experience section specifically. Posts disappear from view after a few weeks; Experience entries are permanent and structured.</div>
+      <div class="card-row">🔍 <b>Invisible cost:</b> This is your single biggest lost opportunity. Real, verifiable internship experience that isn't costing you anything to add — and it's just... not there.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <h3>5. Skills & Keywords</h3>
+        <div class="badge b-low">3/10</div>
+      </div>
+      <div class="reaction">"Only 3 skills? Is that... it?"</div>
+      <div class="card-row">❌ <b>The problem:</b> Your Top Skills section shows only HTML5, CSS3, and JavaScript (ES6+) — even though your About mentions React, Bootstrap, Tailwind, and Adobe Illustrator. LinkedIn allows up to 50 skills.</div>
+      <div class="card-row">🧠 <b>Why it hurts:</b> LinkedIn's search algorithm heavily weights the Skills section. Fewer skills = fewer keyword matches = you show up in fewer recruiter searches.</div>
+      <div class="card-row">🔍 <b>Invisible cost:</b> Recruiters searching "React Developer" or "Tailwind CSS" right now will never find you, even though you use both.</div>
+    </div>
+  </div>
+</section>
+
+<!-- PART 2: REBUILD -->
+<section class="alt">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow mono">// Part 2</div>
+      <h2>The Rebuild</h2>
+      <p>Every rewrite shown as a diff — so you can see exactly what changed, and why.</p>
+    </div>
+
+    <h3 style="margin-bottom:16px; font-size:19px;">Headline — 3 options</h3>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('h1')">Keyword-Optimized</button>
+      <button class="tab-btn" onclick="showTab('h2')">Value-Proposition</button>
+      <button class="tab-btn" onclick="showTab('h3')">Authority</button>
+    </div>
+    <div id="h1" class="tab-panel active">
+      <div class="headline-box">Frontend Developer | React.js &amp; JavaScript (ES6+) | Building Responsive Web Interfaces | CS Undergrad</div>
+      <div class="headline-why"><b>When to use:</b> This is your default. It's stacked with exact-match keywords (Frontend Developer, React.js, Responsive) that recruiter search filters look for — maximizes how often you appear in results.</div>
+      <button class="copy-btn" onclick="copyText('Frontend Developer | React.js & JavaScript (ES6+) | Building Responsive Web Interfaces | CS Undergrad', this)">Copy headline</button>
+    </div>
+    <div id="h2" class="tab-panel">
+      <div class="headline-box">Frontend Developer specializing in React &amp; Tailwind | Turning Designs into Pixel-Perfect, Responsive Websites</div>
+      <div class="headline-why"><b>When to use:</b> Use this when messaging hiring managers directly or when people click into your profile after seeing your posts — it sells outcome ("pixel-perfect websites"), not just tools.</div>
+      <button class="copy-btn" onclick="copyText('Frontend Developer specializing in React & Tailwind | Turning Designs into Pixel-Perfect, Responsive Websites', this)">Copy headline</button>
+    </div>
+    <div id="h3" class="tab-panel">
+      <div class="headline-box">CS Student → Frontend Developer | 5 Internships, 1 Focus: Clean Code &amp; Better UI | Documenting the Journey</div>
+      <div class="headline-why"><b>When to use:</b> Best for your feed presence — since you already post internship milestones publicly, this headline matches that "building in public" identity and pulls more profile clicks from your posts.</div>
+      <button class="copy-btn" onclick="copyText('CS Student → Frontend Developer | 5 Internships, 1 Focus: Clean Code & Better UI | Documenting the Journey', this)">Copy headline</button>
+    </div>
+
+    <h3 style="margin:36px 0 16px; font-size:19px;">About Section</h3>
+    <div class="diff">
+      <div class="diff-file">about_section.txt</div>
+      <div class="diff-line removed"><span class="diff-sym">−</span> I'm Sadia Ramzan, a dedicated Computer Science student with a strong interest in both web development and graphic design.</div>
+      <div class="diff-line added"><span class="diff-sym">+</span> I don't just study frontend development — I've spent the last few months living inside it: 3+ internships, daily React practice, and a portfolio I keep rebuilding until it's right.</div>
+      <div class="diff-line added"><span class="diff-sym">+</span> I build clean, responsive interfaces with HTML, CSS, JavaScript, React, Bootstrap &amp; Tailwind — and I design the social media visuals to go with them using Adobe Illustrator. Development and design aren't separate skills for me; they're the same instinct applied twice.</div>
+      <div class="diff-line added"><span class="diff-sym">+</span> Currently completing frontend internships at Apexcify Technologies, DevelopersHub Corporation, and SoftGrowTech, working hands-on with React, Tailwind CSS, and modern UI practices.</div>
+      <div class="diff-line note"><span class="diff-sym">i</span> ADD HERE: any real number you have — e.g. "X components built," "X pages shipped," "recognized for strong performance at DevelopersHub." Don't invent it — just drop in whatever's true.</div>
+      <div class="diff-line added"><span class="diff-sym">+</span> 📩 Open to frontend / junior developer roles — message me directly, or see my work: sadiaramzan-portfolio.netlify.app</div>
+    </div>
+    <div class="callout" style="background:rgba(124,156,255,0.08); border-color:rgba(124,156,255,0.25);">
+      <span class="tag" style="color:var(--accent-2);">Keywords embedded</span>
+      Frontend Developer · React.js · JavaScript · Tailwind CSS · Bootstrap · Responsive Web Design · UI Development · Computer Science · Internship
+    </div>
+    <button class="copy-btn" onclick="copyAbout(this)">Copy full About rewrite</button>
+
+    <h3 style="margin:36px 0 16px; font-size:19px;">Experience — Most Recent Entry (SoftGrowTech)</h3>
+    <div class="diff">
+      <div class="diff-file">experience_entry.txt</div>
+      <div class="diff-line removed"><span class="diff-sym">−</span> [Not currently listed as an Experience entry — only exists as a feed post]</div>
+      <div class="diff-line added"><span class="diff-sym">+</span> Frontend Developer Intern — SoftGrowTech (Virtual) · Apr 2026 – May 2026 · 1 mo</div>
+      <div class="diff-line added"><span class="diff-sym">+</span> Completed a 1-month virtual frontend development internship, applying HTML, CSS &amp; JavaScript to assigned real-world development tasks.</div>
+      <div class="diff-line note"><span class="diff-sym">i</span> ADD HERE: the actual page/feature/component you built — even one line. "Built the product listing page" or "Fixed responsive bugs across 3 pages" is 10x stronger than a general statement.</div>
+      <div class="diff-line note"><span class="diff-sym">i</span> ADD HERE: any number — pages built, components created, or bugs fixed. Estimates are fine if exact isn't available.</div>
+      <div class="diff-line added"><span class="diff-sym">+</span> Completed with strong dedication and consistent hands-on learning throughout the internship period.</div>
+    </div>
+    <div class="callout">
+      <span class="tag">Do this for all 5 internships</span>
+      Repeat this structure for DevelopersHub Corporation (note: you were recognized for "exceptional performance" — that's real proof, use it directly) and Apexcify Technologies. Each one is a separate Experience entry, not a single line.
+    </div>
+
+    <h3 style="margin:36px 0 16px; font-size:19px;">Skills Recommendations</h3>
+    <div class="skills-grid">
+      <div class="skill-list">
+        <h4>Add (priority order)</h4>
+        <ol>
+          <li><span class="num">01</span> React.js</li>
+          <li><span class="num">02</span> Tailwind CSS</li>
+          <li><span class="num">03</span> Responsive Web Design</li>
+          <li><span class="num">04</span> Bootstrap</li>
+          <li><span class="num">05</span> Git &amp; GitHub</li>
+          <li><span class="num">06</span> REST APIs</li>
+          <li><span class="num">07</span> UI/UX Implementation</li>
+          <li><span class="num">08</span> Adobe Illustrator</li>
+          <li><span class="num">09</span> Problem Solving</li>
+          <li><span class="num">10</span> Team Collaboration</li>
+        </ol>
+      </div>
+      <div class="skill-list">
+        <h4>Pin to top 3</h4>
+        <ul>
+          <li class="pin">📌 React.js</li>
+          <li class="pin">📌 JavaScript (ES6+)</li>
+          <li class="pin">📌 Responsive Web Design</li>
+        </ul>
+        <h4 style="margin-top:20px;">Remove</h4>
+        <ul>
+          <li style="color:var(--text-dim);">None yet — your list is too short to have dead weight. Fix the shortage first.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PART 3: SCORECARD -->
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow mono">// Part 3</div>
+      <h2>Before vs After Scorecard</h2>
+    </div>
+
+    <div class="bar-row" data-before="60" data-after="90">
+      <div class="bar-label"><span class="name">Headline</span><span class="nums"><span class="b">6/10</span> → <span class="a">9/10</span> (+3)</span></div>
+      <div class="bar-track"><div class="bar-fill-before"></div><div class="bar-fill-after"></div></div>
+    </div>
+    <div class="bar-row" data-before="40" data-after="90">
+      <div class="bar-label"><span class="name">About (Hook)</span><span class="nums"><span class="b">4/10</span> → <span class="a">9/10</span> (+5)</span></div>
+      <div class="bar-track"><div class="bar-fill-before"></div><div class="bar-fill-after"></div></div>
+    </div>
+    <div class="bar-row" data-before="50" data-after="90">
+      <div class="bar-label"><span class="name">About (Full)</span><span class="nums"><span class="b">5/10</span> → <span class="a">9/10</span> (+4)</span></div>
+      <div class="bar-track"><div class="bar-fill-before"></div><div class="bar-fill-after"></div></div>
+    </div>
+    <div class="bar-row" data-before="20" data-after="80">
+      <div class="bar-label"><span class="name">Experience</span><span class="nums"><span class="b">2/10</span> → <span class="a">8/10</span> (+6)</span></div>
+      <div class="bar-track"><div class="bar-fill-before"></div><div class="bar-fill-after"></div></div>
+    </div>
+    <div class="bar-row" data-before="30" data-after="90">
+      <div class="bar-label"><span class="name">Skills/Keywords</span><span class="nums"><span class="b">3/10</span> → <span class="a">9/10</span> (+6)</span></div>
+      <div class="bar-track"><div class="bar-fill-before"></div><div class="bar-fill-after"></div></div>
+    </div>
+
+    <div class="overall-bar bar-row" data-before="38" data-after="86">
+      <div class="bar-label"><span class="name" style="font-size:16px;">OVERALL</span><span class="nums" style="font-size:15px;"><span class="b">38/100</span> → <span class="a">86/100</span> (+48)</span></div>
+      <div class="bar-track" style="height:14px;"><div class="bar-fill-before"></div><div class="bar-fill-after"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PART 4: 7-DAY PLAN -->
+<section class="alt">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow mono">// Part 4</div>
+      <h2>7-Day LinkedIn Activation Plan</h2>
+      <p>Not just edits — actions that actually get you seen.</p>
+    </div>
+
+    <div class="day">
+      <div class="day-num">01<span>MON</span></div>
+      <div class="day-content">
+        <h4>Make all profile changes</h4>
+        <ul class="checklist">
+          <li>Update headline (use Option 1, keyword-optimized)</li>
+          <li>Replace About section with the rebuilt version above</li>
+          <li>Add all 5 internships as proper Experience entries</li>
+          <li>Expand Skills section to at least 10 skills, pin top 3</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-num">02<span>TUE</span></div>
+      <div class="day-content">
+        <h4>Publish Post #1 — "I just rebuilt my LinkedIn"</h4>
+        <p>Draft below. Under 1300 characters, hook designed to drive comments.</p>
+        <div class="day-box">I just realized my LinkedIn had 5 internships worth of proof... and none of it was actually on my profile.<br><br>Just spent the week fixing that — rewrote my About section, added every internship as a proper Experience entry, and cleaned up my skills.<br><br>Turns out most of us are sitting on more proof than our profiles show. If you're a fellow CS student — have you actually added your internships as Experience entries, or are they just sitting in your posts like mine were? 👇</div>
+        <button class="copy-btn" onclick="copyText(document.querySelectorAll('.day-box')[0].innerText, this)">Copy post</button>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-num">03<span>WED</span></div>
+      <div class="day-content">
+        <h4>Send 10 strategic connection requests</h4>
+        <p><b>Target:</b> Frontend/React developers 1-3 years ahead of you, hiring managers at Pakistani dev agencies/startups, recruiters who post "hiring frontend" content, alumni from BZU now in tech.</p>
+        <div class="day-box mono">Hi [Name], I'm a CS student building toward frontend/React roles — really admire the work you're doing at [Company]. Would love to connect and follow your journey.</div>
+        <button class="copy-btn" onclick="copyText(document.querySelectorAll('.day-box')[1].innerText, this)">Copy template</button>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-num">04<span>THU</span></div>
+      <div class="day-content">
+        <h4>Comment on 5 posts in your target space</h4>
+        <p>Use the <b>Value Comment formula:</b> Agree + Add Insight + Ask a Question.</p>
+        <div class="day-box">Example: "Totally agree that component reusability is underrated early on — I found the same thing switching from plain CSS to Tailwind, it forced me to think in patterns instead of one-off styles. Curious — do you design the component structure first, or let it emerge as you build?"</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-num">05<span>FRI</span></div>
+      <div class="day-content">
+        <h4>Publish Post #2 — lessons-learned / hot take</h4>
+        <div class="day-box">Unpopular opinion: doing 5 internships as a student taught me more about "real" development than any single big project would have.<br><br>Each one had different code standards, different team habits, different tools. You stop thinking there's one "right way" to build something — and start noticing patterns across all of them.<br><br>If you're a student stacking internships instead of chasing one "perfect" one — you're not behind. You're pattern-matching faster than you think.</div>
+        <button class="copy-btn" onclick="copyText(document.querySelectorAll('.day-box')[2].innerText, this)">Copy post</button>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-num">06<span>SAT</span></div>
+      <div class="day-content">
+        <h4>Engage + expand network</h4>
+        <ul class="checklist">
+          <li>Reply to every comment on both posts (even a short reply keeps the post alive in feeds)</li>
+          <li>Send 5 more connection requests using Wednesday's template</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-num">07<span>SUN</span></div>
+      <div class="day-content">
+        <h4>Review the numbers</h4>
+        <p>Check profile views and connection acceptance rate under "My Network" → "Analytics."</p>
+        <div class="card-row">📈 <b>Profile views up sharply:</b> your headline/keyword changes are working — keep the momentum with a Week 2 post.</div>
+        <div class="card-row">📉 <b>Connection acceptance below ~30%:</b> your requests are too generic or targeting the wrong people — narrow your target list.</div>
+        <div class="card-row">😐 <b>Views flat despite edits:</b> LinkedIn's algorithm rewards activity, not just profile edits — post/comment more, don't just wait.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PART 5: SUMMARY CARD -->
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow mono">// Part 5</div>
+      <h2>Shareable Summary</h2>
+      <p>Screenshot this and post it — or copy the text below.</p>
+    </div>
+
+    <div class="summary-card" id="summaryCard">
+      <div class="eyebrow mono">I let AI roast my LinkedIn profile today. Here's what changed:</div>
+      <div class="summary-score">
+        <span class="big" style="color:var(--removed);">38</span> <span style="color:var(--text-dim);">→</span> <span class="big" style="color:var(--added);">86</span> <span style="color:var(--text-dim);">/ 100</span>
+      </div>
+      <h3>Top 3 mistakes I was making:</h3>
+      <ul class="summary-list">
+        <li data-n="1.">My Experience section was empty — 5 real internships, zero of them visible.</li>
+        <li data-n="2.">Only 3 skills listed out of 50 possible — nearly invisible in recruiter search.</li>
+        <li data-n="3.">My About section opened by restating my name instead of hooking the reader.</li>
+      </ul>
+      <div class="summary-highlight">
+        <b>The #1 thing that made the biggest difference:</b> Turning my internship posts into actual, structured Experience entries. Posts fade from feeds — Experience entries don't.
+      </div>
+      <button class="copy-btn" style="margin-top:20px;" onclick="copySummary(this)">Copy summary card text</button>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">Built for @sadiaramzan · LinkedIn Optimization Report</div>
+</footer>
+
+<script>
+function showTab(id){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function flashCopied(btn){
+  const original = btn.innerText;
+  btn.innerText = "✓ Copied";
+  btn.classList.add('copied');
+  setTimeout(()=>{ btn.innerText = original; btn.classList.remove('copied'); }, 1800);
+}
+
+function copyText(text, btn){
+  navigator.clipboard.writeText(text).then(()=>flashCopied(btn));
+}
+
+function copyAbout(btn){
+  const text = "I don't just study frontend development — I've spent the last few months living inside it: 3+ internships, daily React practice, and a portfolio I keep rebuilding until it's right.\\n\\nI build clean, responsive interfaces with HTML, CSS, JavaScript, React, Bootstrap & Tailwind — and I design the social media visuals to go with them using Adobe Illustrator. Development and design aren't separate skills for me; they're the same instinct applied twice.\\n\\nCurrently completing frontend internships at Apexcify Technologies, DevelopersHub Corporation, and SoftGrowTech, working hands-on with React, Tailwind CSS, and modern UI practices.\\n\\n[Add a real number here once you have one]\\n\\n📩 Open to frontend / junior developer roles — message me directly, or see my work: sadiaramzan-portfolio.netlify.app";
+  navigator.clipboard.writeText(text).then(()=>flashCopied(btn));
+}
+
+function copySummary(btn){
+  const el = document.getElementById('summaryCard');
+  const text = "I let AI roast my LinkedIn profile today. Here's what changed:\\n\\nBefore: 38/100\\nAfter: 86/100\\n\\nTop 3 mistakes I was making:\\n1. My Experience section was empty — 5 real internships, zero of them visible.\\n2. Only 3 skills listed out of 50 possible — nearly invisible in recruiter search.\\n3. My About section opened by restating my name instead of hooking the reader.\\n\\nThe #1 thing that made the biggest difference: Turning my internship posts into actual, structured Experience entries. Posts fade from feeds — Experience entries don't.";
+  navigator.clipboard.writeText(text).then(()=>flashCopied(btn));
+}
+
+// Animate bars on scroll
+const bars = document.querySelectorAll('.bar-row');
+const observer = new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      const row = entry.target;
+      const before = row.dataset.before;
+      const after = row.dataset.after;
+      row.querySelector('.bar-fill-before').style.width = before + '%';
+      row.querySelector('.bar-fill-after').style.width = after + '%';
+      observer.unobserve(row);
+    }
+  });
+}, {threshold:0.3});
+bars.forEach(b=>observer.observe(b));
+</script>
+</body>
+</html>
