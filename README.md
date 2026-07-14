@@ -357,3 +357,9 @@ Day 43 – AI Workflow Architect
 * Built an interactive AI Workflow Architect using HTML, CSS, and JavaScript.
 * Designed end-to-end workflows with AI tool recommendations, decision trees, and prompt examples.
 * Generated workflow summaries, learning resources, automation opportunities, and printable guides.
+
+Day 44 – LinkedIn Profile Optimizer
+
+* Built an interactive LinkedIn Profile Optimizer using HTML, CSS, and JavaScript.
+* Analyzed and rebuilt profile sections with recruiter-focused recommendations and SEO improvements.
+* Generated a personalized 7-day LinkedIn growth plan with content, networking, and profile optimization strategies.
