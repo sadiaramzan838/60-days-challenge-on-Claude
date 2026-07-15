@@ -363,3 +363,9 @@ Day 44 – LinkedIn Profile Optimizer
 * Built an interactive LinkedIn Profile Optimizer using HTML, CSS, and JavaScript.
 * Analyzed and rebuilt profile sections with recruiter-focused recommendations and SEO improvements.
 * Generated a personalized 7-day LinkedIn growth plan with content, networking, and profile optimization strategies.
+
+Day 45 – Decision Strategist
+
+* Built an interactive Decision Strategist using HTML, CSS, and JavaScript.
+* Guided users through structured decision-making with bias analysis, decision matrices, and risk evaluation.
+* Generated a personalized Decision Report with action plans, insights, and shareable summary cards.
