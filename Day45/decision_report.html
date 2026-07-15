@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decision Report — MPhil in China</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-main:#0f0f14;
+  --bg-card:#1a1a24;
+  --bg-card-alt:#1e1e2e;
+  --text-primary:#f0f0f5;
+  --text-secondary:#8888a0;
+  --accent-green:#34d399;
+  --accent-red:#f87171;
+  --accent-blue:#60a5fa;
+  --accent-gold:#fbbf24;
+  --accent-purple:#a78bfa;
+  --border-subtle:rgba(255,255,255,0.06);
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg-main);
+  color:var(--text-primary);
+  font-family:'Inter','Segoe UI',system-ui,sans-serif;
+  margin:0;
+  padding:0 16px 40px;
+}
+.wrap{max-width:720px;margin:0 auto;}
+header.banner{
+  padding:40px 0 20px;
+  text-align:center;
+}
+header.banner h1{
+  font-size:28px;font-weight:800;margin:0 0 8px;letter-spacing:0.5px;
+}
+header.banner .subtitle{
+  font-size:16px;color:var(--text-secondary);margin:0 0 6px;
+}
+header.banner .date{
+  font-size:12px;color:var(--text-secondary);
+}
+.gradient-line{
+  height:2px;width:100%;margin-top:20px;
+  background:linear-gradient(90deg,var(--accent-blue),var(--accent-purple),var(--accent-gold));
+}
+.card{
+  background:var(--bg-card);
+  border:1px solid var(--border-subtle);
+  border-radius:16px;
+  padding:28px;
+  margin:28px 0;
+  box-shadow:0 4px 24px rgba(0,0,0,0.3);
+  transition:transform 0.2s ease;
+  border-left:4px solid var(--accent-blue);
+}
+.card:hover{transform:translateY(-2px);}
+.card.purple{border-left-color:var(--accent-purple);}
+.card.red{border-left-color:var(--accent-red);}
+.card.green{border-left-color:var(--accent-green);}
+.card.gold{border-left-color:var(--accent-gold);background:var(--bg-card-alt);padding:32px;box-shadow:0 0 20px rgba(251,191,36,0.15);}
+.section-title{
+  font-size:20px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 16px;
+}
+.section-title.blue{color:var(--accent-blue);}
+.section-title.green{color:var(--accent-green);}
+.section-title.purple{color:var(--accent-purple);}
+.section-title.red{color:var(--accent-red);}
+.section-title.gold{color:var(--accent-gold);}
+p, li{font-size:15px;line-height:1.7;margin:0 0 10px;}
+.label{font-size:12px;font-weight:500;color:var(--text-secondary);text-transform:uppercase;margin-bottom:4px;}
+.option-card{
+  background:var(--bg-card-alt);
+  border-radius:12px;
+  padding:20px;
+  margin-bottom:16px;
+  border:1px solid var(--border-subtle);
+}
+.option-card h3{margin:0 0 10px;font-size:17px;}
+.tag-strength{color:var(--accent-green);}
+.tag-weakness{color:var(--accent-red);}
+.tag-hidden{color:var(--accent-blue);}
+.tag-value{color:var(--accent-gold);font-weight:600;}
+.matrix-row{margin-bottom:14px;}
+.matrix-label{font-size:13px;color:var(--text-secondary);margin-bottom:6px;}
+.bar-group{display:flex;flex-direction:column;gap:6px;}
+.bar-container{
+  height:28px;background:rgba(255,255,255,0.05);border-radius:8px;overflow:hidden;position:relative;
+}
+.bar-fill{
+  height:100%;border-radius:8px;display:flex;align-items:center;justify-content:flex-end;
+  padding-right:10px;color:#fff;font-weight:700;font-size:13px;
+  width:0;animation:growBar 0.8s ease-out forwards;
+}
+.bar-a{background:linear-gradient(90deg,#60a5fa,#3b82f6);}
+.bar-b{background:linear-gradient(90deg,#34d399,#10b981);}
+@keyframes growBar{
+  from{width:0;}
+  to{width:var(--target);}
+}
+.matrix-total{
+  margin-top:18px;padding:16px;border-radius:10px;background:rgba(255,255,255,0.04);
+  font-weight:700;font-size:15px;display:flex;justify-content:space-between;
+}
+.matrix-legend{display:flex;gap:18px;font-size:13px;color:var(--text-secondary);margin-bottom:18px;}
+.legend-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;}
+.premortem-block{margin-bottom:18px;}
+.premortem-block h4{margin:0 0 8px;font-size:15px;color:var(--accent-red);}
+.day-row{display:flex;gap:10px;margin-bottom:8px;font-size:14px;}
+.day-num{color:var(--accent-green);font-weight:700;min-width:90px;}
+.verdict-name{font-size:30px;font-weight:800;color:var(--accent-gold);margin:0 0 12px;}
+.hard-truth{font-style:italic;color:var(--text-secondary);margin-top:16px;}
+.share-row{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;}
+.mini-card{
+  flex:1;min-width:180px;background:var(--bg-card-alt);padding:16px;border-radius:12px;
+  border:1px solid var(--border-subtle);display:flex;flex-direction:column;justify-content:space-between;
+}
+.mini-card h4{margin:0 0 10px;font-size:14px;color:var(--accent-gold);}
+.mini-card p{font-size:13px;margin:0 0 8px;}
+.watermark{font-size:10px;color:var(--text-secondary);margin-top:10px;text-align:right;}
+footer{text-align:center;color:var(--text-secondary);font-size:12px;margin-top:40px;}
+@media(max-width:600px){
+  .card{padding:16px;}
+  .matrix-label{margin-bottom:4px;}
+  .share-row{flex-direction:column;}
+  header.banner h1{font-size:24px;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="banner">
+  <h1>DECISION REPORT</h1>
+  <div class="subtitle">Should you pursue an MPhil in China?</div>
+  <div class="date">Generated July 15, 2026</div>
+  <div class="gradient-line"></div>
+</header>
+
+<!-- SECTION 1 -->
+<div class="card">
+  <div class="section-title blue">The Real Decision</div>
+  <p>You're weighing whether to pursue an MPhil in China against staying put — right now, in your 7th semester, with about a year to make it happen.</p>
+  <p>The real trade-off isn't "good vs bad" — it's ambition vs two concrete blockers: permission and money.</p>
+  <p>It's emotionally hard because your gut has already answered, but you haven't yet built the case that would make that answer safe to act on.</p>
+</div>
+
+<!-- SECTION 2 -->
+<div class="card green">
+  <div class="section-title green">The Case For Each Option</div>
+
+  <div class="option-card">
+    <h3>Option A — Go for MPhil in China</h3>
+    <p><span class="tag-strength">Strongest case:</span> This is what your gut already told you to do. You have a full year of runway, which is enough time to solve the blockers if you start now.</p>
+    <p><span class="tag-hidden">Hidden upside:</span> Solving the money and permission problem now will build skills (negotiation, planning, resourcefulness) you'll need regardless of the outcome.</p>
+    <p><span class="tag-weakness">Biggest weakness:</span> Money and permission aren't small obstacles — they're the two hardest parts of this exact decision, and you haven't named a plan for either yet.</p>
+    <p class="tag-value">Best if you value: growth and following your instinct.</p>
+  </div>
+
+  <div class="option-card">
+    <h3>Option B — Stay / Don't Go Now</h3>
+    <p><span class="tag-strength">Strongest case:</span> Removes the immediate pressure of money and permission. Buys time to prepare properly instead of rushing.</p>
+    <p><span class="tag-hidden">Hidden upside:</span> More runway to save money and build the permission conversation with family gradually, instead of under deadline pressure.</p>
+    <p><span class="tag-weakness">Biggest weakness:</span> You said this can be undone — but delay has its own cost. A year passes either way; standing still doesn't remove the decision, it just postpones it.</p>
+    <p class="tag-value">Best if you value: certainty and control over timing.</p>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="card purple">
+  <div class="section-title purple">Assumption Buster</div>
+  <div class="label">3 Assumptions You May Be Making</div>
+  <p>1. That permission and money will get easier to solve later — nothing you've said suggests they will.</p>
+  <p>2. That "right choice" is a fact to discover, rather than a plan you build and then commit to.</p>
+  <p>3. That reversibility removes the risk — undoing a decision after moving abroad still costs time, money, and momentum.</p>
+
+  <div class="label">2 Biases At Play</div>
+  <p><strong>Status quo bias</strong> — the pull to stay because staying feels safer, even though your gut disagrees.</p>
+  <p><strong>Loss aversion</strong> — the fear of getting it "wrong" is louder than the pull of what you'd gain by going.</p>
+
+  <div class="label">1 Thing You're Definitely Ignoring</div>
+  <p>You haven't named an actual plan for money or permission — you've named them as obstacles, not as problems with steps.</p>
+</div>
+
+<!-- SECTION 4 -->
+<div class="card">
+  <div class="section-title blue">Decision Matrix</div>
+  <div class="matrix-legend">
+    <span><span class="legend-dot" style="background:#60a5fa;"></span>Option A — Go to China</span>
+    <span><span class="legend-dot" style="background:#34d399;"></span>Option B — Stay</span>
+  </div>
+
+  <div id="matrix"></div>
+
+  <div class="matrix-total">
+    <span>Option A Total</span><span style="color:var(--accent-blue);">46 / 70</span>
+  </div>
+  <div class="matrix-total">
+    <span>Option B Total</span><span style="color:var(--accent-green);">43 / 70</span>
+  </div>
+</div>
+
+<!-- SECTION 5 -->
+<div class="card red">
+  <div class="section-title red">Premortem</div>
+
+  <div class="premortem-block">
+    <h4>Option A failed after 12 months</h4>
+    <p>1. Funding never came through in time. 2. Permission fell apart mid-process. 3. The pressure of solving both at once burned you out before you even left.</p>
+    <p><strong>Early warning sign:</strong> No scholarship or funding lead secured by the 6-month mark.</p>
+    <p><strong>Prevention action:</strong> Start funding and permission conversations in parallel this month, not closer to the deadline.</p>
+  </div>
+
+  <div class="premortem-block">
+    <h4>Option B failed after 12 months</h4>
+    <p>1. The application window closed without you acting. 2. You stayed "for now" and it quietly became permanent. 3. Regret set in once you realized the blockers were never actually tackled.</p>
+    <p><strong>Early warning sign:</strong> Six months pass with no concrete steps taken toward funding or permission.</p>
+    <p><strong>Prevention action:</strong> Set a hard checkpoint date — if no progress by then, treat it as a signal to push, not wait longer.</p>
+  </div>
+</div>
+
+<!-- SECTION 6 -->
+<div class="card green">
+  <div class="section-title green">7-Day Test Plan</div>
+  <div class="day-row"><span class="day-num">Day 1-2:</span> Research MPhil programs in China, scholarship options, and eligibility requirements.</div>
+  <div class="day-row"><span class="day-num">Day 3-4:</span> Reach out to one scholarship office or a current/former student in China for real insight.</div>
+  <div class="day-row"><span class="day-num">Day 5-6:</span> Have the permission conversation with family — bring a real financial plan, not just the idea.</div>
+  <div class="day-row"><span class="day-num">Day 7:</span> Decision day — if you have a funding lead AND family buy-in, commit and start applications. If not, set a new 3-month checkpoint.</div>
+</div>
+
+<!-- SECTION 7 -->
+<div class="card gold">
+  <div class="section-title gold">The Verdict</div>
+  <div class="verdict-name">Go for the MPhil in China</div>
+  <p>It wins on the matrix (46 vs 43) and matches what your gut already told you — the score isn't close enough to ignore that alignment.</p>
+  <p>What could flip it: if 6 months pass with zero progress on funding or permission, Option B becomes the safer, more honest choice.</p>
+  <p class="hard-truth">Your gut already decided — the real work now is solving permission and money, not doubting the choice.</p>
+</div>
+
+<!-- SECTION 8 -->
+<div class="card gold">
+  <div class="section-title gold">Shareable Cards</div>
+  <div class="share-row">
+    <div class="mini-card">
+      <h4>MATRIX SUMMARY</h4>
+      <p>Option A — Go to China: <strong>46/70</strong></p>
+      <p>Option B — Stay: <strong>43/70</strong></p>
+      <div class="watermark">Built with Claude AI</div>
+    </div>
+    <div class="mini-card">
+      <h4>VERDICT</h4>
+      <p><strong>Go for the MPhil in China.</strong></p>
+      <p>Your gut and the data agree — now go solve the money and permission problem.</p>
+      <div class="watermark">Built with Claude AI</div>
+    </div>
+    <div class="mini-card">
+      <h4>LINKEDIN HOOK</h4>
+      <p>"I asked AI to challenge my toughest decision. Here's what happened 👇"</p>
+      <p>Ran my MPhil-abroad dilemma through a full decision framework — matrix, premortem, 7-day test plan.</p>
+      <p>Turns out the answer was never the problem — the plan was.</p>
+      <div class="watermark">Built with Claude AI</div>
+    </div>
+  </div>
+</div>
+
+<footer>Built with Claude AI | ABTalks 60-Day Challenge</footer>
+
+</div>
+
+<script>
+const dims = [
+  {label:"Life/Career Upside", a:8, b:4},
+  {label:"Financial Safety", a:3, b:8},
+  {label:"Growth & Learning", a:9, b:5},
+  {label:"Stress Level (10=low)", a:4, b:7},
+  {label:"Reversibility (10=easy)", a:8, b:9},
+  {label:"Long-term Alignment", a:8, b:5},
+  {label:"Regret Risk (10=low)", a:6, b:5},
+];
+
+const container = document.getElementById('matrix');
+dims.forEach((d, i) => {
+  const row = document.createElement('div');
+  row.className = 'matrix-row';
+  row.innerHTML = `
+    <div class="matrix-label">${d.label}</div>
+    <div class="bar-group">
+      <div class="bar-container">
+        <div class="bar-fill bar-a" style="--target:${d.a*10}%; animation-delay:${i*0.1}s;">${d.a}</div>
+      </div>
+      <div class="bar-container">
+        <div class="bar-fill bar-b" style="--target:${d.b*10}%; animation-delay:${i*0.1 + 0.05}s;">${d.b}</div>
+      </div>
+    </div>
+  `;
+  container.appendChild(row);
+});
+</script>
+
+</body>
+</html>
