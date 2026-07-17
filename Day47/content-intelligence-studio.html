@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Content Intelligence Studio</title>
+<style>
+  :root[data-theme="dark"]{
+    --bg:#0A0B10; --bg-elev:#101219; --panel:#141722; --panel-2:#1B1F2C; --border:#262B3A;
+    --text:#F1F0EC; --text-dim:#A6ACC2; --text-mute:#5C6178;
+    --accent:#7C6CFF; --accent-2:#5947E6; --mint:#39D9A0; --amber:#FFB238; --coral:#FF5C6C;
+    --shadow:0 20px 60px rgba(0,0,0,.45);
+  }
+  :root[data-theme="light"]{
+    --bg:#F3F2ED; --bg-elev:#FFFFFF; --panel:#FFFFFF; --panel-2:#F6F5F0; --border:#DEDCD3;
+    --text:#15161B; --text-dim:#54586A; --text-mute:#8C90A0;
+    --accent:#5A46E8; --accent-2:#4433C4; --mint:#0FA678; --amber:#B87200; --coral:#D63B4C;
+    --shadow:0 20px 50px rgba(20,20,30,.08);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5; -webkit-font-smoothing:antialiased;
+    transition:background .3s ease,color .3s ease;
+  }
+  .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Roboto Mono",monospace;}
+  a{color:var(--accent);}
+  ::selection{background:var(--accent);color:#fff;}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px;}
+
+  /* HEADER */
+  header.top{border-bottom:1px solid var(--border);position:sticky;top:0;background:color-mix(in srgb, var(--bg) 88%, transparent);backdrop-filter:blur(10px);z-index:50;}
+  .top-inner{display:flex;align-items:center;justify-content:space-between;padding:16px 0;}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.02em;font-size:17px;}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--mint));display:flex;align-items:center;justify-content:center;font-size:14px;color:#0A0B10;font-weight:800;}
+  .theme-toggle{border:1px solid var(--border);background:var(--panel);color:var(--text-dim);border-radius:20px;padding:6px 12px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.2s;}
+  .theme-toggle:hover{border-color:var(--accent);color:var(--text);}
+
+  .context-bar{display:flex;flex-wrap:wrap;gap:8px;padding:14px 0;border-bottom:1px solid var(--border);}
+  .pill{font-size:12px;padding:5px 10px;border-radius:20px;border:1px solid var(--border);color:var(--text-dim);background:var(--panel);}
+  .pill b{color:var(--text);font-weight:600;}
+  .pill.rigor{border-color:var(--coral);color:var(--coral);}
+
+  /* HERO */
+  .hero{padding:48px 0 28px;}
+  .hero h1{font-size:clamp(28px,4vw,42px);margin:0 0 10px;letter-spacing:-.03em;font-weight:800;}
+  .hero p.sub{color:var(--text-dim);max-width:640px;margin:0 0 30px;font-size:15.5px;}
+
+  .upload-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:20px;}
+  @media(max-width:860px){.upload-grid{grid-template-columns:1fr;}}
+
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:22px;box-shadow:var(--shadow);}
+  .card h3{margin:0 0 4px;font-size:15px;}
+  .card .hint{color:var(--text-mute);font-size:12.5px;margin-bottom:14px;}
+
+  textarea#captionInput{
+    width:100%;min-height:150px;resize:vertical;background:var(--bg-elev);border:1px solid var(--border);
+    color:var(--text);border-radius:10px;padding:12px 14px;font-size:14.5px;font-family:inherit;
+  }
+  textarea#captionInput:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .charcount{text-align:right;font-size:11.5px;color:var(--text-mute);margin-top:6px;}
+
+  .drop{
+    border:1.5px dashed var(--border);border-radius:12px;padding:22px;text-align:center;cursor:pointer;
+    color:var(--text-dim);font-size:13.5px;transition:.2s;background:var(--bg-elev);
+  }
+  .drop:hover,.drop.drag{border-color:var(--accent);color:var(--text);}
+  .preview-img{width:100%;max-height:220px;object-fit:cover;border-radius:10px;margin-top:12px;border:1px solid var(--border);display:none;}
+  .clear-img{display:none;margin-top:8px;font-size:12px;background:none;border:none;color:var(--coral);cursor:pointer;padding:0;}
+
+  .actions{display:flex;gap:12px;margin-top:20px;align-items:center;flex-wrap:wrap;}
+  .btn{border:none;border-radius:10px;padding:12px 22px;font-size:14.5px;font-weight:600;cursor:pointer;transition:.15s;}
+  .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;box-shadow:0 8px 24px rgba(124,108,255,.35);}
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 12px 30px rgba(124,108,255,.45);}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text-dim);}
+  .btn-ghost:hover{color:var(--text);border-color:var(--accent);}
+  .btn-sm{padding:7px 13px;font-size:12.5px;border-radius:8px;}
+  .err-msg{color:var(--coral);font-size:13px;margin-top:4px;}
+
+  /* PIPELINE */
+  .pipeline{margin-top:40px;display:none;}
+  .pipeline.show{display:block;}
+  .section-title{display:flex;align-items:center;gap:10px;margin:44px 0 16px;}
+  .section-title h2{font-size:19px;margin:0;letter-spacing:-.01em;}
+  .section-title .line{flex:1;height:1px;background:var(--border);}
+  .section-eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--text-mute);margin-bottom:4px;}
+
+  .stage-row{display:flex;flex-wrap:wrap;gap:10px;}
+  .stage-chip{
+    display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--border);
+    border-radius:10px;padding:10px 14px;font-size:12.5px;color:var(--text-dim);flex:1;min-width:150px;
+  }
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--text-mute);flex-shrink:0;}
+  .stage-chip.running .dot{background:var(--amber);animation:pulse 1s infinite;}
+  .stage-chip.done .dot{background:var(--mint);}
+  .stage-chip.error .dot{background:var(--coral);}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+  /* LOG */
+  .log-panel{background:#07080C;border:1px solid var(--border);border-radius:12px;padding:14px 16px;height:150px;overflow-y:auto;font-size:12px;margin-top:16px;}
+  :root[data-theme="light"] .log-panel{background:#0E1016;}
+  .log-line{color:#8FE3C0;margin-bottom:4px;opacity:0;animation:fadein .3s forwards;}
+  .log-line.info{color:#9AA6FF;}
+  .log-line.err{color:#FF8B96;}
+  @keyframes fadein{to{opacity:1;}}
+
+  /* SCORE DASHBOARD */
+  .score-grid{display:grid;grid-template-columns:260px 1fr;gap:24px;margin-top:18px;}
+  @media(max-width:860px){.score-grid{grid-template-columns:1fr;}}
+  .gauge-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+  .gauge{width:200px;height:200px;transform:rotate(-90deg);}
+  .gauge-track{fill:none;stroke:var(--border);stroke-width:14;}
+  .gauge-fill{fill:none;stroke:var(--accent);stroke-width:14;stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1),stroke 1.2s;}
+  .gauge-num{font-size:40px;font-weight:800;margin-top:-124px;letter-spacing:-.03em;}
+  .gauge-label{color:var(--text-mute);font-size:12px;text-transform:uppercase;letter-spacing:.1em;margin-top:118px;}
+
+  .cat-list{display:flex;flex-direction:column;gap:16px;justify-content:center;}
+  .cat-row{}
+  .cat-top{display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:6px;}
+  .cat-top .name{font-weight:600;}
+  .cat-track{height:8px;background:var(--panel-2);border-radius:6px;overflow:hidden;}
+  .cat-fill{height:100%;width:0%;border-radius:6px;transition:width 1s cubic-bezier(.4,0,.2,1);}
+
+  /* REVIEWER CARDS */
+  .reviewer-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:18px;}
+  @media(max-width:860px){.reviewer-grid{grid-template-columns:1fr;}}
+  .rev-card{cursor:pointer;}
+  .rev-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .rev-score{font-size:22px;font-weight:800;font-family:ui-monospace,monospace;}
+  .rev-summary{color:var(--text-dim);font-size:13.5px;margin:8px 0 0;}
+  .rev-detail{max-height:0;overflow:hidden;transition:max-height .35s ease;}
+  .rev-card.open .rev-detail{max-height:600px;margin-top:14px;}
+  .rev-detail h4{font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-mute);margin:12px 0 6px;}
+  .rev-detail ul{margin:0;padding-left:18px;font-size:13.5px;color:var(--text-dim);}
+  .rev-detail li{margin-bottom:4px;}
+  .rev-detail .opp{background:var(--panel-2);border-left:3px solid var(--amber);padding:10px 12px;border-radius:6px;font-size:13.5px;color:var(--text);}
+  .toggle-hint{font-size:11px;color:var(--text-mute);margin-top:10px;}
+
+  /* SKELETON */
+  .skeleton{background:linear-gradient(90deg,var(--panel-2) 25%,var(--border) 37%,var(--panel-2) 63%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;border-radius:8px;}
+  @keyframes shimmer{0%{background-position:100% 50%;}100%{background-position:0 50%;}}
+  .sk-line{height:12px;margin-bottom:8px;}
+
+  /* REWRITE LAB */
+  .lab-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px;}
+  @media(max-width:860px){.lab-grid{grid-template-columns:1fr;}}
+  .rewrite-box{white-space:pre-wrap;font-size:14px;background:var(--bg-elev);border:1px solid var(--border);border-radius:10px;padding:14px;margin-top:10px;color:var(--text);}
+  .hook-item{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--bg-elev);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:13.5px;}
+  .copy-btn{border:1px solid var(--border);background:transparent;color:var(--text-mute);border-radius:6px;padding:4px 9px;font-size:11px;cursor:pointer;flex-shrink:0;}
+  .copy-btn:hover{color:var(--accent);border-color:var(--accent);}
+  .checklist{list-style:none;margin:10px 0 0;padding:0;}
+  .checklist li{display:flex;gap:10px;font-size:13.5px;padding:7px 0;border-bottom:1px solid var(--border);color:var(--text-dim);}
+  .checklist li:last-child{border-bottom:none;}
+  .checklist li::before{content:'☐';color:var(--accent);}
+
+  /* BEFORE/AFTER */
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px;}
+  @media(max-width:760px){.ba-grid{grid-template-columns:1fr;}}
+  .ba-col{border-radius:12px;padding:16px;border:1px solid var(--border);}
+  .ba-col.before{background:color-mix(in srgb, var(--coral) 8%, var(--panel));}
+  .ba-col.after{background:color-mix(in srgb, var(--mint) 10%, var(--panel));}
+  .ba-col h4{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;}
+  .ba-col.before h4{color:var(--coral);}
+  .ba-col.after h4{color:var(--mint);}
+  .ba-col p{font-size:13.5px;white-space:pre-wrap;color:var(--text-dim);margin:0;}
+
+  /* SUMMARY */
+  .summary-card{background:linear-gradient(160deg,var(--panel),var(--panel-2));border:1px solid var(--border);}
+  .predicted{display:flex;gap:14px;align-items:flex-start;background:var(--bg-elev);border:1px solid var(--border);border-radius:10px;padding:14px;margin-top:14px;}
+  .predicted .badge{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;background:var(--amber);color:#241800;padding:3px 8px;border-radius:6px;flex-shrink:0;font-weight:700;}
+  .predicted p{margin:0;font-size:13.5px;color:var(--text-dim);}
+
+  .deeper-list{display:flex;flex-direction:column;gap:8px;margin-top:14px;}
+  .deeper-item{background:var(--bg-elev);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13.5px;color:var(--text-dim);cursor:pointer;}
+  .deeper-item:hover{border-color:var(--accent);color:var(--text);}
+
+  footer{margin:60px 0 40px;text-align:center;color:var(--text-mute);font-size:12px;}
+
+  .stage-error-box{background:color-mix(in srgb, var(--coral) 10%, var(--panel));border:1px solid var(--coral);border-radius:10px;padding:14px;margin-top:14px;font-size:13.5px;color:var(--text);}
+
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-inner">
+    <div class="brand"><span class="brand-mark">CI</span> Content Intelligence Studio</div>
+    <button class="theme-toggle" id="themeToggle">🌙 Dark</button>
+  </div>
+  <div class="wrap context-bar">
+    <span class="pill">Content: <b>Social Post</b></span>
+    <span class="pill">Platform: <b>Multi-platform (feed-style)</b></span>
+    <span class="pill">Goal: <b>Grow Reach & Followers</b></span>
+    <span class="pill rigor">Rigor: <b>Brutally Honest — Pro Level</b></span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section class="hero">
+    <h1>Send it to the review desk before the algorithm does.</h1>
+    <p class="sub">Seven specialist AI reviewers — a strategist, a hook analyst, a copy editor, a growth strategist, an audience psychologist, an executive editor, and an optimization lab — will tear your post apart and rebuild it. Every score and sentence below is generated live by Claude.</p>
+
+    <div class="upload-grid">
+      <div class="card">
+        <h3>Caption / Text</h3>
+        <div class="hint">Paste the exact caption you're planning to post.</div>
+        <textarea id="captionInput" placeholder="Paste your caption here..."></textarea>
+        <div class="charcount" id="charCount">0 characters</div>
+      </div>
+      <div class="card">
+        <h3>Image (optional but recommended)</h3>
+        <div class="hint">The visual that will ship with this post.</div>
+        <div class="drop" id="dropZone">Click to upload, or drag an image here<br><span style="font-size:11px;color:var(--text-mute);">JPG, PNG, WEBP — under 5MB</span></div>
+        <input type="file" id="fileInput" accept="image/*" style="display:none;">
+        <img id="previewImg" class="preview-img" alt="Upload preview">
+        <button class="clear-img" id="clearImg">Remove image</button>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="analyzeBtn">Run Full Review</button>
+      <button class="btn btn-ghost" id="resetBtn" style="display:none;">Start Over</button>
+      <div class="err-msg" id="topError"></div>
+    </div>
+  </section>
+
+  <div class="pipeline" id="pipeline">
+
+    <div class="section-title"><h2>Live Review Desk</h2><div class="line"></div></div>
+    <div class="stage-row" id="stageRow"></div>
+    <div class="log-panel mono" id="logPanel"></div>
+
+    <div class="section-title"><h2>Content Health Score</h2><div class="line"></div></div>
+    <div class="card">
+      <div class="score-grid" id="scoreGrid">
+        <div class="gauge-wrap">
+          <svg class="gauge" viewBox="0 0 220 220"><circle class="gauge-track" cx="110" cy="110" r="88"></circle><circle class="gauge-fill" id="gaugeFill" cx="110" cy="110" r="88" style="stroke-dasharray:553;stroke-dashoffset:553;"></circle></svg>
+          <div class="gauge-num" id="gaugeNum">--</div>
+          <div class="gauge-label">Overall / 100</div>
+        </div>
+        <div class="cat-list" id="catList"></div>
+      </div>
+    </div>
+
+    <div class="section-title"><h2>Specialist Reviewer Reports</h2><div class="line"></div></div>
+    <div class="reviewer-grid" id="reviewerGrid"></div>
+
+    <div class="section-title"><h2>Optimization Lab</h2><div class="line"></div></div>
+    <div class="card">
+      <div class="section-eyebrow">Rewritten Caption</div>
+      <div class="rewrite-box" id="rewriteBox">Waiting for review...</div>
+      <div class="lab-grid">
+        <div>
+          <div class="section-eyebrow" style="margin-top:16px;">Alternative Hooks</div>
+          <div id="hooksList" style="margin-top:8px;"></div>
+        </div>
+        <div>
+          <div class="section-eyebrow" style="margin-top:16px;">Publishing Checklist</div>
+          <ul class="checklist" id="checklistBox"></ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title"><h2>Before vs. After</h2><div class="line"></div></div>
+    <div class="ba-grid">
+      <div class="ba-col before"><h4>Before</h4><p id="baBefore">--</p></div>
+      <div class="ba-col after"><h4>After</h4><p id="baAfter">--</p></div>
+    </div>
+
+    <div class="section-title"><h2>Executive Summary & Health Report</h2><div class="line"></div></div>
+    <div class="card summary-card">
+      <div class="section-eyebrow">Verdict</div>
+      <p id="verdictText" style="font-size:15px;margin:6px 0 16px;">--</p>
+      <div class="section-eyebrow">Executive Summary</div>
+      <p id="execSummary" style="font-size:14px;color:var(--text-dim);margin:6px 0 16px;">--</p>
+      <div class="section-eyebrow">Highest-Impact Improvements</div>
+      <ul id="topImprovements" style="font-size:14px;color:var(--text-dim);"></ul>
+      <div class="section-eyebrow">Missed Opportunities</div>
+      <ul id="missedOpps" style="font-size:14px;color:var(--text-dim);"></ul>
+      <div class="section-eyebrow">Content Health Report</div>
+      <p id="healthReport" style="font-size:14px;color:var(--text-dim);">--</p>
+      <div class="predicted"><span class="badge">AI Estimate</span><p id="predictedPerf">--</p></div>
+    </div>
+
+    <div class="section-title"><h2>Go Deeper</h2><div class="line"></div></div>
+    <div class="card">
+      <div class="hint" style="margin-bottom:0;">Prompts the reviewers suggest for your next optimization pass — click to reuse.</div>
+      <div class="deeper-list" id="deeperList"></div>
+    </div>
+
+  </div>
+</div>
+
+<footer>Content Intelligence Studio — all analysis generated live via the Claude API. Scores and predictions are AI estimates, not guarantees.</footer>
+
+<script>
+(function(){
+
+/* ---------- THEME ---------- */
+const themeToggle = document.getElementById('themeToggle');
+themeToggle.addEventListener('click', ()=>{
+  const html = document.documentElement;
+  const cur = html.getAttribute('data-theme');
+  const next = cur==='dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  themeToggle.textContent = next==='dark' ? '🌙 Dark' : '☀️ Light';
+});
+
+/* ---------- UPLOAD ---------- */
+const captionInput = document.getElementById('captionInput');
+const charCount = document.getElementById('charCount');
+captionInput.addEventListener('input', ()=>{ charCount.textContent = captionInput.value.length + ' characters'; });
+
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const previewImg = document.getElementById('previewImg');
+const clearImgBtn = document.getElementById('clearImg');
+let imageData = null; // {mediaType, base64}
+
+dropZone.addEventListener('click', ()=> fileInput.click());
+dropZone.addEventListener('dragover', e=>{ e.preventDefault(); dropZone.classList.add('drag'); });
+dropZone.addEventListener('dragleave', ()=> dropZone.classList.remove('drag'));
+dropZone.addEventListener('drop', e=>{
+  e.preventDefault(); dropZone.classList.remove('drag');
+  if(e.dataTransfer.files && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', ()=>{ if(fileInput.files[0]) handleFile(fileInput.files[0]); });
+clearImgBtn.addEventListener('click', ()=>{
+  imageData = null; previewImg.style.display='none'; clearImgBtn.style.display='none'; fileInput.value='';
+});
+
+function handleFile(file){
+  if(!file.type.startsWith('image/')){ alert('Please upload an image file.'); return; }
+  if(file.size > 5*1024*1024){ alert('Image must be under 5MB.'); return; }
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    const result = reader.result;
+    const base64 = result.split(',')[1];
+    imageData = { mediaType: file.type, base64: base64 };
+    previewImg.src = result;
+    previewImg.style.display = 'block';
+    clearImgBtn.style.display = 'inline-block';
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ---------- HELPERS ---------- */
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+function el(tag, cls, text){ const e=document.createElement(tag); if(cls) e.className=cls; if(text!==undefined) e.textContent=text; return e; }
+function scoreColor(s){ if(s>=75) return 'var(--mint)'; if(s>=50) return 'var(--amber)'; return 'var(--coral)'; }
+
+function parseKeyed(text, keys){
+  const escaped = keys.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
+  const re = new RegExp('^\\s*(' + escaped.join('|') + ')\\s*:', 'gim');
+  const matches = [...text.matchAll(re)];
+  const out = {};
+  for(let i=0;i<matches.length;i++){
+    const key = matches[i][1].toUpperCase();
+    const start = matches[i].index + matches[i][0].length;
+    const end = i+1<matches.length ? matches[i+1].index : text.length;
+    out[key] = text.slice(start, end).trim();
+  }
+  return out;
+}
+function parseBullets(str){
+  if(!str) return [];
+  return str.split('\n').map(l=>l.trim()).filter(l=>/^[-•*]/.test(l)).map(l=>l.replace(/^[-•*]\s*/,'').trim()).filter(Boolean);
+}
+function parseInt0(str, fallback){
+  if(!str) return fallback;
+  const m = str.match(/\d+/);
+  return m ? Math.max(0, Math.min(100, parseInt(m[0],10))) : fallback;
+}
+
+/* ---------- LOGGING / STATUS UI ---------- */
+const logPanel = document.getElementById('logPanel');
+function log(msg, cls){
+  const line = el('div', 'log-line ' + (cls||''));
+  const t = new Date().toLocaleTimeString();
+  line.textContent = '[' + t + '] ' + msg;
+  logPanel.appendChild(line);
+  logPanel.scrollTop = logPanel.scrollHeight;
+}
+
+const stageRow = document.getElementById('stageRow');
+const stageChips = {};
+function buildStageChips(stages){
+  stageRow.innerHTML = '';
+  stages.forEach(s=>{
+    const chip = el('div', 'stage-chip');
+    chip.id = 'chip-' + s.id;
+    const dot = el('span','dot');
+    const label = el('span', null, s.label);
+    chip.appendChild(dot); chip.appendChild(label);
+    stageRow.appendChild(chip);
+    stageChips[s.id] = chip;
+  });
+}
+function setChipStatus(id, status){
+  const chip = stageChips[id];
+  if(!chip) return;
+  chip.classList.remove('running','done','error');
+  if(status) chip.classList.add(status);
+}
+
+/* ---------- CLAUDE API ---------- */
+async function callClaude(system, userContent, retries){
+  retries = retries===undefined ? 2 : retries;
+  let lastErr;
+  for(let attempt=0; attempt<=retries; attempt++){
+    try{
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 1000,
+          system: system,
+          messages: [{ role:'user', content: userContent }]
+        })
+      });
+      if(!res.ok){ throw new Error('API responded with status ' + res.status); }
+      const data = await res.json();
+      const text = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim();
+      if(!text) throw new Error('Empty response from model');
+      return text;
+    }catch(err){
+      lastErr = err;
+      if(attempt < retries){ await sleep(700*(attempt+1)); }
+    }
+  }
+  throw lastErr;
+}
+
+/* ---------- STAGE DEFINITIONS ---------- */
+const RIGOR = "Calibration: you are running a BRUTALLY HONEST, PRO-LEVEL review. Score like a working professional grading against top 1% viral content, not against effort or intent. A 50 means forgettable/scroll-past. A 70 means solid but not remarkable. Only 85+ is genuinely exceptional. Do not soften scores to be encouraging. Do not give participation-trophy feedback. Be specific and concrete, never generic.";
+const GOAL = "The creator's stated primary goal for this post is GROWING REACH AND NEW FOLLOWERS on general social feeds (Instagram/Facebook-style, multi-platform). Judge everything through that lens: will this travel beyond existing followers, get saved/shared, and convert viewers into follows.";
+
+const STAGES = [
+  {
+    id:'intake', label:'Chief Strategist', role:'Intake & Classification', needsImage:true,
+    system: "You are the Chief Content Strategist at a top-tier social media consultancy. You open every review by objectively describing what is actually in front of you, before any scoring happens. Be concrete and observational, never invent details you can't see. " + GOAL + " Respond ONLY in this exact plain-text template, no preamble, no markdown, no code fences, no JSON:\nCONTENT_TYPE: <one line: what kind of post this actually is>\nVISUAL_DESCRIPTION: <2-4 concrete sentences describing the image's composition, subject, color, text overlay and quality, or exactly 'No image provided.' if none>\nAUDIENCE_READ: <who this content is realistically speaking to, based on tone and visuals>\nFIRST_IMPRESSION: <the honest, unfiltered reaction a scrolling stranger would have in the first half-second>\nPLATFORM_FIT: <one sentence on how well this format suits general social feeds>",
+    keys:['CONTENT_TYPE','VISUAL_DESCRIPTION','AUDIENCE_READ','FIRST_IMPRESSION','PLATFORM_FIT']
+  },
+  {
+    id:'hook', label:'Hook & Visual Analyst', role:'Scroll-Stop Audit', needsImage:true, scored:true, catLabel:'Hook Strength',
+    system: "You are a scroll-stop specialist who has studied thousands of viral vs invisible posts. You judge only the first-impression power: does the visual and opening line stop a thumb mid-scroll. " + RIGOR + " " + GOAL + " Respond ONLY in this template, no preamble, no markdown, no JSON:\nSCORE: <integer 0-100>\nSUMMARY: <1-2 blunt sentences on scroll-stop power>\nSTRENGTHS:\n- <point>\n- <point>\nWEAKNESSES:\n- <point>\n- <point>\nOPPORTUNITY: <the single highest-impact fix to the hook/visual, 1-2 sentences>",
+    keys:['SCORE','SUMMARY','STRENGTHS','WEAKNESSES','OPPORTUNITY']
+  },
+  {
+    id:'copy', label:'Copy Editor', role:'Caption & Clarity Audit', needsImage:false, scored:true, catLabel:'Copy & Clarity',
+    system: "You are a ruthless copywriting editor who has edited captions for accounts with millions of followers. You judge caption structure, clarity, rhythm, readability, and call-to-action strength — not the visual. " + RIGOR + " " + GOAL + " Respond ONLY in this template, no preamble, no markdown, no JSON:\nSCORE: <integer 0-100>\nSUMMARY: <1-2 blunt sentences on the writing quality>\nSTRENGTHS:\n- <point>\n- <point>\nWEAKNESSES:\n- <point>\n- <point>\nOPPORTUNITY: <the single highest-impact copy fix, 1-2 sentences>",
+    keys:['SCORE','SUMMARY','STRENGTHS','WEAKNESSES','OPPORTUNITY']
+  },
+  {
+    id:'growth', label:'Growth Strategist', role:'Algorithm & Reach Audit', needsImage:false, scored:true, catLabel:'Discoverability',
+    system: "You are a platform growth strategist who reverse-engineers feed algorithms for a living. You judge discoverability: hashtag/keyword strategy, shareability mechanics, saveability, and how likely this reaches non-followers. " + RIGOR + " " + GOAL + " Respond ONLY in this template, no preamble, no markdown, no JSON:\nSCORE: <integer 0-100>\nSUMMARY: <1-2 blunt sentences on reach potential>\nSTRENGTHS:\n- <point>\n- <point>\nWEAKNESSES:\n- <point>\n- <point>\nOPPORTUNITY: <the single highest-impact growth fix, 1-2 sentences>",
+    keys:['SCORE','SUMMARY','STRENGTHS','WEAKNESSES','OPPORTUNITY']
+  },
+  {
+    id:'psych', label:'Audience Psychologist', role:'Emotional Resonance Audit', needsImage:false, scored:true, catLabel:'Emotional Pull',
+    system: "You are a behavioral psychologist specializing in what makes people comment, share, and follow. You judge emotional resonance, relatability, and the specific psychological trigger (curiosity, identity, humor, controversy, aspiration, utility) this post relies on. " + RIGOR + " " + GOAL + " Respond ONLY in this template, no preamble, no markdown, no JSON:\nSCORE: <integer 0-100>\nSUMMARY: <1-2 blunt sentences on emotional/psychological pull>\nSTRENGTHS:\n- <point>\n- <point>\nWEAKNESSES:\n- <point>\n- <point>\nOPPORTUNITY: <the single highest-impact psychological fix, 1-2 sentences>",
+    keys:['SCORE','SUMMARY','STRENGTHS','WEAKNESSES','OPPORTUNITY']
+  },
+  {
+    id:'synthesis', label:'Executive Editor', role:'Synthesis & Verdict', needsImage:false,
+    system: "You are the Executive Editor who has final say. You've been handed four specialist scores and reports plus the strategist's intake notes. Weigh them using your own judgment (do not just average blindly — some categories matter more for reach-growth than others) and deliver a decisive final verdict. " + RIGOR + " " + GOAL + " Respond ONLY in this template, no preamble, no markdown, no JSON:\nOVERALL_SCORE: <integer 0-100>\nVERDICT: <one sharp, honest paragraph — your overall take, no hedging>\nEXECUTIVE_SUMMARY: <2-3 sentences summarizing the state of this post for someone skimming>\nTOP_IMPROVEMENTS:\n- <highest impact fix>\n- <second highest impact fix>\n- <third highest impact fix>\nMISSED_OPPORTUNITIES:\n- <opportunity the creator left on the table>\n- <another one>\nHEALTH_REPORT: <one paragraph diagnosing the overall health of this content strategically>",
+    keys:['OVERALL_SCORE','VERDICT','EXECUTIVE_SUMMARY','TOP_IMPROVEMENTS','MISSED_OPPORTUNITIES','HEALTH_REPORT']
+  },
+  {
+    id:'lab', label:'Optimization Lab', role:'Rewrite & Playbook', needsImage:false,
+    system: "You are the Optimization Lab: a senior ghostwriter and growth tactician who turns critique into a ready-to-post upgrade. Using everything the review desk has found, produce a concretely better version of this post. " + GOAL + " Respond ONLY in this template, no preamble, no markdown, no JSON. The REWRITE must be a complete, ready-to-post caption, not notes about it:\nREWRITE: <the full rewritten, ready-to-post caption>\nHOOK_1: <alternative opening line/hook>\nHOOK_2: <alternative opening line/hook>\nHOOK_3: <alternative opening line/hook>\nCHECKLIST:\n- <pre-publish checklist item>\n- <item>\n- <item>\n- <item>\n- <item>\nPREDICTED_PERFORMANCE: <a clearly-labeled AI estimate paragraph, using ranges and caveats, of how this rewritten version is likely to perform on reach/engagement compared to the original — explicitly state this is an estimate, not a guarantee>\nDEEPER_PROMPTS:\n- <a follow-up prompt the creator could ask for a deeper optimization pass>\n- <another one>\n- <another one>",
+    keys:['REWRITE','HOOK_1','HOOK_2','HOOK_3','CHECKLIST','PREDICTED_PERFORMANCE','DEEPER_PROMPTS']
+  }
+];
+
+/* ---------- RUN STATE ---------- */
+let results = {};
+
+function buildImageBlock(){
+  if(!imageData) return null;
+  return { type:'image', source:{ type:'base64', media_type: imageData.mediaType, data: imageData.base64 } };
+}
+
+function buildUserContent(stage, caption){
+  const parts = [];
+  const img = stage.needsImage ? buildImageBlock() : null;
+  if(img) parts.push(img);
+  let contextText = 'CAPTION TEXT:\n' + (caption || '(no caption text provided)') + '\n\n';
+  if(results.intake){
+    contextText += 'STRATEGIST INTAKE NOTES:\n' + results.intake._raw + '\n\n';
+  }
+  if(stage.id==='synthesis' || stage.id==='lab'){
+    ['hook','copy','growth','psych'].forEach(id=>{
+      if(results[id]) contextText += (id.toUpperCase()) + ' REVIEWER REPORT:\n' + results[id]._raw + '\n\n';
+    });
+  }
+  if(stage.id==='lab' && results.synthesis){
+    contextText += 'EXECUTIVE EDITOR VERDICT:\n' + results.synthesis._raw + '\n\n';
+  }
+  parts.push({ type:'text', text: contextText });
+  return parts;
+}
+
+async function runPipeline(){
+  const caption = captionInput.value.trim();
+  const analyzeBtn = document.getElementById('analyzeBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const topError = document.getElementById('topError');
+  topError.textContent = '';
+
+  if(!caption && !imageData){
+    topError.textContent = 'Add a caption or an image before running the review.';
+    return;
+  }
+
+  results = {};
+  analyzeBtn.disabled = true;
+  analyzeBtn.textContent = 'Reviewing...';
+  document.getElementById('pipeline').classList.add('show');
+  logPanel.innerHTML = '';
+  buildStageChips(STAGES);
+  resetDashboard();
+  log('Review desk opened. Routing content to specialists...', 'info');
+
+  for(const stage of STAGES){
+    setChipStatus(stage.id, 'running');
+    log(stage.label + ' (' + stage.role + ') is reviewing...', null);
+    try{
+      const content = buildUserContent(stage, caption);
+      const raw = await callClaude(stage.system, content);
+      const parsed = parseKeyed(raw, stage.keys);
+      parsed._raw = raw;
+      results[stage.id] = parsed;
+      setChipStatus(stage.id, 'done');
+      log(stage.label + ' finished.', null);
+      renderStageResult(stage, parsed);
+    }catch(err){
+      setChipStatus(stage.id, 'error');
+      log(stage.label + ' failed: ' + err.message, 'err');
+      showStageError(stage);
+      analyzeBtn.disabled = false;
+      analyzeBtn.textContent = 'Run Full Review';
+      resetBtn.style.display = 'inline-block';
+      return;
+    }
+  }
+
+  log('Full review complete.', 'info');
+  analyzeBtn.disabled = false;
+  analyzeBtn.textContent = 'Run Full Review';
+  resetBtn.style.display = 'inline-block';
+}
+
+function showStageError(stage){
+  const box = el('div','stage-error-box');
+  box.textContent = 'The ' + stage.label + ' review failed after retries. ';
+  const retryBtn = el('button','btn btn-ghost btn-sm','Retry from here');
+  retryBtn.style.marginLeft = '10px';
+  retryBtn.addEventListener('click', ()=>{ box.remove(); resumePipelineFrom(stage); });
+  box.appendChild(retryBtn);
+  logPanel.parentElement.insertBefore(box, logPanel.nextSibling);
+}
+
+async function resumePipelineFrom(fromStage){
+  const caption = captionInput.value.trim();
+  const analyzeBtn = document.getElementById('analyzeBtn');
+  analyzeBtn.disabled = true;
+  const startIdx = STAGES.findIndex(s=>s.id===fromStage.id);
+  for(let i=startIdx;i<STAGES.length;i++){
+    const stage = STAGES[i];
+    setChipStatus(stage.id, 'running');
+    log('Retrying ' + stage.label + '...', null);
+    try{
+      const content = buildUserContent(stage, caption);
+      const raw = await callClaude(stage.system, content);
+      const parsed = parseKeyed(raw, stage.keys);
+      parsed._raw = raw;
+      results[stage.id] = parsed;
+      setChipStatus(stage.id, 'done');
+      log(stage.label + ' finished.', null);
+      renderStageResult(stage, parsed);
+    }catch(err){
+      setChipStatus(stage.id, 'error');
+      log(stage.label + ' failed again: ' + err.message, 'err');
+      showStageError(stage);
+      analyzeBtn.disabled = false;
+      return;
+    }
+  }
+  log('Full review complete.', 'info');
+  analyzeBtn.disabled = false;
+}
+
+/* ---------- RENDERING ---------- */
+const gaugeFill = document.getElementById('gaugeFill');
+const gaugeNum = document.getElementById('gaugeNum');
+const catList = document.getElementById('catList');
+const reviewerGrid = document.getElementById('reviewerGrid');
+const CIRC = 2*Math.PI*88;
+
+function resetDashboard(){
+  gaugeFill.style.stroke = 'var(--accent)';
+  gaugeFill.style.strokeDashoffset = CIRC;
+  gaugeNum.textContent = '--';
+  catList.innerHTML = '';
+  reviewerGrid.innerHTML = '';
+  document.getElementById('rewriteBox').textContent = 'Waiting for review...';
+  document.getElementById('hooksList').innerHTML = '';
+  document.getElementById('checklistBox').innerHTML = '';
+  document.getElementById('baBefore').textContent = '--';
+  document.getElementById('baAfter').textContent = '--';
+  document.getElementById('verdictText').textContent = '--';
+  document.getElementById('execSummary').textContent = '--';
+  document.getElementById('topImprovements').innerHTML = '';
+  document.getElementById('missedOpps').innerHTML = '';
+  document.getElementById('healthReport').textContent = '--';
+  document.getElementById('predictedPerf').textContent = '--';
+  document.getElementById('deeperList').innerHTML = '';
+
+  ['hook','copy','growth','psych'].forEach(id=>{
+    const stage = STAGES.find(s=>s.id===id);
+    const row = el('div','cat-row'); row.id = 'cat-'+id;
+    const top = el('div','cat-top');
+    top.appendChild(el('span','name', stage.catLabel));
+    const scoreSpan = el('span','mono', '--');
+    scoreSpan.id = 'cat-score-'+id;
+    top.appendChild(scoreSpan);
+    row.appendChild(top);
+    const track = el('div','cat-track');
+    const fill = el('div','cat-fill'); fill.id = 'cat-fill-'+id;
+    track.appendChild(fill);
+    row.appendChild(track);
+    catList.appendChild(row);
+
+    const card = el('div','card rev-card'); card.id = 'rev-'+id;
+    const head = el('div','rev-head');
+    const left = el('div');
+    left.appendChild(el('h3', null, stage.label));
+    left.appendChild(el('div','hint', stage.role));
+    left.style.marginBottom = 0;
+    head.appendChild(left);
+    const sc = el('div','rev-score skeleton'); sc.id = 'rev-score-'+id; sc.style.width='40px'; sc.style.height='24px';
+    head.appendChild(sc);
+    card.appendChild(head);
+    const summary = el('div','sk-line skeleton'); summary.id = 'rev-summary-'+id;
+    card.appendChild(summary);
+    const detail = el('div','rev-detail'); detail.id = 'rev-detail-'+id;
+    card.appendChild(detail);
+    const hintEl = el('div','toggle-hint','Click to expand full findings');
+    card.appendChild(hintEl);
+    card.addEventListener('click', ()=> card.classList.toggle('open'));
+    reviewerGrid.appendChild(card);
+  });
+}
+
+function renderStageResult(stage, parsed){
+  if(stage.scored){
+    const score = parseInt0(parsed.SCORE, 0);
+    const color = scoreColor(score);
+    document.getElementById('cat-score-'+stage.id).textContent = score;
+    const fill = document.getElementById('cat-fill-'+stage.id);
+    fill.style.background = color;
+    requestAnimationFrame(()=>{ fill.style.width = score + '%'; });
+
+    const scoreEl = document.getElementById('rev-score-'+stage.id);
+    scoreEl.classList.remove('skeleton'); scoreEl.style.width=''; scoreEl.style.height='';
+    scoreEl.textContent = score;
+    scoreEl.style.color = color;
+
+    const summaryEl = document.getElementById('rev-summary-'+stage.id);
+    summaryEl.classList.remove('skeleton','sk-line');
+    summaryEl.className = 'rev-summary';
+    summaryEl.textContent = parsed.SUMMARY || '';
+
+    const detail = document.getElementById('rev-detail-'+stage.id);
+    detail.innerHTML = '';
+    const strengths = parseBullets(parsed.STRENGTHS);
+    const weaknesses = parseBullets(parsed.WEAKNESSES);
+    if(strengths.length){
+      detail.appendChild(el('h4', null, 'Strengths'));
+      const ul = el('ul'); strengths.forEach(s=>ul.appendChild(el('li',null,s))); detail.appendChild(ul);
+    }
+    if(weaknesses.length){
+      detail.appendChild(el('h4', null, 'Weaknesses'));
+      const ul = el('ul'); weaknesses.forEach(s=>ul.appendChild(el('li',null,s))); detail.appendChild(ul);
+    }
+    if(parsed.OPPORTUNITY){
+      detail.appendChild(el('h4', null, 'Highest-Impact Fix'));
+      detail.appendChild(el('div','opp', parsed.OPPORTUNITY));
+    }
+  }
+
+  if(stage.id==='synthesis'){
+    const overall = parseInt0(parsed.OVERALL_SCORE, 0);
+    gaugeNum.textContent = overall;
+    gaugeFill.style.stroke = scoreColor(overall);
+    requestAnimationFrame(()=>{
+      gaugeFill.style.strokeDashoffset = CIRC - (overall/100)*CIRC;
+    });
+    document.getElementById('verdictText').textContent = parsed.VERDICT || '--';
+    document.getElementById('execSummary').textContent = parsed.EXECUTIVE_SUMMARY || '--';
+    const topImp = document.getElementById('topImprovements'); topImp.innerHTML='';
+    parseBullets(parsed.TOP_IMPROVEMENTS).forEach(t=> topImp.appendChild(el('li',null,t)));
+    const missed = document.getElementById('missedOpps'); missed.innerHTML='';
+    parseBullets(parsed.MISSED_OPPORTUNITIES).forEach(t=> missed.appendChild(el('li',null,t)));
+    document.getElementById('healthReport').textContent = parsed.HEALTH_REPORT || '--';
+  }
+
+  if(stage.id==='lab'){
+    const rewriteBox = document.getElementById('rewriteBox');
+    rewriteBox.textContent = parsed.REWRITE || '--';
+    document.getElementById('baBefore').textContent = captionInput.value.trim() || '(no caption provided)';
+    document.getElementById('baAfter').textContent = parsed.REWRITE || '--';
+
+    const hooksList = document.getElementById('hooksList'); hooksList.innerHTML='';
+    ['HOOK_1','HOOK_2','HOOK_3'].forEach(k=>{
+      if(!parsed[k]) return;
+      const item = el('div','hook-item');
+      item.appendChild(el('span', null, parsed[k]));
+      const btn = el('button','copy-btn','Copy');
+      btn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        navigator.clipboard.writeText(parsed[k]).then(()=>{ btn.textContent='Copied'; setTimeout(()=>btn.textContent='Copy',1200); });
+      });
+      item.appendChild(btn);
+      hooksList.appendChild(item);
+    });
+
+    const checklistBox = document.getElementById('checklistBox'); checklistBox.innerHTML='';
+    parseBullets(parsed.CHECKLIST).forEach(t=> checklistBox.appendChild(el('li',null,t)));
+
+    document.getElementById('predictedPerf').textContent = parsed.PREDICTED_PERFORMANCE || '--';
+
+    const deeperList = document.getElementById('deeperList'); deeperList.innerHTML='';
+    parseBullets(parsed.DEEPER_PROMPTS).forEach(t=>{
+      const item = el('div','deeper-item', t);
+      item.addEventListener('click', ()=>{
+        navigator.clipboard.writeText(t);
+        item.textContent = 'Copied: ' + t;
+        setTimeout(()=>{ item.textContent = t; }, 1400);
+      });
+      deeperList.appendChild(item);
+    });
+  }
+}
+
+document.getElementById('analyzeBtn').addEventListener('click', runPipeline);
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  document.getElementById('pipeline').classList.remove('show');
+  document.getElementById('resetBtn').style.display='none';
+  results = {};
+  logPanel.innerHTML = '';
+});
+
+})();
+</script>
+</body>
+</html>
