@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Bidding Ledger — Upwork vs Freelancer.com vs Guru vs PeoplePerHour</title>
+<style>
+  :root{
+    --ink:#16202a;
+    --paper:#edeae2;
+    --paper-2:#e3ded1;
+    --charcoal:#262b33;
+    --charcoal-soft:#565f68;
+    --teal:#3e7c6b;
+    --teal-dark:#2c5b4e;
+    --gold:#c1902f;
+    --rose:#b4544a;
+    --line:#cfc7b0;
+    --white:#fbfaf6;
+    font-size:16px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--charcoal);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;}
+  .app{max-width:1080px;margin:0 auto;padding:0 20px 80px;}
+
+  /* ---------- HEADER ---------- */
+  header.masthead{
+    background:var(--ink);
+    color:var(--white);
+    padding:48px 20px 40px;
+    margin-bottom:36px;
+    border-bottom:6px solid var(--teal);
+  }
+  .masthead-inner{max-width:1080px;margin:0 auto;}
+  .eyebrow{
+    font-family:"SFMono-Regular",Consolas,monospace;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    font-size:.72rem;
+    color:#9fb8ad;
+    margin-bottom:10px;
+  }
+  h1{
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:clamp(1.7rem,4vw,2.6rem);
+    font-weight:400;
+    letter-spacing:.01em;
+    margin:0 0 12px;
+  }
+  .masthead p.sub{
+    max-width:640px;
+    color:#c9cfd3;
+    font-size:.98rem;
+    margin:0;
+  }
+  .decision-line{
+    margin-top:22px;
+    padding-top:18px;
+    border-top:1px dashed #3a4753;
+    font-size:.85rem;
+    color:#9fb8ad;
+  }
+
+  /* ---------- SECTION SHELL ---------- */
+  section{margin-bottom:34px;}
+  .card{
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:26px 28px;
+    position:relative;
+  }
+  .section-title{
+    font-family:Georgia,serif;
+    font-size:1.3rem;
+    font-weight:400;
+    margin:0 0 4px;
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  .section-title .tag{
+    font-family:"SFMono-Regular",Consolas,monospace;
+    font-size:.65rem;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--teal-dark);
+    background:#e4efe9;
+    padding:3px 7px;
+    border-radius:2px;
+  }
+  .section-desc{color:var(--charcoal-soft);font-size:.88rem;margin:0 0 20px;max-width:640px;}
+
+  /* ---------- SLIDERS (balance-beam ledger style) ---------- */
+  .weights-grid{display:flex;flex-direction:column;gap:16px;}
+  .weight-row{
+    display:grid;
+    grid-template-columns:170px 1fr 46px;
+    align-items:center;
+    gap:16px;
+    padding-bottom:14px;
+    border-bottom:1px dotted var(--line);
+  }
+  .weight-row:last-child{border-bottom:none;padding-bottom:0;}
+  .weight-label{font-size:.88rem;font-weight:600;color:var(--charcoal);}
+  .weight-label small{
+    display:block;font-weight:400;color:var(--charcoal-soft);
+    font-size:.72rem;margin-top:2px;
+  }
+  input[type=range]{
+    -webkit-appearance:none;
+    width:100%;
+    height:6px;
+    background:linear-gradient(var(--line),var(--line)) no-repeat;
+    background-size:100% 2px;
+    background-position:center;
+    border-radius:3px;
+    cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:20px;height:20px;
+    background:var(--teal);
+    border:3px solid var(--white);
+    box-shadow:0 0 0 1px var(--teal-dark);
+    border-radius:50% 50% 50% 0;
+    transform:rotate(45deg);
+    cursor:pointer;
+    margin-top:-2px;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:14px;height:14px;
+    background:var(--teal);
+    border:3px solid var(--white);
+    box-shadow:0 0 0 1px var(--teal-dark);
+    border-radius:50% 50% 50% 0;
+    transform:rotate(45deg);
+    cursor:pointer;
+  }
+  .weight-val{
+    font-family:"SFMono-Regular",Consolas,monospace;
+    text-align:right;
+    font-size:.95rem;
+    font-weight:700;
+    color:var(--teal-dark);
+  }
+  .presets{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;}
+  .presets button{
+    background:none;
+    border:1px solid var(--charcoal);
+    color:var(--charcoal);
+    font-size:.76rem;
+    padding:7px 12px;
+    border-radius:2px;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .presets button:hover{background:var(--charcoal);color:var(--white);}
+
+  /* ---------- RANKING ---------- */
+  .rank-list{display:flex;flex-direction:column;gap:14px;}
+  .rank-item{
+    display:grid;
+    grid-template-columns:34px 150px 1fr 70px;
+    align-items:center;
+    gap:16px;
+    padding:14px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .rank-item:last-child{border-bottom:none;}
+  .rank-num{
+    font-family:Georgia,serif;
+    font-size:1.4rem;
+    color:var(--charcoal-soft);
+  }
+  .rank-item.rank-1 .rank-num{color:var(--gold);font-weight:700;}
+  .rank-name{font-weight:700;font-size:.98rem;}
+  .rank-name .sub{display:block;font-weight:400;font-size:.72rem;color:var(--charcoal-soft);margin-top:2px;}
+  .bar-track{
+    height:10px;
+    background:var(--paper-2);
+    border-radius:2px;
+    overflow:hidden;
+    position:relative;
+  }
+  .bar-fill{
+    height:100%;
+    background:linear-gradient(90deg,var(--teal),var(--teal-dark));
+    border-radius:2px;
+    transition:width .35s ease;
+  }
+  .rank-score{
+    font-family:"SFMono-Regular",Consolas,monospace;
+    text-align:right;
+    font-weight:700;
+    font-size:1rem;
+  }
+  .empty-state{
+    text-align:center;
+    padding:40px 20px;
+    color:var(--charcoal-soft);
+    font-size:.92rem;
+  }
+  .empty-state strong{display:block;color:var(--charcoal);font-size:1rem;margin-bottom:6px;font-family:Georgia,serif;}
+
+  /* ---------- DATA TABLE ---------- */
+  .table-wrap{overflow-x:auto;}
+  table.data-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:.83rem;
+    min-width:760px;
+  }
+  table.data-table th, table.data-table td{
+    border:1px solid var(--line);
+    padding:10px 12px;
+    text-align:left;
+    vertical-align:top;
+  }
+  table.data-table th{
+    background:var(--ink);
+    color:var(--white);
+    font-weight:400;
+    font-family:Georgia,serif;
+    font-size:.9rem;
+  }
+  table.data-table td.crit-label{
+    background:#f2efe6;
+    font-weight:600;
+    width:150px;
+  }
+  .fact{margin:0 0 6px;}
+  .badge{
+    display:inline-block;
+    font-family:"SFMono-Regular",Consolas,monospace;
+    font-size:.62rem;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    padding:2px 6px;
+    border-radius:2px;
+    margin-top:2px;
+  }
+  .badge.sourced{background:#e4efe9;color:var(--teal-dark);}
+  .badge.estimate{background:#f7ecd6;color:var(--gold);border:1px solid #e6cf9c;}
+  .score-chip{
+    font-family:"SFMono-Regular",Consolas,monospace;
+    font-weight:700;
+    font-size:.78rem;
+    color:var(--teal-dark);
+  }
+
+  /* ---------- COLLAPSIBLES ---------- */
+  details.card{padding:0;}
+  details summary{
+    list-style:none;
+    cursor:pointer;
+    padding:22px 28px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-family:Georgia,serif;
+    font-size:1.15rem;
+  }
+  details summary::-webkit-details-marker{display:none;}
+  details summary .chevron{
+    font-family:"SFMono-Regular",Consolas,monospace;
+    font-size:.85rem;
+    color:var(--teal-dark);
+    transition:transform .2s ease;
+  }
+  details[open] summary .chevron{transform:rotate(90deg);}
+  .details-body{padding:0 28px 26px;border-top:1px dotted var(--line);}
+  .details-body p{font-size:.9rem;color:var(--charcoal-soft);}
+
+  .source-list{list-style:none;margin:16px 0 0;padding:0;}
+  .source-list li{
+    padding:12px 0;
+    border-bottom:1px dotted var(--line);
+    font-size:.85rem;
+    display:grid;
+    grid-template-columns:26px 1fr;
+    gap:10px;
+  }
+  .source-list li:last-child{border-bottom:none;}
+  .source-list .sid{font-family:"SFMono-Regular",Consolas,monospace;color:var(--teal-dark);font-weight:700;}
+  .source-list a{color:var(--charcoal);word-break:break-word;}
+  .source-list .stitle{font-weight:600;display:block;margin-bottom:2px;}
+
+  .conflict-note{
+    background:#f7ecd6;
+    border:1px solid #e6cf9c;
+    border-left:4px solid var(--gold);
+    padding:12px 14px;
+    font-size:.85rem;
+    margin:14px 0;
+    border-radius:2px;
+  }
+
+  footer.disclaimer{
+    margin-top:40px;
+    font-size:.76rem;
+    color:var(--charcoal-soft);
+    text-align:center;
+    padding-top:20px;
+    border-top:1px solid var(--line);
+  }
+
+  @media (max-width:640px){
+    .weight-row{grid-template-columns:1fr;gap:6px;}
+    .weight-val{text-align:left;}
+    .rank-item{grid-template-columns:24px 1fr;grid-template-areas:"num name" "num bar" "num score";}
+    .rank-num{grid-area:num;}
+    .rank-name{grid-area:name;}
+    .bar-track{grid-area:bar;}
+    .rank-score{grid-area:score;text-align:left;}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="eyebrow">Compare &amp; Decide — Freelancing Platforms</div>
+    <h1>The Bidding Ledger</h1>
+    <p class="sub">A first-platform decision tool for a beginner freelancer choosing between Upwork, Freelancer.com, Guru, and PeoplePerHour — weighted by what actually matters to you.</p>
+    <div class="decision-line">Built for: a new freelancer picking their <strong>first</strong> platform to work on. One decision, made with real numbers instead of vibes.</div>
+  </div>
+</header>
+
+<div class="app">
+
+  <section class="card" id="loading-card">
+    <div class="section-title">Loading ledger<span class="tag">init</span></div>
+    <p class="section-desc" id="loading-text">Pulling verified fee, payment, and reputation data for four platforms…</p>
+  </section>
+
+  <section class="card" id="main-content" style="display:none;">
+
+    <div class="section-title">Set your priorities <span class="tag">live</span></div>
+    <p class="section-desc">Drag each weight to reflect what matters most to you right now. The ranking below updates instantly — nothing is submitted anywhere.</p>
+
+    <div class="weights-grid" id="weights-grid"></div>
+
+    <div class="presets">
+      <button data-preset="equal">Equal weights</button>
+      <button data-preset="cost">I care most about fees</button>
+      <button data-preset="beginner">I care most about ease + trust</button>
+      <button data-preset="pk">I care most about Pakistan payments</button>
+    </div>
+  </section>
+
+  <section class="card" id="ranking-card" style="display:none;">
+    <div class="section-title">Your ranking</div>
+    <p class="section-desc">Recalculated live from your weights above. Higher bar = better fit for your priorities, not "objectively best."</p>
+    <div id="rank-list" class="rank-list"></div>
+    <div id="empty-state" class="empty-state" style="display:none;">
+      <strong>No priorities set</strong>
+      Move at least one slider above zero to see a ranking.
+    </div>
+  </section>
+
+  <section class="card" id="table-card" style="display:none;">
+    <div class="section-title">The raw data</div>
+    <p class="section-desc">Every score above is derived from these facts. Green badges are directly sourced; gold badges are estimates or proxies because no platform publishes an exact figure.</p>
+    <div class="table-wrap">
+      <table class="data-table" id="data-table"></table>
+    </div>
+  </section>
+
+  <details class="card" id="methodology-card" style="display:none;">
+    <summary>How this was researched <span class="chevron">▸</span></summary>
+    <div class="details-body" id="methodology-body"></div>
+  </details>
+
+  <details class="card" id="sources-card" style="display:none;">
+    <summary>Sources panel (18 citations) <span class="chevron">▸</span></summary>
+    <div class="details-body">
+      <ul class="source-list" id="source-list"></ul>
+    </div>
+  </details>
+
+  <footer class="disclaimer">
+    Data compiled from publicly available sources, July 2026. Fee structures, ratings, and policies change — verify current numbers directly on each platform before deciding. This tool does not constitute financial advice.
+  </footer>
+
+</div>
+
+<script>
+(function(){
+
+  // ---------- DATA ----------
+  const CRITERIA = [
+    { id:"fees",       label:"Platform Fees",              hint:"Lower freelancer commission = higher score" },
+    { id:"ease",       label:"Ease of First Client",        hint:"Less bidding competition = higher score" },
+    { id:"payment",    label:"Pakistan-Friendly Payments",  hint:"Coverage & ease of local withdrawal" },
+    { id:"volume",     label:"Design/Social Job Volume",    hint:"Gigs available in your niche" },
+    { id:"beginner",   label:"Beginner-Friendliness",       hint:"Onboarding, learning curve, support" },
+    { id:"trust",      label:"Trust & Reviews",             hint:"Independent review-site standing" }
+  ];
+
+  const PLATFORMS = [
+    {
+      id:"upwork", name:"Upwork", tagline:"Largest proposal-based marketplace",
+      scores:{fees:6, ease:5, payment:8, volume:8, beginner:5, trust:8},
+      facts:{
+        fees:{text:"Freelancer service fee is variable, 0–15% per contract; most freelancers land around 10%, disclosed upfront before accepting.", estimate:false, src:1},
+        ease:{text:"Enormous job volume, but proposals cost paid \"Connects,\" and long-time freelancers increasingly describe the market as harder to break into.", estimate:false, src:12},
+        payment:{text:"Multiple Pakistan-specific payout routes: Payoneer, direct local bank transfer, and wire transfer, each documented in dedicated freelancer guides.", estimate:false, src:5},
+        volume:{text:"Around 18 million freelancers across 125+ categories, with a dedicated graphic design job stream — the broadest reach of the four.", estimate:false, src:8},
+        beginner:{text:"Job Success Score and Connects create a real learning curve for newcomers, though an AI assistant (Uma) helps with proposals.", estimate:true, src:9},
+        trust:{text:"Trustpilot rating around 4.5/5, with recurring praise for payment security and recurring complaints about rising fees.", estimate:false, src:12}
+      }
+    },
+    {
+      id:"freelancer", name:"Freelancer.com", tagline:"Open bidding, largest raw user base",
+      scores:{fees:6, ease:4, payment:7, volume:8, beginner:5, trust:8},
+      facts:{
+        fees:{text:"Flat 10% commission or a $5 minimum, whichever is greater — simple, but the minimum makes very small gigs proportionally expensive.", estimate:false, src:2},
+        ease:{text:"Posting a project typically draws 20+ bids within hours; reviewers explicitly flag \"intense competition\" as a downside.", estimate:false, src:17},
+        payment:{text:"Payoneer and Skrill withdrawal routes are documented for Pakistani freelancers in independent payment guides.", estimate:false, src:7},
+        volume:{text:"Reports over 86 million registered users and 2,700+ skill categories, plus design contests — very broad, though quality varies widely.", estimate:false, src:8},
+        beginner:{text:"Free and fast to join, and design contests help build a portfolio — but reviewers note a rough bottom tier and scam risk.", estimate:false, src:17},
+        trust:{text:"Trustpilot rating around 4.6/5 from roughly 5,000 reviews, though sampling across review sites shows more variation (3.5–4.6).", estimate:false, src:13}
+      }
+    },
+    {
+      id:"guru", name:"Guru", tagline:"Smaller, longer-running marketplace",
+      scores:{fees:8, ease:6, payment:5, volume:4, beginner:7, trust:5},
+      facts:{
+        fees:{text:"Freelancer job fee runs 5–9% depending on membership tier (free plan sits near 9%; paid tiers as low as ~1%) — the cheapest of the four for freelancers.", estimate:false, src:3},
+        ease:{text:"Smaller applicant pool than the other three; freelancers report the platform routes relevant leads directly rather than requiring heavy bidding.", estimate:true, src:16},
+        payment:{text:"No dedicated Pakistan-specific payout guide was found in this research; general Payoneer coverage lists are inconsistent about including Guru.", estimate:true, src:7},
+        volume:{text:"Around 800,000 registered employers and $250M+ paid to freelancers historically — meaningfully smaller reach than the other three platforms.", estimate:false, src:3},
+        beginner:{text:"Explicitly recommended in beginner-focused platform guides for its straightforward, low-friction interface.", estimate:false, src:16},
+        trust:{text:"G2 rating of 3.2/5 from a small sample (20 reviews); user-sentiment aggregator scores it 85/100 — mixed but limited data.", estimate:true, src:11}
+      }
+    },
+    {
+      id:"pph", name:"PeoplePerHour", tagline:"UK-based, design & marketing focus",
+      scores:{fees:3, ease:4, payment:8, volume:7, beginner:5, trust:5},
+      facts:{
+        fees:{text:"Tiered per-buyer commission: 20% on the first ~£250 with a new client, dropping to 7.5% then 3.5% as lifetime billing grows — steepest for a beginner's first clients.", estimate:false, src:4},
+        ease:{text:"Popularity plus the 20% new-client entry fee makes early competition noticeably tough, per multiple freelancer reviews.", estimate:false, src:14},
+        payment:{text:"Supports direct payouts to Pakistani bank accounts and has a dedicated Pakistan payment guide via a currency-conversion partner.", estimate:false, src:6},
+        volume:{text:"Roughly 1.5–2 million registered freelancers, with the platform's own positioning centered specifically on web, marketing, and design work.", estimate:false, src:10},
+        beginner:{text:"G2 reviewers cite an easy initial setup, but support-quality complaints appear repeatedly in employee and user reviews.", estimate:false, src:14},
+        trust:{text:"Trustpilot shows 4.2/5 from ~3,758 reviews, but this conflicts sharply with a 1.5/5 rating from a smaller review-site sample — a real discrepancy, not an error.", estimate:false, src:14}
+      }
+    }
+  ];
+
+  const SOURCES = [
+    {id:1,  title:"Upwork — Is Upwork Free? Pricing Breakdown (official)", url:"https://www.upwork.com/resources/is-upwork-free"},
+    {id:2,  title:"FreelanceCompare — Freelancer.com Fee Percentage 2026", url:"https://freelancecompare.com/blog/freelancer-com-fees-explained"},
+    {id:3,  title:"Flexiple / ITQlick — Guru.com Pricing & Fee Tiers 2026", url:"https://flexiple.com/reviews/guru"},
+    {id:4,  title:"PeoplePerHour Support — Freelancer Commission Fees (official)", url:"https://support.peopleperhour.com/hc/en-us/articles/205218337-Freelancer-commission-fees"},
+    {id:5,  title:"PNY Trainings — Upwork Payment Methods in Pakistan", url:"https://www.pnytrainings.com/blog/marketing/upwork-payment-methods-in-pakistan"},
+    {id:6,  title:"Grey — Receiving PeoplePerHour Payments in Pakistan", url:"https://grey.co/blog/how-to-receive-payments-from-peopleperhour-in-pakistan-in-2025"},
+    {id:7,  title:"Scribd / BeingGuru — Freelance Payment Options for Pakistan", url:"https://beingguru.com/international-payment-methods-for-freelancers/"},
+    {id:8,  title:"Freelancer.com — Freelancer vs Upwork Comparison (official)", url:"https://www.freelancer.com/articles/freelancer-vs-upwork"},
+    {id:9,  title:"Upwork — Upwork vs Guru Comparison (official)", url:"https://www.upwork.com/resources/upwork-vs-guru"},
+    {id:10, title:"BestJobSearchApps / G2 — PeoplePerHour Niche Focus & User Count", url:"https://www.g2.com/products/peopleperhour-com/reviews"},
+    {id:11, title:"G2 — Compare Guru.com and PeoplePerHour.com", url:"https://www.g2.com/compare/guru-com-vs-peopleperhour-com"},
+    {id:12, title:"Revelo — Upwork Reviews: Client & Freelancer Experiences", url:"https://www.revelo.com/blog/upwork-reviews"},
+    {id:13, title:"Apploye — Freelancer.com Review 2026 (Trustpilot data)", url:"https://apploye.com/blog/freelancer-com-review/"},
+    {id:14, title:"LancerReview — PeoplePerHour Review (Trustpilot & G2 data)", url:"https://www.lancerreview.com/review/peopleperhour"},
+    {id:15, title:"SmartCustomer — PeoplePerHour Reviews (192 reviews)", url:"https://www.smartcustomer.com/reviews/peopleperhour.com"},
+    {id:16, title:"SadaPay — Top 5 Freelancing Websites in Pakistan", url:"https://sadapay.pk/blogs/top-freelancing-websites-in-pakistan"},
+    {id:17, title:"South — Freelancer.com Review 2026 (competition & quality)", url:"https://www.hireinsouth.com/post/freelancer-review"},
+    {id:18, title:"ITQlick — Guru.com Pricing Breakdown", url:"https://www.itqlick.com/guru-com/pricing"}
+  ];
+
+  const srcMap = {};
+  SOURCES.forEach(s => srcMap[s.id] = s);
+
+  // ---------- STATE ----------
+  let weights = {};
+  CRITERIA.forEach(c => weights[c.id] = 5);
+
+  // ---------- RENDER: WEIGHT SLIDERS ----------
+  const weightsGrid = document.getElementById("weights-grid");
+  CRITERIA.forEach(c => {
+    const row = document.createElement("div");
+    row.className = "weight-row";
+    row.innerHTML = `
+      <div class="weight-label">${c.label}<small>${c.hint}</small></div>
+      <input type="range" min="0" max="10" step="1" value="5" data-crit="${c.id}">
+      <div class="weight-val mono" id="val-${c.id}">5</div>
+    `;
+    weightsGrid.appendChild(row);
+  });
+
+  weightsGrid.addEventListener("input", (e) => {
+    if(e.target.matches("input[type=range]")){
+      const crit = e.target.dataset.crit;
+      weights[crit] = parseInt(e.target.value, 10);
+      document.getElementById("val-" + crit).textContent = weights[crit];
+      render();
+    }
+  });
+
+  document.querySelectorAll(".presets button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const preset = btn.dataset.preset;
+      if(preset === "equal"){
+        CRITERIA.forEach(c => weights[c.id] = 5);
+      } else if(preset === "cost"){
+        weights = {fees:10, ease:4, payment:5, volume:4, beginner:3, trust:4};
+      } else if(preset === "beginner"){
+        weights = {fees:4, ease:8, payment:3, volume:3, beginner:10, trust:8};
+      } else if(preset === "pk"){
+        weights = {fees:4, ease:3, payment:10, volume:3, beginner:3, trust:4};
+      }
+      CRITERIA.forEach(c => {
+        const input = weightsGrid.querySelector(`input[data-crit="${c.id}"]`);
+        input.value = weights[c.id];
+        document.getElementById("val-" + c.id).textContent = weights[c.id];
+      });
+      render();
+    });
+  });
+
+  // ---------- RENDER: RANKING ----------
+  function computeScore(platform){
+    let totalWeight = 0, weighted = 0;
+    CRITERIA.forEach(c => {
+      totalWeight += weights[c.id];
+      weighted += weights[c.id] * platform.scores[c.id];
+    });
+    if(totalWeight === 0) return null;
+    return weighted / totalWeight;
+  }
+
+  function render(){
+    const totalWeight = CRITERIA.reduce((s,c) => s + weights[c.id], 0);
+    const rankList = document.getElementById("rank-list");
+    const emptyState = document.getElementById("empty-state");
+
+    if(totalWeight === 0){
+      rankList.innerHTML = "";
+      emptyState.style.display = "block";
+      return;
+    }
+    emptyState.style.display = "none";
+
+    const results = PLATFORMS.map(p => ({ p, score: computeScore(p) }))
+      .sort((a,b) => b.score - a.score);
+
+    const maxScore = results[0].score;
+    rankList.innerHTML = results.map((r, i) => `
+      <div class="rank-item ${i===0 ? 'rank-1' : ''}">
+        <div class="rank-num mono">${i+1}</div>
+        <div class="rank-name">${r.p.name}<span class="sub">${r.p.tagline}</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${(r.score/10*100).toFixed(0)}%"></div></div>
+        <div class="rank-score">${r.score.toFixed(1)}</div>
+      </div>
+    `).join("");
+  }
+
+  // ---------- RENDER: DATA TABLE ----------
+  function renderTable(){
+    const table = document.getElementById("data-table");
+    let thead = "<tr><th>Criterion</th>" + PLATFORMS.map(p => `<th>${p.name}</th>`).join("") + "</tr>";
+    let rows = CRITERIA.map(c => {
+      let cells = PLATFORMS.map(p => {
+        const f = p.facts[c.id];
+        const score = p.scores[c.id];
+        const badge = f.estimate
+          ? `<span class="badge estimate">Estimate</span>`
+          : `<span class="badge sourced">Sourced</span>`;
+        return `<td>
+          <p class="fact">${f.text}</p>
+          <span class="score-chip">Score: ${score}/10</span> ·
+          <span class="mono" style="font-size:.7rem;color:var(--charcoal-soft);">[${f.src}]</span>
+          ${badge}
+        </td>`;
+      }).join("");
+      return `<tr><td class="crit-label">${c.label}</td>${cells}</tr>`;
+    }).join("");
+    table.innerHTML = thead + rows;
+  }
+
+  // ---------- RENDER: SOURCES ----------
+  function renderSources(){
+    const list = document.getElementById("source-list");
+    list.innerHTML = SOURCES.map(s => `
+      <li>
+        <span class="sid mono">[${s.id}]</span>
+        <span>
+          <span class="stitle">${s.title}</span>
+          <a href="${s.url}" target="_blank" rel="noopener">${s.url}</a>
+        </span>
+      </li>
+    `).join("");
+  }
+
+  // ---------- RENDER: METHODOLOGY ----------
+  function renderMethodology(){
+    const body = document.getElementById("methodology-body");
+    body.innerHTML = `
+      <p>Every score in this tool traces back to a named source in the panel below — fee figures come from each platform's own pricing pages where available (Upwork, Guru, PeoplePerHour all publish theirs directly; Freelancer.com's is confirmed via an independent fee-tracking site quoting their documentation).</p>
+      <p><strong>Where sources conflicted:</strong></p>
+      <div class="conflict-note">
+        <strong>PeoplePerHour's reputation is genuinely split.</strong> Trustpilot shows 4.2/5 across roughly 3,758 reviews, while a smaller review aggregator (192 reviews) shows 1.5/5, with complaints centered on freelancer-application processing delays rather than the core marketplace experience. Both numbers are reported here rather than picking one, because the discrepancy itself is useful information.
+      </div>
+      <div class="conflict-note">
+        <strong>Design/social-media job volume is a proxy, not a direct count.</strong> None of the four platforms publish live job counts by sub-category. The "volume" score instead uses total registered freelancer counts and category breadth (documented) combined with each platform's stated niche focus (e.g. PeoplePerHour explicitly positions around web, marketing and design work) — this is flagged as an estimate in the table above.
+      </div>
+      <div class="conflict-note">
+        <strong>Guru's Pakistan payment support is under-documented.</strong> Independent Pakistan-freelancer payment guides consistently cover Upwork, Freelancer.com and PeoplePerHour by name, but rarely mention Guru specifically. That's treated as a gap in available information, not evidence that Guru doesn't work for Pakistani freelancers — flagged as an estimate accordingly.
+      </div>
+      <p>Beginner-friendliness combines platform-guide recommendations with structural friction points (paid bidding credits, tiered fee entry costs, minimum project fees) rather than a single published metric, so several cells in that row are also flagged as estimates.</p>
+    `;
+  }
+
+  // ---------- INIT with a brief loading state ----------
+  function init(){
+    renderTable();
+    renderSources();
+    renderMethodology();
+    render();
+
+    setTimeout(() => {
+      document.getElementById("loading-card").style.display = "none";
+      document.getElementById("main-content").style.display = "block";
+      document.getElementById("ranking-card").style.display = "block";
+      document.getElementById("table-card").style.display = "block";
+      document.getElementById("methodology-card").style.display = "block";
+      document.getElementById("sources-card").style.display = "block";
+    }, 550);
+  }
+
+  init();
+
+})();
+</script>
+
+</body>
+</html>
