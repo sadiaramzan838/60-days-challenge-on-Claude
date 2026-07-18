@@ -381,3 +381,9 @@ Day 47 – Content Intelligence Studio
 Built a premium Content Intelligence Studio using HTML, CSS, and JavaScript with a modern SaaS-style interface.
 Created an intelligent multi-stage AI review workflow that analyzes both text and image content through the Claude Messages API.
 Generated AI-powered content scores, detailed insights, optimization recommendations, rewritten content, publishing reports, and performance predictions with live analysis.
+
+Day 48 – Compare & Decide Builder**
+
+* Built an interactive Compare & Decide Builder using HTML, CSS, and JavaScript with a premium responsive interface.
+* Designed a guided MCQ-based interview to collect decision context, comparison criteria, data sources, and ranking preferences.
+* Developed a research-driven comparison dashboard with live weighted rankings, source citations, research methodology, and transparent evidence-based recommendations.
