@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>defend_your_experience.claim</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+:root{
+  --bg:#0a0e14;
+  --bg-elevated:#0d1117;
+  --bg-panel:#11151c;
+  --bg-panel-2:#161b22;
+  --border:#232a35;
+  --border-soft:#1b212b;
+  --text:#e6edf3;
+  --text-dim:#8b98a5;
+  --text-faint:#4d5866;
+  --green:#7ee787;
+  --green-dim:#2ea04326;
+  --amber:#f0b72f;
+  --amber-dim:#f0b72f26;
+  --pink:#ff6b9d;
+  --pink-dim:#ff6b9d26;
+  --blue:#61dafb;
+  --blue-dim:#61dafb26;
+  --red:#ff5f56;
+  --yellow:#ffbd2e;
+  --greenlight:#27c93f;
+  --font-mono:'JetBrains Mono',monospace;
+  --font-sans:'Inter',sans-serif;
+  --radius:10px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-sans);
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+}
+::selection{background:var(--green);color:#0a0e14;}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-track{background:var(--bg-panel);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;}
+::-webkit-scrollbar-thumb:hover{background:var(--text-faint);}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px;}
+
+button{font-family:inherit;cursor:pointer;}
+textarea, input{font-family:inherit;}
+
+/* ===== App shell — fake IDE window ===== */
+#app{
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+.titlebar{
+  height:42px;
+  flex:0 0 auto;
+  background:var(--bg-elevated);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  padding:0 14px;
+  gap:14px;
+}
+.traffic{display:flex;gap:8px;}
+.traffic span{width:11px;height:11px;border-radius:50%;display:inline-block;}
+.traffic .r{background:var(--red);}
+.traffic .y{background:var(--yellow);}
+.traffic .g{background:var(--greenlight);}
+.tab{
+  font-family:var(--font-mono);
+  font-size:12.5px;
+  color:var(--text-dim);
+  background:var(--bg-panel);
+  border:1px solid var(--border);
+  border-bottom:none;
+  padding:6px 14px 5px;
+  border-radius:6px 6px 0 0;
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+.tab .dot{width:6px;height:6px;border-radius:50%;background:var(--amber);}
+.tab.saved .dot{background:var(--green);}
+.titlebar-right{margin-left:auto;display:flex;gap:8px;align-items:center;}
+.tb-btn{
+  font-family:var(--font-mono);
+  font-size:11.5px;
+  color:var(--text-dim);
+  background:transparent;
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:5px 10px;
+  transition:.15s;
+}
+.tb-btn:hover{border-color:var(--text-faint);color:var(--text);}
+
+.layout{
+  flex:1 1 auto;
+  display:flex;
+  min-height:0;
+}
+
+/* ===== Sidebar ===== */
+.sidebar{
+  width:280px;
+  flex:0 0 auto;
+  background:var(--bg-elevated);
+  border-right:1px solid var(--border);
+  display:none;
+  flex-direction:column;
+  min-height:0;
+}
+.sidebar.show{display:flex;}
+.sidebar-head{
+  padding:14px 16px 10px;
+  font-family:var(--font-mono);
+  font-size:10.5px;
+  letter-spacing:.08em;
+  color:var(--text-faint);
+  text-transform:uppercase;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.suite-progress{
+  padding:0 16px 12px;
+}
+.suite-bar{height:6px;border-radius:4px;background:var(--bg-panel-2);overflow:hidden;}
+.suite-bar-fill{height:100%;background:linear-gradient(90deg,var(--pink),var(--amber),var(--green));width:0%;transition:width .5s ease;}
+.suite-meta{font-family:var(--font-mono);font-size:11px;color:var(--text-dim);margin-top:6px;display:flex;justify-content:space-between;}
+.claim-list{flex:1;overflow-y:auto;padding:4px 8px 12px;}
+.claim-item{
+  padding:9px 10px;
+  border-radius:8px;
+  margin-bottom:3px;
+  cursor:pointer;
+  display:flex;
+  gap:9px;
+  align-items:flex-start;
+  transition:.12s;
+  border:1px solid transparent;
+}
+.claim-item:hover{background:var(--bg-panel-2);}
+.claim-item.active{background:var(--bg-panel-2);border-color:var(--border);}
+.claim-status{flex:0 0 auto;width:16px;height:16px;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:11px;font-family:var(--font-mono);border-radius:50%;}
+.claim-status.pending{color:var(--text-faint);border:1.5px solid var(--text-faint);}
+.claim-status.active-status{color:var(--amber);border:1.5px solid var(--amber);animation:pulse 1.4s infinite;}
+.claim-status.strong{background:var(--green-dim);color:var(--green);}
+.claim-status.developing{background:var(--amber-dim);color:var(--amber);}
+.claim-status.weak{background:var(--pink-dim);color:var(--pink);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.claim-text{font-size:12.5px;line-height:1.4;color:var(--text-dim);}
+.claim-item.active .claim-text{color:var(--text);}
+.claim-score{font-family:var(--font-mono);font-size:10px;color:var(--text-faint);margin-top:3px;}
+
+/* ===== Main ===== */
+.main{
+  flex:1 1 auto;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+  position:relative;
+}
+.screen{
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  display:none;
+}
+.screen.show{display:flex;flex-direction:column;}
+
+/* ---- Intro ---- */
+.intro{
+  max-width:760px;
+  margin:0 auto;
+  padding:64px 32px 60px;
+  width:100%;
+}
+.eyebrow{
+  font-family:var(--font-mono);
+  font-size:11.5px;
+  color:var(--blue);
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  margin-bottom:18px;
+  display:flex;align-items:center;gap:8px;
+}
+.eyebrow::before{content:'';width:7px;height:7px;background:var(--blue);border-radius:1px;display:inline-block;}
+.intro h1{
+  font-family:var(--font-mono);
+  font-size:40px;
+  line-height:1.15;
+  font-weight:800;
+  margin:0 0 20px;
+  letter-spacing:-.01em;
+}
+.intro h1 .accent{color:var(--green);}
+.intro p.lede{
+  font-size:16px;
+  line-height:1.65;
+  color:var(--text-dim);
+  margin:0 0 34px;
+  max-width:600px;
+}
+.code-block{
+  background:var(--bg-panel);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px 20px;
+  font-family:var(--font-mono);
+  font-size:13px;
+  line-height:1.9;
+  margin-bottom:36px;
+  color:var(--text-dim);
+}
+.code-block .k{color:var(--pink);}
+.code-block .s{color:var(--green);}
+.code-block .c{color:var(--text-faint);}
+.cta-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.btn{
+  font-family:var(--font-mono);
+  font-size:13.5px;
+  font-weight:600;
+  padding:12px 22px;
+  border-radius:8px;
+  border:1px solid transparent;
+  transition:.15s;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.btn-primary{background:var(--green);color:#062012;}
+.btn-primary:hover{filter:brightness(1.08);transform:translateY(-1px);}
+.btn-ghost{background:transparent;border-color:var(--border);color:var(--text-dim);}
+.btn-ghost:hover{border-color:var(--text-faint);color:var(--text);}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none !important;}
+.history-strip{margin-top:40px;}
+.history-strip h3{font-family:var(--font-mono);font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.08em;margin:0 0 10px;}
+.history-item{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:11px 14px;background:var(--bg-panel);border:1px solid var(--border-soft);
+  border-radius:8px;margin-bottom:8px;font-size:13px;
+}
+.history-item:hover{border-color:var(--border);}
+.history-item button{background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:6px;padding:5px 10px;font-family:var(--font-mono);font-size:11px;}
+.history-item button:hover{color:var(--text);}
+.hi-score{font-family:var(--font-mono);}
+
+/* ---- Setup ---- */
+.setup{max-width:720px;margin:0 auto;padding:52px 32px 60px;width:100%;}
+.step-label{font-family:var(--font-mono);font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+.setup h2{font-family:var(--font-mono);font-size:22px;margin:0 0 26px;}
+.qgroup{margin-bottom:30px;}
+.qgroup label.qtitle{display:block;font-size:14.5px;color:var(--text);margin-bottom:12px;font-weight:600;}
+.chips{display:flex;flex-wrap:wrap;gap:9px;}
+.chip{
+  font-family:var(--font-mono);
+  font-size:12.5px;
+  padding:9px 14px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:var(--bg-panel);
+  color:var(--text-dim);
+  transition:.15s;
+}
+.chip:hover{border-color:var(--text-faint);}
+.chip.selected{border-color:var(--green);color:var(--green);background:var(--green-dim);}
+
+/* ---- Upload ---- */
+.upload-wrap{max-width:720px;margin:0 auto;padding:52px 32px 60px;width:100%;}
+.dropzone{
+  border:1.5px dashed var(--border);
+  border-radius:14px;
+  padding:46px 24px;
+  text-align:center;
+  transition:.15s;
+  cursor:pointer;
+  margin-bottom:20px;
+}
+.dropzone.drag{border-color:var(--green);background:var(--green-dim);}
+.dropzone .dz-icon{font-family:var(--font-mono);font-size:26px;color:var(--text-faint);margin-bottom:12px;}
+.dropzone p{margin:4px 0;color:var(--text-dim);font-size:13.5px;}
+.dropzone .dz-main{color:var(--text);font-size:15px;font-weight:600;}
+.or-divider{display:flex;align-items:center;gap:14px;color:var(--text-faint);font-family:var(--font-mono);font-size:11px;margin:22px 0;text-transform:uppercase;letter-spacing:.08em;}
+.or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+textarea.paste-area{
+  width:100%;min-height:220px;background:var(--bg-panel);border:1px solid var(--border);
+  border-radius:10px;color:var(--text);padding:16px;font-size:13.5px;line-height:1.6;resize:vertical;
+}
+textarea.paste-area:focus{border-color:var(--blue);}
+.file-chip{display:inline-flex;align-items:center;gap:8px;background:var(--bg-panel);border:1px solid var(--border);padding:7px 12px;border-radius:7px;font-family:var(--font-mono);font-size:12px;margin-bottom:16px;}
+.file-chip button{background:none;border:none;color:var(--pink);font-size:14px;}
+
+/* ---- Extracting / loading ---- */
+.loading-screen{max-width:640px;margin:auto;padding:40px;text-align:center;width:100%;}
+.cursor-blink{display:inline-block;width:9px;height:18px;background:var(--green);animation:blink 1s step-end infinite;vertical-align:middle;margin-left:4px;}
+@keyframes blink{50%{opacity:0;}}
+.loading-line{font-family:var(--font-mono);font-size:14px;color:var(--text-dim);margin-bottom:8px;}
+.loading-line .ok{color:var(--green);}
+
+/* ---- Interview ---- */
+.interview-shell{flex:1;display:flex;min-height:0;}
+.interview-main{flex:1;display:flex;flex-direction:column;min-height:0;}
+.claim-banner{
+  padding:16px 26px;border-bottom:1px solid var(--border);background:var(--bg-elevated);
+  display:flex;align-items:center;gap:16px;
+}
+.severity-badge{font-family:var(--font-mono);font-size:10.5px;padding:4px 9px;border-radius:6px;text-transform:uppercase;letter-spacing:.05em;font-weight:700;flex:0 0 auto;}
+.severity-badge.weak{background:var(--pink-dim);color:var(--pink);}
+.severity-badge.vague{background:var(--amber-dim);color:var(--amber);}
+.severity-badge.moderate{background:var(--blue-dim);color:var(--blue);}
+.severity-badge.strong{background:var(--green-dim);color:var(--green);}
+.claim-banner-text{font-size:13.5px;color:var(--text);line-height:1.4;flex:1;}
+.confidence-ring{flex:0 0 auto;width:46px;height:46px;position:relative;}
+.confidence-ring svg{transform:rotate(-90deg);}
+.confidence-ring .cr-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:11px;font-weight:700;}
+
+.transcript{flex:1;overflow-y:auto;padding:24px 26px;display:flex;flex-direction:column;gap:16px;}
+.msg{max-width:620px;display:flex;gap:10px;}
+.msg.from-ai{align-self:flex-start;}
+.msg.from-user{align-self:flex-end;flex-direction:row-reverse;}
+.avatar{flex:0 0 auto;width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:11px;font-weight:700;}
+.avatar.ai{background:var(--bg-panel-2);border:1px solid var(--border);color:var(--blue);}
+.avatar.user{background:var(--green-dim);color:var(--green);}
+.bubble{padding:12px 15px;border-radius:11px;font-size:14px;line-height:1.6;}
+.msg.from-ai .bubble{background:var(--bg-panel);border:1px solid var(--border-soft);border-top-left-radius:3px;}
+.msg.from-user .bubble{background:var(--green-dim);border:1px solid #2ea04340;color:var(--text);border-top-right-radius:3px;}
+.feedback-line{
+  font-family:var(--font-mono);font-size:12px;color:var(--text-faint);
+  padding:8px 15px;border-left:2px solid var(--border);margin-left:36px;max-width:600px;
+}
+.feedback-line.pos{border-color:var(--green);color:var(--green);}
+.feedback-line.neg{border-color:var(--pink);color:var(--pink);}
+.feedback-line.neu{border-color:var(--amber);color:var(--amber);}
+
+.typing-dots{display:flex;gap:4px;padding:14px 15px;}
+.typing-dots span{width:6px;height:6px;background:var(--text-faint);border-radius:50%;animation:tdot 1.2s infinite;}
+.typing-dots span:nth-child(2){animation-delay:.2s;}
+.typing-dots span:nth-child(3){animation-delay:.4s;}
+@keyframes tdot{0%,60%,100%{opacity:.3;transform:translateY(0);}30%{opacity:1;transform:translateY(-3px);}}
+
+.composer{border-top:1px solid var(--border);padding:16px 26px 20px;background:var(--bg-elevated);}
+.composer-row{display:flex;gap:10px;align-items:flex-end;}
+.prompt-sym{font-family:var(--font-mono);color:var(--green);font-size:16px;padding-bottom:12px;}
+textarea.answer-box{
+  flex:1;background:var(--bg-panel);border:1px solid var(--border);border-radius:10px;
+  color:var(--text);padding:12px 14px;font-size:14px;line-height:1.5;resize:none;min-height:46px;max-height:180px;
+}
+textarea.answer-box:focus{border-color:var(--blue);}
+.composer-hint{font-family:var(--font-mono);font-size:10.5px;color:var(--text-faint);margin-top:8px;}
+
+.error-banner{
+  margin:14px 26px 0;padding:11px 14px;background:var(--pink-dim);border:1px solid #ff6b9d40;
+  border-radius:8px;font-family:var(--font-mono);font-size:12.5px;color:var(--pink);display:flex;justify-content:space-between;align-items:center;gap:10px;
+}
+.error-banner button{background:transparent;border:1px solid var(--pink);color:var(--pink);border-radius:6px;padding:4px 10px;font-size:11px;font-family:var(--font-mono);}
+
+/* ---- Report ---- */
+.report-wrap{max-width:820px;margin:0 auto;padding:48px 32px 70px;width:100%;}
+.report-head{display:flex;gap:28px;align-items:center;margin-bottom:8px;flex-wrap:wrap;}
+.big-score{font-family:var(--font-mono);font-size:56px;font-weight:800;line-height:1;}
+.big-score .unit{font-size:22px;color:var(--text-faint);font-weight:500;}
+.report-title{font-family:var(--font-mono);font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
+.report-verdict{font-size:14.5px;color:var(--text-dim);max-width:420px;line-height:1.5;}
+.report-meta-row{display:flex;gap:22px;margin:28px 0 34px;font-family:var(--font-mono);font-size:12px;color:var(--text-dim);flex-wrap:wrap;}
+.report-meta-row span.n{color:var(--text);font-weight:700;}
+.report-section{margin-bottom:34px;}
+.report-section h3{font-family:var(--font-mono);font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-faint);margin:0 0 14px;display:flex;align-items:center;gap:8px;}
+.claim-report-card{background:var(--bg-panel);border:1px solid var(--border-soft);border-radius:10px;padding:16px 18px;margin-bottom:10px;}
+.crc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:8px;}
+.crc-claim{font-size:13.5px;color:var(--text);line-height:1.5;flex:1;}
+.crc-score{font-family:var(--font-mono);font-size:13px;font-weight:700;flex:0 0 auto;}
+.crc-fb{font-size:13px;color:var(--text-dim);line-height:1.55;margin-top:6px;}
+.crc-fix{font-size:12.5px;color:var(--blue);line-height:1.55;margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);}
+.list-plain{margin:0;padding-left:0;list-style:none;}
+.list-plain li{position:relative;padding-left:20px;margin-bottom:9px;font-size:13.5px;line-height:1.55;color:var(--text-dim);}
+.list-plain li::before{content:'>';position:absolute;left:0;color:var(--green);font-family:var(--font-mono);}
+.list-plain.risks li::before{color:var(--pink);}
+.report-actions{display:flex;gap:12px;margin-top:38px;flex-wrap:wrap;}
+
+@media print{
+  .titlebar,.sidebar,.composer,.report-actions,.tb-btn{display:none !important;}
+  body{background:#fff;color:#111;overflow:visible;}
+  .screen{display:block !important;overflow:visible !important;}
+  .report-wrap *{color:#111 !important;}
+}
+
+@media (max-width:760px){
+  .sidebar{position:fixed;left:0;top:42px;bottom:0;z-index:20;}
+  .intro h1{font-size:28px;}
+  .report-head{flex-direction:column;align-items:flex-start;}
+}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.001ms !important;animation-iteration-count:1 !important;transition-duration:0.001ms !important;}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="titlebar">
+    <div class="traffic"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+    <div class="tab saved" id="tabEl"><span class="dot"></span><span id="tabLabel">defend_your_experience.claim</span></div>
+    <div class="titlebar-right">
+      <button class="tb-btn" id="historyBtn">history</button>
+      <button class="tb-btn" id="newSessionBtn" style="display:none;">new session</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-head">
+        <span>test suite</span>
+        <span id="suiteCount">0/0</span>
+      </div>
+      <div class="suite-progress">
+        <div class="suite-bar"><div class="suite-bar-fill" id="suiteBarFill"></div></div>
+        <div class="suite-meta"><span id="suiteMetaLeft">not started</span><span id="suiteMetaRight">0% avg</span></div>
+      </div>
+      <div class="claim-list" id="claimList"></div>
+    </div>
+
+    <div class="main">
+
+      <!-- INTRO -->
+      <div class="screen show" id="screen-intro">
+        <div class="intro">
+          <div class="eyebrow">defend your experience</div>
+          <h1>Don't just <span class="accent">list</span> it.<br>Be ready to <span class="accent">defend</span> it.</h1>
+          <p class="lede">Paste in a resume, LinkedIn profile, project, or freelance story. This treats every claim you make about yourself like a line of code — it gets linted, tested, and challenged until you can defend it under pressure, not just recite it.</p>
+          <div class="code-block">
+<span class="c">// how this works</span><br>
+<span class="k">1.</span> parse(<span class="s">your_experience</span>) <span class="c">→ extract every claim worth questioning</span><br>
+<span class="k">2.</span> interview(<span class="s">claims</span>) <span class="c">→ adaptive follow‑ups, one claim at a time</span><br>
+<span class="k">3.</span> score(<span class="s">answers</span>) <span class="c">→ confidence per claim, live</span><br>
+<span class="k">4.</span> build_report() <span class="c">→ what's solid, what will get poked at, how to fix it</span>
+          </div>
+          <div class="cta-row">
+            <button class="btn btn-primary" id="startBtn">start a session →</button>
+            <button class="btn btn-ghost" id="viewHistoryBtn2" style="display:none;">view past sessions</button>
+          </div>
+          <div class="history-strip" id="historyStrip" style="display:none;">
+            <h3>previous sessions</h3>
+            <div id="historyList"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETUP -->
+      <div class="screen" id="screen-setup">
+        <div class="setup">
+          <div class="step-label">step 1 of 3</div>
+          <h2>What are we defending, and against who?</h2>
+
+          <div class="qgroup">
+            <label class="qtitle">What are you defending today?</label>
+            <div class="chips" data-key="what">
+              <button class="chip" data-val="LinkedIn profile">LinkedIn profile</button>
+              <button class="chip" data-val="Resume / CV">Resume / CV</button>
+              <button class="chip" data-val="A specific project">A specific project</button>
+              <button class="chip" data-val="Freelance / business work">Freelance / business work</button>
+            </div>
+          </div>
+
+          <div class="qgroup">
+            <label class="qtitle">What's this prep for? (pick any that apply)</label>
+            <div class="chips" data-key="purpose" data-multi="true">
+              <button class="chip" data-val="Job interview">Job interview</button>
+              <button class="chip" data-val="Internship interview">Internship interview</button>
+              <button class="chip" data-val="Networking / cold outreach">Networking / cold outreach</button>
+              <button class="chip" data-val="General confidence building">General confidence building</button>
+            </div>
+          </div>
+
+          <div class="qgroup">
+            <label class="qtitle">Who's on the other side of the table?</label>
+            <div class="chips" data-key="audience">
+              <button class="chip" data-val="Technical panel">Technical panel (senior devs)</button>
+              <button class="chip" data-val="HR / non-technical recruiter">HR / non‑technical recruiter</button>
+              <button class="chip" data-val="Mixed panel (HR + tech lead)">Mixed panel (HR + tech lead)</button>
+              <button class="chip" data-val="Networking contact">Networking contact — casual but probing</button>
+            </div>
+          </div>
+
+          <div class="qgroup">
+            <label class="qtitle">How hard should I push?</label>
+            <div class="chips" data-key="tone">
+              <button class="chip" data-val="Friendly but thorough">Friendly but thorough</button>
+              <button class="chip" data-val="Tough and skeptical">Tough &amp; skeptical</button>
+              <button class="chip" data-val="Realistic mix">Realistic mix — starts easy, escalates</button>
+            </div>
+          </div>
+
+          <div class="cta-row">
+            <button class="btn btn-ghost" id="setupBackBtn">back</button>
+            <button class="btn btn-primary" id="setupNextBtn">continue →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- UPLOAD -->
+      <div class="screen" id="screen-upload">
+        <div class="upload-wrap">
+          <div class="step-label">step 2 of 3</div>
+          <h2 style="font-family:var(--font-mono);font-size:22px;margin:0 0 24px;">Drop in what you want to defend</h2>
+
+          <div class="dropzone" id="dropzone">
+            <div class="dz-icon">⌁</div>
+            <p class="dz-main">Drag a .txt or .md file here, or click to browse</p>
+            <p>PDFs and images: open them, copy the text, and paste below instead — text extraction of binary files isn't reliable in-browser.</p>
+          </div>
+          <input type="file" id="fileInput" accept=".txt,.md" style="display:none;">
+          <div id="fileChipWrap"></div>
+
+          <div class="or-divider">or paste directly</div>
+          <textarea class="paste-area" id="pasteArea" placeholder="Paste your LinkedIn About section, resume bullet points, project README, freelance case study — whatever you need to be able to defend out loud."></textarea>
+
+          <div class="cta-row" style="margin-top:20px;">
+            <button class="btn btn-ghost" id="uploadBackBtn">back</button>
+            <button class="btn btn-primary" id="uploadNextBtn">extract claims →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXTRACTING -->
+      <div class="screen" id="screen-extracting">
+        <div class="loading-screen">
+          <div class="loading-line" id="loadLine1">$ parsing input<span class="cursor-blink"></span></div>
+          <div class="loading-line" id="loadLine2" style="opacity:.3;">$ extracting claims worth defending…</div>
+          <div class="loading-line" id="loadLine3" style="opacity:.3;">$ ranking by how hard they'll get hit</div>
+        </div>
+      </div>
+
+      <!-- INTERVIEW -->
+      <div class="screen" id="screen-interview">
+        <div class="interview-shell">
+          <div class="interview-main">
+            <div class="claim-banner">
+              <span class="severity-badge moderate" id="bannerSeverity">CLAIM</span>
+              <div class="claim-banner-text" id="bannerText">—</div>
+              <div class="confidence-ring">
+                <svg width="46" height="46" viewBox="0 0 46 46">
+                  <circle cx="23" cy="23" r="19" fill="none" stroke="#232a35" stroke-width="4"></circle>
+                  <circle cx="23" cy="23" r="19" fill="none" stroke="#7ee787" stroke-width="4" stroke-linecap="round"
+                    id="ringProgress" stroke-dasharray="119.4" stroke-dashoffset="119.4"></circle>
+                </svg>
+                <div class="cr-num" id="ringNum">0%</div>
+              </div>
+            </div>
+            <div class="transcript" id="transcript"></div>
+            <div class="error-banner" id="errorBanner" style="display:none;">
+              <span id="errorText">Something broke.</span>
+              <button id="errorRetryBtn">retry</button>
+            </div>
+            <div class="composer">
+              <div class="composer-row">
+                <span class="prompt-sym">›</span>
+                <textarea class="answer-box" id="answerBox" placeholder="Type your answer… (Enter to send, Shift+Enter for new line)"></textarea>
+                <button class="btn btn-primary" id="sendBtn">send</button>
+              </div>
+              <div class="composer-hint">Answer like you would out loud — specifics, numbers, what you'd do differently, beat around it and I'll notice.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPORT -->
+      <div class="screen" id="screen-report">
+        <div class="report-wrap" id="reportContent"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+
+// ============================================================
+// STATE
+// ============================================================
+const state = {
+  context: { what:'LinkedIn profile', purpose:['Job interview','Networking / cold outreach'], audience:'Mixed panel (HR + tech lead)', tone:'Friendly but thorough' },
+  sourceText: '',
+  claims: [],           // {id, claim, category, severity, why, status, score, transcript:[], feedback, fix}
+  activeClaimIndex: -1,
+  transcriptEls: {},
+  sessionId: null,
+  sessionSaved: false
+};
+
+const LS_KEY = 'dye_sessions_v2';
+
+// ============================================================
+// UTIL
+// ============================================================
+function $(id){ return document.getElementById(id); }
+function show(screenId){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('show'));
+  $(screenId).classList.add('show');
+}
+function escapeHtml(str){
+  return (str||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function uid(){ return 'c'+Math.random().toString(36).slice(2,9); }
+
+function loadSessions(){
+  try{ return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); }catch(e){ return []; }
+}
+function saveSessions(list){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(list)); }catch(e){}
+}
+function persistSession(){
+  const sessions = loadSessions();
+  const idx = sessions.findIndex(s=>s.id===state.sessionId);
+  const record = {
+    id: state.sessionId,
+    date: new Date().toISOString(),
+    what: state.context.what,
+    claims: state.claims,
+    context: state.context,
+    overallScore: computeOverallScore()
+  };
+  if(idx>=0) sessions[idx]=record; else sessions.unshift(record);
+  saveSessions(sessions.slice(0,30));
+}
+function computeOverallScore(){
+  if(!state.claims.length) return 0;
+  const scored = state.claims.filter(c=>typeof c.score==='number');
+  if(!scored.length) return 0;
+  return Math.round(scored.reduce((a,c)=>a+c.score,0)/scored.length);
+}
+
+// ============================================================
+// CLAUDE API
+// ============================================================
+async function callClaude(systemPrompt, userPrompt, {retries=3} = {}){
+  let attempt = 0;
+  while(true){
+    try{
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+          model:"claude-sonnet-4-6",
+          max_tokens:1000,
+          system: systemPrompt,
+          messages:[{role:"user", content:userPrompt}]
+        })
+      });
+      if(res.status===429 && attempt<retries){
+        attempt++;
+        showError(`Rate limited — retrying (${attempt}/${retries})…`, false);
+        await new Promise(r=>setTimeout(r, 1200*attempt));
+        continue;
+      }
+      if(!res.ok){
+        throw new Error("API error "+res.status);
+      }
+      hideError();
+      const data = await res.json();
+      const textBlock = (data.content||[]).find(b=>b.type==='text');
+      return textBlock ? textBlock.text : '';
+    }catch(err){
+      if(attempt<retries){
+        attempt++;
+        await new Promise(r=>setTimeout(r, 1000*attempt));
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+function extractJson(raw){
+  if(!raw) return null;
+  let t = raw.trim();
+  t = t.replace(/^```json/i,'').replace(/^```/,'').replace(/```$/,'').trim();
+  const first = t.indexOf('{')===-1 ? t.indexOf('[') : Math.min(...[t.indexOf('{'), t.indexOf('[')].filter(i=>i>=0));
+  try{ return JSON.parse(t); }catch(e){}
+  // fallback: try to find first {...} or [...] block
+  const objMatch = t.match(/\{[\s\S]*\}/);
+  const arrMatch = t.match(/\[[\s\S]*\]/);
+  try{ if(objMatch) return JSON.parse(objMatch[0]); }catch(e){}
+  try{ if(arrMatch) return JSON.parse(arrMatch[0]); }catch(e){}
+  return null;
+}
+
+function showError(msg, retryable=true){
+  $('errorBanner').style.display='flex';
+  $('errorText').textContent = msg;
+  $('errorRetryBtn').style.display = retryable ? 'inline-block' : 'none';
+}
+function hideError(){ $('errorBanner').style.display='none'; }
+
+// ============================================================
+// NAV: intro
+// ============================================================
+function renderIntro(){
+  const sessions = loadSessions();
+  if(sessions.length){
+    $('historyStrip').style.display='block';
+    $('viewHistoryBtn2').style.display='inline-flex';
+    $('historyList').innerHTML = sessions.slice(0,5).map(s=>`
+      <div class="history-item">
+        <div>
+          <div style="font-family:var(--font-mono);font-size:12px;">${escapeHtml(s.what)}</div>
+          <div style="color:var(--text-faint);font-size:11px;font-family:var(--font-mono);">${new Date(s.date).toLocaleDateString()} · ${s.claims.length} claims</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span class="hi-score" style="color:${scoreColor(s.overallScore)}">${s.overallScore}%</span>
+          <button data-id="${s.id}" class="resumeBtn">view report</button>
+        </div>
+      </div>
+    `).join('');
+    document.querySelectorAll('.resumeBtn').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const sess = loadSessions().find(s=>s.id===b.dataset.id);
+        if(sess){
+          state.sessionId = sess.id;
+          state.claims = sess.claims;
+          state.context = sess.context;
+          renderSidebar();
+          renderReport();
+          show('screen-report');
+          $('sidebar').classList.add('show');
+        }
+      });
+    });
+  }
+}
+function scoreColor(n){
+  if(n>=75) return 'var(--green)';
+  if(n>=45) return 'var(--amber)';
+  return 'var(--pink)';
+}
+
+$('startBtn').addEventListener('click', ()=>{ show('screen-setup'); });
+$('viewHistoryBtn2').addEventListener('click', ()=>{ document.getElementById('historyStrip').scrollIntoView({behavior:'smooth'}); });
+$('historyBtn').addEventListener('click', ()=>{ show('screen-intro'); renderIntro(); $('sidebar').classList.remove('show'); });
+$('newSessionBtn').addEventListener('click', ()=>{ location.reload(); });
+
+// ============================================================
+// SETUP screen chips
+// ============================================================
+function initChips(){
+  document.querySelectorAll('.chips').forEach(group=>{
+    const key = group.dataset.key;
+    const multi = group.dataset.multi === 'true';
+    // preselect from state.context
+    Array.from(group.children).forEach(chip=>{
+      const val = chip.dataset.val;
+      const current = state.context[key];
+      const isSelected = multi ? (current||[]).includes(val) : current===val;
+      chip.classList.toggle('selected', isSelected);
+      chip.addEventListener('click', ()=>{
+        if(multi){
+          let arr = state.context[key] || [];
+          if(arr.includes(val)) arr = arr.filter(v=>v!==val);
+          else arr = [...arr, val];
+          state.context[key] = arr;
+          chip.classList.toggle('selected');
+        } else {
+          state.context[key] = val;
+          Array.from(group.children).forEach(c=>c.classList.remove('selected'));
+          chip.classList.add('selected');
+        }
+      });
+    });
+  });
+}
+initChips();
+$('setupBackBtn').addEventListener('click', ()=>show('screen-intro'));
+$('setupNextBtn').addEventListener('click', ()=>show('screen-upload'));
+
+// ============================================================
+// UPLOAD screen
+// ============================================================
+const dropzone = $('dropzone');
+const fileInput = $('fileInput');
+dropzone.addEventListener('click', ()=>fileInput.click());
+['dragover','dragenter'].forEach(evt=>dropzone.addEventListener(evt, e=>{ e.preventDefault(); dropzone.classList.add('drag'); }));
+['dragleave','drop'].forEach(evt=>dropzone.addEventListener(evt, e=>{ e.preventDefault(); dropzone.classList.remove('drag'); }));
+dropzone.addEventListener('drop', e=>{
+  const file = e.dataTransfer.files[0];
+  if(file) handleFile(file);
+});
+fileInput.addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if(file) handleFile(file);
+});
+function handleFile(file){
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    $('pasteArea').value = reader.result;
+    $('fileChipWrap').innerHTML = `<div class="file-chip">📄 ${escapeHtml(file.name)} <button id="clearFileBtn">✕</button></div>`;
+    $('clearFileBtn').addEventListener('click', ()=>{ $('pasteArea').value=''; $('fileChipWrap').innerHTML=''; });
+  };
+  reader.readAsText(file);
+}
+$('uploadBackBtn').addEventListener('click', ()=>show('screen-setup'));
+$('uploadNextBtn').addEventListener('click', ()=>{
+  const text = $('pasteArea').value.trim();
+  if(text.length < 30){
+    showBriefAlert('Paste in a bit more — at least a few sentences to work with.');
+    return;
+  }
+  state.sourceText = text;
+  state.sessionId = uid();
+  extractClaims();
+});
+function showBriefAlert(msg){
+  const dz = $('dropzone');
+  const old = dz.style.borderColor;
+  dz.style.borderColor = 'var(--pink)';
+  const p = document.createElement('p');
+  p.textContent = msg; p.style.color='var(--pink)'; p.id='briefAlert';
+  const existing = document.getElementById('briefAlert');
+  if(existing) existing.remove();
+  dz.appendChild(p);
+  setTimeout(()=>{ dz.style.borderColor = old; }, 1600);
+}
+
+// ============================================================
+// EXTRACT CLAIMS
+// ============================================================
+async function extractClaims(){
+  show('screen-extracting');
+  animateLoadingLines();
+  const sys = `You are a skeptical, expert recruiter, hiring manager, and behavioral interviewer. Given a piece of career content (LinkedIn profile / resume / project description / freelance case study), extract every distinct, meaningful claim the person makes about themselves that a real interviewer could challenge. For each claim assess how defensible it currently sounds AS WRITTEN.
+Return ONLY valid JSON, no preamble, no markdown fences, in this exact shape:
+[{"claim": "short paraphrase of the claim in plain language", "category": "one of: Experience, Skill, Metric/Result, Leadership, Project, Soft-skill, Education", "severity": "one of: weak, vague, moderate, strong", "why": "one crisp sentence on why this needs defending (e.g. vague quantifier, no evidence of ownership, buzzwordy, unverified metric)"}]
+Extract between 5 and 10 claims, prioritizing the ones most likely to get challenged in a ${state.context.audience} interview. Do not invent claims not supported by the text.`;
+  const userMsg = `CONTEXT: The candidate is defending: ${state.context.what}. Purpose: ${(state.context.purpose||[]).join(', ')}. Audience: ${state.context.audience}.\n\nCONTENT TO ANALYZE:\n"""\n${state.sourceText}\n"""`;
+  try{
+    const raw = await callClaude(sys, userMsg);
+    let parsed = extractJson(raw);
+    if(!Array.isArray(parsed)) throw new Error("bad claim format");
+    state.claims = parsed.map(c=>({
+      id: uid(),
+      claim: c.claim || 'Unnamed claim',
+      category: c.category || 'Experience',
+      severity: (c.severity||'moderate').toLowerCase(),
+      why: c.why || '',
+      status: 'pending',
+      score: null,
+      transcript: [],
+      feedback: '',
+      fix: ''
+    }));
+    // order: weakest first (most to defend), so weak > vague > moderate > strong
+    const order = {weak:0, vague:1, moderate:2, strong:3};
+    state.claims.sort((a,b)=>(order[a.severity]??2)-(order[b.severity]??2));
+    renderSidebar();
+    $('sidebar').classList.add('show');
+    startInterview();
+  }catch(err){
+    show('screen-upload');
+    showBriefAlert('Could not extract claims — check connection and try again.');
+  }
+}
+function animateLoadingLines(){
+  setTimeout(()=>{ $('loadLine1').innerHTML = '$ parsing input <span class="ok">✓</span>'; $('loadLine2').style.opacity=1; }, 500);
+  setTimeout(()=>{ $('loadLine2').innerHTML = '$ extracting claims worth defending… <span class="ok">✓</span>'; $('loadLine3').style.opacity=1; }, 1400);
+}
+
+// ============================================================
+// SIDEBAR
+// ============================================================
+function renderSidebar(){
+  const list = $('claimList');
+  list.innerHTML = state.claims.map((c,i)=>{
+    let statusClass = 'pending', icon='○';
+    if(c.status==='in-progress'){ statusClass='active-status'; icon='◐'; }
+    else if(c.status==='strong'){ statusClass='strong'; icon='✓'; }
+    else if(c.status==='developing'){ statusClass='developing'; icon='◑'; }
+    else if(c.status==='weak'){ statusClass='weak'; icon='✗'; }
+    return `<div class="claim-item ${i===state.activeClaimIndex?'active':''}" data-idx="${i}">
+      <div class="claim-status ${statusClass}">${icon}</div>
+      <div>
+        <div class="claim-text">${escapeHtml(c.claim)}</div>
+        <div class="claim-score">${typeof c.score==='number' ? c.score+'% confidence' : c.severity}</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.querySelectorAll('.claim-item').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const idx = parseInt(el.dataset.idx,10);
+      if(state.claims[idx].status !== 'pending' || idx===state.activeClaimIndex) return;
+    });
+  });
+  const done = state.claims.filter(c=>c.status!=='pending' && c.status!=='in-progress').length;
+  $('suiteCount').textContent = `${done}/${state.claims.length}`;
+  const pct = state.claims.length ? (done/state.claims.length*100) : 0;
+  $('suiteBarFill').style.width = pct+'%';
+  $('suiteMetaLeft').textContent = done===state.claims.length && done>0 ? 'suite complete' : (done===0?'not started':'in progress');
+  $('suiteMetaRight').textContent = computeOverallScore()+'% avg';
+}
+
+// ============================================================
+// INTERVIEW LOGIC
+// ============================================================
+function severityLabel(s){
+  return {weak:'WEAK', vague:'VAGUE', moderate:'CLAIM', strong:'STRONG'}[s] || 'CLAIM';
+}
+function addMsg(role, text){
+  const t = $('transcript');
+  const div = document.createElement('div');
+  div.className = `msg from-${role}`;
+  div.innerHTML = `<div class="avatar ${role}">${role==='ai'?'AI':'You'}</div><div class="bubble">${escapeHtml(text)}</div>`;
+  t.appendChild(div);
+  t.scrollTop = t.scrollHeight;
+  return div;
+}
+function addFeedback(text, kind){
+  const t = $('transcript');
+  const div = document.createElement('div');
+  div.className = `feedback-line ${kind}`;
+  div.textContent = text;
+  t.appendChild(div);
+  t.scrollTop = t.scrollHeight;
+}
+function addTyping(){
+  const t = $('transcript');
+  const div = document.createElement('div');
+  div.className = 'msg from-ai';
+  div.id = 'typingIndicator';
+  div.innerHTML = `<div class="avatar ai">AI</div><div class="bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+  t.appendChild(div);
+  t.scrollTop = t.scrollHeight;
+}
+function removeTyping(){
+  const el = $('typingIndicator');
+  if(el) el.remove();
+}
+function updateBanner(claim){
+  $('bannerSeverity').textContent = severityLabel(claim.severity);
+  $('bannerSeverity').className = 'severity-badge ' + claim.severity;
+  $('bannerText').textContent = claim.claim;
+  updateRing(claim.score || 0);
+}
+function updateRing(pct){
+  const circumference = 119.4;
+  const offset = circumference - (pct/100)*circumference;
+  $('ringProgress').style.strokeDashoffset = offset;
+  $('ringProgress').setAttribute('stroke', pct>=75?'#7ee787':pct>=45?'#f0b72f':'#ff6b9d');
+  $('ringNum').textContent = pct+'%';
+}
+
+async function startInterview(){
+  show('screen-interview');
+  $('transcript').innerHTML = '';
+  state.activeClaimIndex = 0;
+  await runOpeningQuestion();
+}
+
+async function runOpeningQuestion(){
+  const claim = state.claims[state.activeClaimIndex];
+  if(!claim) return finishInterview();
+  claim.status = 'in-progress';
+  renderSidebar();
+  updateBanner(claim);
+  addTyping();
+  const sys = buildInterviewerSystemPrompt();
+  const userMsg = `We are now beginning the claim: "${claim.claim}" (severity: ${claim.severity}; reason it needs defending: ${claim.why}).
+This is the OPENING question for this claim — no prior answer yet.
+Return ONLY JSON: {"message": "your opening question to the candidate, natural spoken interview tone, one question, reference the specific claim"}`;
+  try{
+    const raw = await callClaude(sys, userMsg);
+    const parsed = extractJson(raw) || {};
+    removeTyping();
+    addMsg('ai', parsed.message || `Tell me more about: ${claim.claim}`);
+  }catch(e){
+    removeTyping();
+    showError('Could not reach the interviewer model.', true);
+  }
+}
+
+function buildInterviewerSystemPrompt(){
+  const c = state.context;
+  return `You are role-playing a real interview panel: ${c.audience}. Tone: ${c.tone}. This is prep for: ${(c.purpose||[]).join(', ')}. You are interviewing a candidate about their ${c.what}.
+You are an expert interviewer, recruiter, behavioral psychologist and senior technical hiring manager combined. You are a friendly-but-genuine skeptic: your job is to find weak claims, vague statements, missing evidence, and unclear ownership, and to push (proportional to the chosen tone) until the candidate either backs up the claim convincingly or reveals a gap.
+Never repeat generic template questions like "tell me about yourself" — always reference the SPECIFIC claim and the candidate's own prior wording.
+Always respond in the exact JSON shape requested in the user message, nothing else, no markdown fences.`;
+}
+
+let sending = false;
+async function sendAnswer(){
+  if(sending) return;
+  const box = $('answerBox');
+  const text = box.value.trim();
+  if(!text) return;
+  sending = true;
+  box.value='';
+  box.style.height='auto';
+  const claim = state.claims[state.activeClaimIndex];
+  addMsg('user', text);
+  claim.transcript.push({role:'user', text});
+  addTyping();
+
+  const sys = buildInterviewerSystemPrompt();
+  const historyStr = claim.transcript.map(t=>`${t.role==='user'?'Candidate':'Interviewer'}: ${t.text}`).join('\n');
+  const userMsg = `Current claim under test: "${claim.claim}" (severity: ${claim.severity}).
+Conversation so far on THIS claim:
+${historyStr}
+
+The candidate just answered. Evaluate their latest answer and decide what happens next.
+Return ONLY JSON in this exact shape:
+{
+ "feedback": "one short coaching line (max ~18 words) — direct, specific, never generic praise",
+ "confidence_score": <integer 0-100, absolute confidence this claim is now well-defended, considering the WHOLE exchange so far>,
+ "verdict": "strong" | "developing" | "weak",
+ "action": "follow_up" | "advance",
+ "next_message": "if action is follow_up: a sharper, more specific follow-up question digging into a gap in THIS answer. if action is advance: a brief 1-sentence transition acknowledging their answer, then move on (the next claim's question will be asked separately, so do NOT ask a new question here, just transition)."
+}
+Push for follow_up if the answer was vague, unquantified, avoided ownership, or contradicted something earlier — up to a max of 3 follow-ups per claim, matching the requested tone (${state.context.tone}). Otherwise advance.`;
+
+  try{
+    const raw = await callClaude(sys, userMsg);
+    const parsed = extractJson(raw) || {};
+    removeTyping();
+    const fbKind = parsed.verdict==='strong' ? 'pos' : parsed.verdict==='weak' ? 'neg' : 'neu';
+    if(parsed.feedback) addFeedback(parsed.feedback, fbKind);
+    claim.transcript.push({role:'ai_feedback', text: parsed.feedback});
+    if(typeof parsed.confidence_score === 'number'){
+      claim.score = Math.max(0, Math.min(100, Math.round(parsed.confidence_score)));
+      updateRing(claim.score);
+    }
+    claim.feedback = parsed.feedback || claim.feedback;
+
+    const followUpCount = claim.transcript.filter(t=>t.role==='ai_followup').length;
+    if(parsed.action === 'follow_up' && followUpCount < 3){
+      addTyping();
+      await new Promise(r=>setTimeout(r, 350));
+      removeTyping();
+      addMsg('ai', parsed.next_message || 'Can you be more specific?');
+      claim.transcript.push({role:'ai_followup', text: parsed.next_message});
+    } else {
+      if(parsed.next_message){
+        addTyping();
+        await new Promise(r=>setTimeout(r, 300));
+        removeTyping();
+        addMsg('ai', parsed.next_message);
+      }
+      claim.status = claim.score>=75 ? 'strong' : claim.score>=45 ? 'developing' : 'weak';
+      renderSidebar();
+      state.activeClaimIndex++;
+      if(state.activeClaimIndex < state.claims.length){
+        setTimeout(()=>runOpeningQuestion(), 500);
+      } else {
+        setTimeout(()=>finishInterview(), 500);
+      }
+    }
+    renderSidebar();
+  }catch(err){
+    removeTyping();
+    showError('Lost connection to the interviewer — your answer is saved, hit retry.', true);
+    claim.transcript.push({role:'user_pending_retry', text});
+  }finally{
+    sending = false;
+  }
+}
+
+$('sendBtn').addEventListener('click', sendAnswer);
+$('answerBox').addEventListener('keydown', e=>{
+  if(e.key==='Enter' && !e.shiftKey){
+    e.preventDefault();
+    sendAnswer();
+  }
+});
+$('answerBox').addEventListener('input', function(){
+  this.style.height='auto';
+  this.style.height=Math.min(this.scrollHeight,180)+'px';
+});
+$('errorRetryBtn').addEventListener('click', ()=>{
+  hideError();
+  const claim = state.claims[state.activeClaimIndex];
+  const last = claim.transcript[claim.transcript.length-1];
+  if(last && last.role==='user_pending_retry'){
+    claim.transcript.pop();
+    $('answerBox').value = last.text;
+    sendAnswer();
+  } else {
+    runOpeningQuestion();
+  }
+});
+
+// ============================================================
+// REPORT
+// ============================================================
+async function finishInterview(){
+  persistSession();
+  show('screen-report');
+  $('reportContent').innerHTML = `<div class="loading-line">$ compiling defense report<span class="cursor-blink"></span></div>`;
+  await buildReport();
+}
+
+async function buildReport(){
+  const sys = `You are an expert interview coach synthesizing a final "Defense Report" for a candidate who just practiced defending claims about their ${state.context.what}. Be specific, reference their actual claims and actual answers, never generic. Tone: constructive but honest.`;
+  const claimsSummary = state.claims.map(c=>`- Claim: "${c.claim}" | Category: ${c.category} | Confidence: ${c.score ?? 'n/a'}% | Transcript: ${c.transcript.filter(t=>t.role==='user').map(t=>t.text).join(' || ')}`).join('\n');
+  const userMsg = `CONTEXT: audience=${state.context.audience}, purpose=${(state.context.purpose||[]).join(', ')}, tone=${state.context.tone}.
+CLAIMS AND HOW THEY WERE DEFENDED:
+${claimsSummary}
+
+Return ONLY JSON in this exact shape:
+{
+ "overall_verdict": "2-3 sentence honest summary of overall interview readiness for this specific candidate",
+ "strengths": ["3-5 short bullet points, specific to what they actually said"],
+ "risks": ["3-5 short bullet points on what will get challenged in a real interview, specific"],
+ "per_claim": [{"claim": "same claim text", "feedback": "1-2 sentence specific feedback on how they defended it", "fix": "1 concrete, specific suggestion to strengthen it — e.g. a rewritten line, a number to find, a story structure (STAR) to use"}]
+}`;
+  try{
+    const raw = await callClaude(sys, userMsg);
+    const parsed = extractJson(raw) || {};
+    renderReport(parsed);
+  }catch(err){
+    renderReport(null);
+  }
+}
+
+function renderReport(aiReport){
+  const overall = computeOverallScore();
+  const color = scoreColor(overall);
+  aiReport = aiReport || state._lastAiReport || null;
+  if(aiReport) state._lastAiReport = aiReport;
+
+  const perClaimMap = {};
+  (aiReport?.per_claim || []).forEach(pc=>perClaimMap[pc.claim]=pc);
+
+  $('reportContent').innerHTML = `
+    <div class="step-label">defense report</div>
+    <div class="report-head">
+      <div class="big-score" style="color:${color}">${overall}<span class="unit">/100</span></div>
+      <div>
+        <div class="report-title">overall interview readiness</div>
+        <div class="report-verdict">${escapeHtml(aiReport?.overall_verdict || 'Report synthesis unavailable — connection issue. Your per-claim scores below are still accurate.')}</div>
+      </div>
+    </div>
+    <div class="report-meta-row">
+      <span>defending <span class="n">${escapeHtml(state.context.what)}</span></span>
+      <span>audience <span class="n">${escapeHtml(state.context.audience)}</span></span>
+      <span><span class="n">${state.claims.length}</span> claims tested</span>
+    </div>
+
+    <div class="report-section">
+      <h3 style="color:var(--green)">✓ well defended</h3>
+      <ul class="list-plain">${(aiReport?.strengths||['Not enough signal yet — finish more claims for a stronger read.']).map(s=>`<li>${escapeHtml(s)}</li>`).join('')}</ul>
+    </div>
+
+    <div class="report-section">
+      <h3 style="color:var(--pink)">✗ will get challenged</h3>
+      <ul class="list-plain risks">${(aiReport?.risks||['—']).map(s=>`<li>${escapeHtml(s)}</li>`).join('')}</ul>
+    </div>
+
+    <div class="report-section">
+      <h3>per-claim breakdown</h3>
+      ${state.claims.map(c=>{
+        const pc = perClaimMap[c.claim] || {};
+        return `<div class="claim-report-card">
+          <div class="crc-top">
+            <div class="crc-claim">${escapeHtml(c.claim)}</div>
+            <div class="crc-score" style="color:${scoreColor(c.score||0)}">${c.score ?? 0}%</div>
+          </div>
+          <div class="crc-fb">${escapeHtml(pc.feedback || c.feedback || 'Not enough answer detail captured.')}</div>
+          <div class="crc-fix">fix → ${escapeHtml(pc.fix || 'Add a concrete number or specific outcome next time this comes up.')}</div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <div class="report-actions">
+      <button class="btn btn-primary" id="exportBtn">export report (.md)</button>
+      <button class="btn btn-ghost" id="printBtn">print / save as pdf</button>
+      <button class="btn btn-ghost" id="restartBtn">new session</button>
+    </div>
+  `;
+  $('exportBtn').addEventListener('click', exportMarkdown);
+  $('printBtn').addEventListener('click', ()=>window.print());
+  $('restartBtn').addEventListener('click', ()=>location.reload());
+  $('newSessionBtn').style.display = 'inline-block';
+}
+
+function exportMarkdown(){
+  const overall = computeOverallScore();
+  const ai = state._lastAiReport;
+  let md = `# Defense Report — ${state.context.what}\n\n`;
+  md += `**Overall readiness:** ${overall}/100\n\n`;
+  if(ai?.overall_verdict) md += `${ai.overall_verdict}\n\n`;
+  md += `## Well defended\n`;
+  (ai?.strengths||[]).forEach(s=>md+=`- ${s}\n`);
+  md += `\n## Will get challenged\n`;
+  (ai?.risks||[]).forEach(s=>md+=`- ${s}\n`);
+  md += `\n## Per-claim breakdown\n`;
+  const perClaimMap = {};
+  (ai?.per_claim||[]).forEach(pc=>perClaimMap[pc.claim]=pc);
+  state.claims.forEach(c=>{
+    const pc = perClaimMap[c.claim] || {};
+    md += `\n### ${c.claim} — ${c.score ?? 0}%\n${pc.feedback || c.feedback || ''}\n\n**Fix:** ${pc.fix || ''}\n`;
+  });
+  const blob = new Blob([md], {type:'text/markdown'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'defense-report.md';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+renderIntro();
+
+})();
+</script>
+</body>
+</html>
