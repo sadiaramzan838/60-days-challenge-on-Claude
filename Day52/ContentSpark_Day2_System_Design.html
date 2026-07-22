@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ContentSpark — Day 2: System Design</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+<style>
+  :root {
+    --navy: #1E2761;
+    --navy-light: #273272;
+    --ice: #CADCFC;
+    --gold: #C9A227;
+    --grey: #6B7280;
+    --darktext: #212121;
+    --bg-soft: #F7F8FC;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Calibri', 'Segoe UI', Arial, sans-serif;
+    color: var(--darktext);
+    margin: 0;
+    background: #fff;
+    line-height: 1.65;
+  }
+  .container { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
+
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--navy); color: #fff;
+    padding: 0.9rem 0; box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+  }
+  nav .container { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; max-width: 1100px; }
+  nav .brand { font-family: Georgia, 'Cambria', serif; font-weight: bold; font-size: 1.3rem; }
+  nav .brand span { color: var(--gold); }
+  nav ul { list-style: none; display: flex; gap: 1.1rem; margin: 0; padding: 0; flex-wrap: wrap; }
+  nav a { color: var(--ice); text-decoration: none; font-size: 0.9rem; font-weight: 600; }
+  nav a:hover { color: #fff; text-decoration: underline; }
+
+  .cover {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+    color: #fff; padding: 4rem 2rem 3rem; text-align: center;
+  }
+  .cover .eyebrow { letter-spacing: 3px; font-size: 0.8rem; color: var(--ice); font-weight: 700; margin-bottom: 1rem; }
+  .cover h1 { font-family: Georgia, 'Cambria', serif; font-size: 2.8rem; margin: 0.2rem 0; }
+  .cover .tagline { font-size: 1.15rem; color: var(--ice); font-style: italic; margin-bottom: 1.5rem; }
+  .cover .badges { margin-top: 2rem; display: flex; justify-content: center; gap: 0.8rem; flex-wrap: wrap; }
+  .cover .badge { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.3); padding: 0.45rem 1rem; border-radius: 30px; font-size: 0.82rem; }
+
+  section.doc-part { padding: 3rem 0 1rem; }
+  .part-title {
+    background: var(--bg-soft); border-left: 5px solid var(--gold);
+    padding: 1.3rem 1.8rem; margin-bottom: 1.8rem; border-radius: 6px;
+  }
+  .part-title .label { color: var(--gold); font-weight: 700; letter-spacing: 2px; font-size: 0.78rem; }
+  .part-title h1 { color: var(--navy); font-family: Georgia, serif; margin: 0.3rem 0 0; font-size: 1.8rem; }
+
+  h1 { color: var(--navy); }
+  h2 { color: var(--navy); font-family: Georgia, serif; border-bottom: 2px solid var(--ice); padding-bottom: 0.4rem; margin-top: 2.3rem; font-size: 1.4rem; }
+  h3 { color: var(--navy-light); margin-top: 1.5rem; font-size: 1.05rem; }
+  p { margin: 0.6rem 0; }
+  ul, ol { padding-left: 1.4rem; }
+  li { margin: 0.35rem 0; }
+  strong { color: var(--navy); }
+
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0 1.5rem; font-size: 0.9rem; }
+  th, td { border: 1px solid #ddd; padding: 0.55rem 0.75rem; text-align: left; }
+  th { background: var(--navy); color: #fff; }
+  tr:nth-child(even) { background: var(--bg-soft); }
+
+  pre { background: var(--bg-soft); border: 1px solid #e2e5f0; border-radius: 6px; padding: 1rem; overflow-x: auto; }
+  pre code { font-family: 'Courier New', monospace; font-size: 0.83rem; color: #333; white-space: pre; }
+  code { background: var(--bg-soft); padding: 0.1rem 0.35rem; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.88rem; }
+
+  .mermaid { background: #fff; border: 1px solid #e2e5f0; border-radius: 8px; padding: 1.2rem; margin: 1.2rem 0; text-align: center; }
+
+  .toc { columns: 1; }
+  .toc a { color: var(--navy); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .toc li { margin-bottom: 0.4rem; }
+
+  footer { text-align: center; padding: 3rem 0; color: var(--grey); font-size: 0.85rem; }
+
+  @media print {
+    nav { display: none; }
+    .part-title { page-break-before: always; }
+  }
+  @media (max-width: 700px) {
+    .cover h1 { font-size: 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <div class="brand">Content<span>Spark</span></div>
+    <ul>
+      <li><a href="#top">Home</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+      <li><a href="#schema">Schema</a></li>
+      <li><a href="#api">API</a></li>
+      <li><a href="#ui">UI/Wireframes</a></li>
+      <li><a href="#structure">Structure</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="cover" id="top">
+  <div class="eyebrow">AB TALKS 60-DAY CLAUDE AI CHALLENGE &bull; DAY 2: SYSTEM DESIGN</div>
+  <h1>ContentSpark</h1>
+  <div class="tagline">Complete Technical Blueprint &mdash; Architecture, Schema, API, UI &amp; Structure</div>
+  <div class="badges">
+    <div class="badge">🏗️ Architecture</div>
+    <div class="badge">🗄️ Schema</div>
+    <div class="badge">🔗 API</div>
+    <div class="badge">🎨 Wireframes</div>
+    <div class="badge">📁 Structure</div>
+  </div>
+</div>
+
+<div class="container">
+  <section style="padding: 2.2rem 0 0;">
+    <h2 style="margin-top:0;">Contents</h2>
+    <ul class="toc">
+      <li><a href="#architecture">1. System Architecture</a></li>
+      <li><a href="#schema">2. Data Schema</a></li>
+      <li><a href="#api">3. API Design</a></li>
+      <li><a href="#ui">4. UI, User Flow &amp; Wireframes</a></li>
+      <li><a href="#structure">5. Project Structure</a></li>
+    </ul>
+  </section>
+
+  <section class="doc-part" id="architecture">
+    <div class="part-title"><div class="label">PART 1</div><h1>System Architecture</h1></div>
+    <h1 id="contentspark-system-architecture">ContentSpark — System Architecture</h1>
+<p><strong>Status:</strong> Approved Day 2 design, matches PRD v1.0 and Implementation Blueprint <strong>Repo location:</strong> <code>Day51/</code> (monorepo: <code>60-days-challenge-on-Claude</code>)</p>
+<h2 id="overview">1. Overview</h2>
+<p>ContentSpark is a single-user, client-side-heavy web application with exactly one server-side responsibility: securely calling the Claude API. There is no traditional backend server, no database server, and no authentication layer — all of which are deliberate scope decisions from the PRD to fit a 1–2 hour/day, 9-remaining-day budget.</p>
+<h2 id="component-diagram">2. Component Diagram</h2>
+<div class="mermaid">graph TD
+    subgraph Browser[&quot;Browser (Client)&quot;]
+        UI[React App&lt;br/&gt;Dashboard / ClientForm / ClientDetail]
+        LS[(localStorage&lt;br/&gt;contentspark_clients&lt;br/&gt;contentspark_history)]
+        UI &lt;--&gt; LS
+    end
+
+    subgraph Vercel[&quot;Vercel (Hosting)&quot;]
+        STATIC[Static React Build&lt;br/&gt;served as CDN assets]
+        FUNC[&quot;Serverless Function&lt;br/&gt;/api/generate.js&quot;]
+    end
+
+    subgraph Anthropic[&quot;Anthropic&quot;]
+        CLAUDE[Claude API&lt;br/&gt;claude-sonnet-4-6]
+    end
+
+    UI -- &quot;1. HTTPS GET (page load)&quot; --&gt; STATIC
+    UI -- &quot;2. POST /api/generate&lt;br/&gt;{niche, tone, goal, pastPosts}&quot; --&gt; FUNC
+    FUNC -- &quot;3. API call w/ ANTHROPIC_API_KEY&lt;br/&gt;(server-side env var)&quot; --&gt; CLAUDE
+    CLAUDE -- &quot;4. JSON: ideas, captions,&lt;br/&gt;hashtags, visualDirection&quot; --&gt; FUNC
+    FUNC -- &quot;5. JSON response&quot; --&gt; UI
+    UI -- &quot;6. Save result to history&quot; --&gt; LS</div>
+<h2 id="data-flow">3. Data Flow</h2>
+<ol type="1">
+<li><strong>App load:</strong> Vercel serves the static React build. React reads <code>contentspark_clients</code> and <code>contentspark_history</code> from <code>localStorage</code> to populate the Dashboard.</li>
+<li><strong>Client management:</strong> All create/edit/delete operations for client profiles happen entirely in the browser — React state updates <code>localStorage</code> directly via <code>utils/storage.js</code>. No network request involved.</li>
+<li><strong>Content generation:</strong> When “Generate Content” is clicked, the client’s profile data is sent to <code>/api/generate</code> (Vercel serverless function). This is the <em>only</em> network call that leaves the browser besides the initial page load.</li>
+<li><strong>AI call:</strong> The serverless function reads <code>ANTHROPIC_API_KEY</code> from Vercel’s environment variables (never sent to the browser), builds a structured prompt, and calls the Claude API.</li>
+<li><strong>Response handling:</strong> The parsed JSON result flows back to the browser, renders in <code>GenerationResult</code>, and is saved to <code>contentspark_history</code> in <code>localStorage</code>.</li>
+</ol>
+<h2 id="request-lifecycle-generate-content-flow">4. Request Lifecycle (Generate Content Flow)</h2>
+<div class="mermaid">sequenceDiagram
+    participant U as Sadia (User)
+    participant R as React App
+    participant V as Vercel Function&lt;br/&gt;/api/generate
+    participant C as Claude API
+
+    U-&gt;&gt;R: Click &quot;Generate Content&quot;
+    R-&gt;&gt;R: Set isLoading = true, show LoadingSkeleton
+    R-&gt;&gt;V: POST /api/generate { niche, tone, goal, pastPostExamples }
+    V-&gt;&gt;V: Read ANTHROPIC_API_KEY from env
+    V-&gt;&gt;V: Build system + user prompt
+    V-&gt;&gt;C: messages.create(...)
+    alt Success
+        C-&gt;&gt;V: JSON text response
+        V-&gt;&gt;V: Parse &amp; validate JSON shape
+        V-&gt;&gt;R: 200 { ideas, captions, hashtags, visualDirection }
+        R-&gt;&gt;R: Render GenerationResult
+        R-&gt;&gt;R: Save entry to contentspark_history (localStorage)
+    else Failure (network / parse / API error)
+        C--&gt;&gt;V: Error / malformed response
+        V-&gt;&gt;R: 4xx/5xx { error: &quot;message&quot; }
+        R-&gt;&gt;R: Show friendly error state
+    end
+    R-&gt;&gt;U: Display result or error</div>
+<h2 id="ai-interaction-details">5. AI Interaction Details</h2>
+<ul>
+<li><strong>Model:</strong> <code>claude-sonnet-4-6</code></li>
+<li><strong>Call pattern:</strong> One request per “Generate” click. No streaming, no conversation history (each generation is stateless and independent).</li>
+<li><strong>Prompt structure:</strong>
+<ul>
+<li>System prompt: instructs Claude to act as a social media content strategist and to return <strong>strict JSON only</strong> (no markdown, no commentary) with keys <code>ideas</code>, <code>captions</code>, <code>hashtags</code>, <code>visualDirection</code>.</li>
+<li>User message: dynamically built from the selected client’s <code>niche</code>, <code>tone</code>, <code>goal</code>, and <code>pastPostExamples</code>.</li>
+</ul></li>
+<li><strong>Output contract:</strong> <code>{ ideas: string[], captions: string[], hashtags: string[], visualDirection: string }</code> — validated with a <code>try/catch</code> around <code>JSON.parse</code> in the serverless function before returning to the client.</li>
+</ul>
+<h2 id="external-services">6. External Services</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Service</th>
+<th>Purpose</th>
+<th>Tier</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Anthropic API</td>
+<td>Content generation</td>
+<td>Pay-as-you-go (API key from console.anthropic.com)</td>
+</tr>
+<tr class="even">
+<td>Vercel</td>
+<td>Hosting (static app + serverless function)</td>
+<td>Free (Hobby)</td>
+</tr>
+<tr class="odd">
+<td>GitHub</td>
+<td>Version control, triggers Vercel auto-deploy</td>
+<td>Free</td>
+</tr>
+</tbody>
+</table>
+<p>No other external services (no database provider, no auth provider, no analytics, no image hosting) are used in v1.0 — consistent with the PRD’s “free-tier only, minimal moving parts” non-functional requirement.</p>
+<h2 id="security-notes">7. Security Notes</h2>
+<ul>
+<li><code>ANTHROPIC_API_KEY</code> lives only in <code>.env.local</code> (local dev, gitignored) and Vercel’s Environment Variables (production). It is read exclusively inside <code>api/generate.js</code>, which runs server-side — it is never bundled into the React app or sent to the browser.</li>
+<li>Because there’s no authentication and no server-side database, there is no user data at risk beyond what already lives in the user’s own browser (<code>localStorage</code>), which is standard for a single-user local tool.</li>
+</ul>
+
+  </section>
+
+  <section class="doc-part" id="schema">
+    <div class="part-title"><div class="label">PART 2</div><h1>Data Schema</h1></div>
+    <h1 id="contentspark-data-schema-localstorage">ContentSpark — Data Schema (localStorage)</h1>
+<p><strong>Status:</strong> Approved Day 2 design <strong>Storage engine:</strong> Browser <code>localStorage</code> (no external database — see ARCHITECTURE.md for rationale)</p>
+<h2 id="overview">1. Overview</h2>
+<p>There is no traditional database in v1.0. Two JSON arrays are stored under fixed <code>localStorage</code> keys, and all reads/writes are centralized in <code>src/utils/storage.js</code> so no component ever touches <code>localStorage</code> directly. This keeps the “schema” simple but still deserves the same rigor as a real database design — field types, constraints, and relationships are all defined below.</p>
+<h2 id="collections">2. Collections</h2>
+<h3 id="contentspark_clients-clientprofile">2.1 <code>contentspark_clients</code> → <code>ClientProfile[]</code></h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Constraints</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>id</code></td>
+<td>string (UUID)</td>
+<td>Yes</td>
+<td>Generated via <code>crypto.randomUUID()</code>; primary key</td>
+</tr>
+<tr class="even">
+<td><code>name</code></td>
+<td>string</td>
+<td>Yes</td>
+<td>Non-empty; max ~80 chars (UI-enforced)</td>
+</tr>
+<tr class="odd">
+<td><code>niche</code></td>
+<td>string</td>
+<td>Yes</td>
+<td>Non-empty; e.g. “bakery”, “fitness coach”</td>
+</tr>
+<tr class="even">
+<td><code>tone</code></td>
+<td>string</td>
+<td>Yes</td>
+<td>Non-empty; e.g. “fun”, “elegant”, “bold”</td>
+</tr>
+<tr class="odd">
+<td><code>goal</code></td>
+<td>string</td>
+<td>Yes</td>
+<td>Non-empty; e.g. “promote a sale”, “boost engagement”</td>
+</tr>
+<tr class="even">
+<td><code>pastPostExamples</code></td>
+<td>string</td>
+<td>No</td>
+<td>Free text, can be empty string; no max length enforced (large text handled via <code>overflow-y-auto</code> per Blueprint Day 9)</td>
+</tr>
+<tr class="odd">
+<td><code>createdAt</code></td>
+<td>string (ISO 8601)</td>
+<td>Yes</td>
+<td>Set once at creation, never modified</td>
+</tr>
+</tbody>
+</table>
+<h3 id="contentspark_history-generationhistoryentry">2.2 <code>contentspark_history</code> → <code>GenerationHistoryEntry[]</code></h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Constraints</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>id</code></td>
+<td>string (UUID)</td>
+<td>Yes</td>
+<td>Generated via <code>crypto.randomUUID()</code>; primary key</td>
+</tr>
+<tr class="even">
+<td><code>clientId</code></td>
+<td>string (UUID)</td>
+<td>Yes</td>
+<td><strong>Foreign key</strong> → <code>ClientProfile.id</code> (soft reference, app-enforced, no DB-level constraint)</td>
+</tr>
+<tr class="odd">
+<td><code>ideas</code></td>
+<td>string[]</td>
+<td>Yes</td>
+<td>3–5 items (enforced by AI prompt, not schema)</td>
+</tr>
+<tr class="even">
+<td><code>captions</code></td>
+<td>string[]</td>
+<td>Yes</td>
+<td>Same length as <code>ideas</code>, index-matched</td>
+</tr>
+<tr class="odd">
+<td><code>hashtags</code></td>
+<td>string[]</td>
+<td>Yes</td>
+<td>Variable length</td>
+</tr>
+<tr class="even">
+<td><code>visualDirection</code></td>
+<td>string</td>
+<td>Yes</td>
+<td>Non-empty</td>
+</tr>
+<tr class="odd">
+<td><code>createdAt</code></td>
+<td>string (ISO 8601)</td>
+<td>Yes</td>
+<td>Set once at creation</td>
+</tr>
+</tbody>
+</table>
+<h2 id="relationships">3. Relationships</h2>
+<div class="mermaid">erDiagram
+    ClientProfile ||--o{ GenerationHistoryEntry : &quot;has many&quot;
+    ClientProfile {
+        string id PK
+        string name
+        string niche
+        string tone
+        string goal
+        string pastPostExamples
+        string createdAt
+    }
+    GenerationHistoryEntry {
+        string id PK
+        string clientId FK
+        string_array ideas
+        string_array captions
+        string_array hashtags
+        string visualDirection
+        string createdAt
+    }</div>
+<p>One <code>ClientProfile</code> has many <code>GenerationHistoryEntry</code> records. The relationship is <strong>one-to-many</strong>, enforced entirely in application code (<code>getHistory(clientId)</code> filters by <code>clientId</code>) since <code>localStorage</code> has no referential integrity.</p>
+<h2 id="constraints-rules">4. Constraints &amp; Rules</h2>
+<ul>
+<li><strong>Orphaned history:</strong> If a client is deleted, their history entries become orphaned (unreachable, since no UI lists history without a client). Per Blueprint Day 9, the decision is: <strong>leave orphaned entries harmless rather than cascade-delete</strong>, to keep <code>deleteClient()</code> simple. This is documented here so it’s an intentional decision, not a bug.</li>
+<li><strong>No duplicate IDs:</strong> <code>crypto.randomUUID()</code> guarantees uniqueness; no manual ID collision handling needed.</li>
+<li><strong>No cross-field validation needed:</strong> Each field is independent; the only relationship is <code>clientId</code> referencing an existing <code>ClientProfile.id</code>, checked implicitly (a history entry is only ever created immediately after a successful generation for a currently-loaded, valid client).</li>
+</ul>
+<h2 id="schema-validation-against-prd-functional-requirements">5. Schema Validation Against PRD Functional Requirements</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>PRD Requirement</th>
+<th>Supported By</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>FR-1: Create client profile with name, niche, tone, goal, past posts</td>
+<td><code>ClientProfile</code> — all fields present</td>
+</tr>
+<tr class="even">
+<td>FR-2: View list of all client profiles</td>
+<td><code>getClients()</code> reads full <code>contentspark_clients</code> array</td>
+</tr>
+<tr class="odd">
+<td>FR-3: Edit existing client profile</td>
+<td><code>saveClient()</code> updates by matching <code>id</code></td>
+</tr>
+<tr class="even">
+<td>FR-4: Delete client profile</td>
+<td><code>deleteClient(id)</code> filters array by <code>id</code></td>
+</tr>
+<tr class="odd">
+<td>FR-6: Send niche/tone/goal/pastPosts to Claude</td>
+<td>All 4 fields exist on <code>ClientProfile</code></td>
+</tr>
+<tr class="even">
+<td>FR-7: Display ideas, captions, hashtags, visual direction</td>
+<td>All 4 fields exist on <code>GenerationHistoryEntry</code></td>
+</tr>
+<tr class="odd">
+<td>FR-11: Auto-save every generation to history</td>
+<td><code>saveHistoryEntry()</code> called right after successful generation</td>
+</tr>
+<tr class="even">
+<td>FR-12: View chronological history per client</td>
+<td><code>getHistory(clientId)</code> + sort by <code>createdAt</code> descending</td>
+</tr>
+<tr class="odd">
+<td>FR-13: Reopen a past generation</td>
+<td>Full entry retrieved by <code>id</code>, all fields present to re-render <code>GenerationResult</code></td>
+</tr>
+<tr class="even">
+<td>FR-14: Delete a history entry</td>
+<td><code>deleteHistoryEntry(id)</code> filters array by <code>id</code></td>
+</tr>
+</tbody>
+</table>
+<p>Every functional requirement from the PRD maps cleanly onto this schema — no gaps found.</p>
+
+  </section>
+
+  <section class="doc-part" id="api">
+    <div class="part-title"><div class="label">PART 3</div><h1>API Design</h1></div>
+    <h1 id="contentspark-api-design">ContentSpark — API Design</h1>
+<p><strong>Status:</strong> Approved Day 2 design <strong>Note:</strong> Because there is no backend database (see ARCHITECTURE.md), ContentSpark has exactly <strong>one</strong> real HTTP API endpoint. All client profile and history operations (create/edit/delete/list) are <strong>client-side functions</strong> against <code>localStorage</code> — not network calls — and are documented separately for completeness.</p>
+<h2 id="http-endpoint">1. HTTP Endpoint</h2>
+<h3 id="post-apigenerate"><code>POST /api/generate</code></h3>
+<p><strong>Purpose:</strong> Securely call the Claude API on behalf of the browser, using a server-side API key, and return structured content for a given client profile.</p>
+<h4 id="request">Request</h4>
+<pre><code>POST /api/generate
+Content-Type: application/json</code></pre>
+<div class="sourceCode" id="cb2"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;niche&quot;</span><span class="fu">:</span> <span class="st">&quot;string, required&quot;</span><span class="fu">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;tone&quot;</span><span class="fu">:</span> <span class="st">&quot;string, required&quot;</span><span class="fu">,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;goal&quot;</span><span class="fu">:</span> <span class="st">&quot;string, required&quot;</span><span class="fu">,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;pastPostExamples&quot;</span><span class="fu">:</span> <span class="st">&quot;string, optional (can be empty string)&quot;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<h4 id="response-success-200">Response — Success (200)</h4>
+<div class="sourceCode" id="cb3"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;ideas&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;string&quot;</span><span class="ot">,</span> <span class="st">&quot;string&quot;</span><span class="ot">,</span> <span class="st">&quot;string&quot;</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;captions&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;string&quot;</span><span class="ot">,</span> <span class="st">&quot;string&quot;</span><span class="ot">,</span> <span class="st">&quot;string&quot;</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;hashtags&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;string&quot;</span><span class="ot">,</span> <span class="st">&quot;string&quot;</span><span class="ot">,</span> <span class="st">&quot;...&quot;</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;visualDirection&quot;</span><span class="fu">:</span> <span class="st">&quot;string&quot;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<ul>
+<li><code>ideas</code> and <code>captions</code> are index-matched (idea[0] pairs with caption[0]).</li>
+<li>3–5 items expected in <code>ideas</code>/<code>captions</code>, enforced via prompt instruction, not strict schema validation.</li>
+</ul>
+<h4 id="validation">Validation</h4>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Rule</th>
+<th>Behavior if violated</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>niche</code>, <code>tone</code>, <code>goal</code> must be non-empty strings</td>
+<td>Return <code>400</code> before calling Claude</td>
+</tr>
+<tr class="even">
+<td><code>pastPostExamples</code> may be missing or empty</td>
+<td>No error — prompt handles gracefully</td>
+</tr>
+<tr class="odd">
+<td>Response from Claude must be valid JSON matching the expected shape</td>
+<td>If <code>JSON.parse</code> fails, return <code>502</code> with a generic error message (never leak raw Claude output or stack traces to the client)</td>
+</tr>
+</tbody>
+</table>
+<h4 id="authentication">Authentication</h4>
+<p>None. This is a single-user app with no login system (per PRD). The endpoint is technically public if someone finds the URL, but it does nothing without valid client-shaped input, and the API key itself is never exposed. (Acceptable risk for a v1.0 personal tool — noted here explicitly as a conscious tradeoff, not an oversight.)</p>
+<h4 id="error-cases">Error Cases</h4>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Scenario</th>
+<th>HTTP Status</th>
+<th>Response Body</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Missing/empty required field (<code>niche</code>, <code>tone</code>, or <code>goal</code>)</td>
+<td><code>400</code></td>
+<td><code>{ "error": "Missing required client information." }</code></td>
+</tr>
+<tr class="even">
+<td><code>ANTHROPIC_API_KEY</code> not configured (misconfigured deploy)</td>
+<td><code>500</code></td>
+<td><code>{ "error": "Server configuration error." }</code></td>
+</tr>
+<tr class="odd">
+<td>Claude API call fails (network, rate limit, timeout)</td>
+<td><code>502</code></td>
+<td><code>{ "error": "Something went wrong generating content. Please try again." }</code></td>
+</tr>
+<tr class="even">
+<td>Claude returns non-JSON or malformed JSON</td>
+<td><code>502</code></td>
+<td><code>{ "error": "Something went wrong generating content. Please try again." }</code></td>
+</tr>
+<tr class="odd">
+<td>Method other than POST</td>
+<td><code>405</code></td>
+<td><code>{ "error": "Method not allowed." }</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="client-side-data-operations-not-http-for-completeness">2. Client-Side Data Operations (Not HTTP — for completeness)</h2>
+<p>These live in <code>src/utils/storage.js</code> and operate directly on <code>localStorage</code>. Documented here so the “full CRUD surface” of the app is visible in one place, even though none of it is a network API.</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Purpose</th>
+<th>Equivalent to</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>getClients()</code></td>
+<td>Read all client profiles</td>
+<td><code>GET /clients</code></td>
+</tr>
+<tr class="even">
+<td><code>getClientById(id)</code></td>
+<td>Read one client profile</td>
+<td><code>GET /clients/:id</code></td>
+</tr>
+<tr class="odd">
+<td><code>saveClient(client)</code></td>
+<td>Create (no <code>id</code>) or update (has <code>id</code>) a client</td>
+<td><code>POST /clients</code> or <code>PUT /clients/:id</code></td>
+</tr>
+<tr class="even">
+<td><code>deleteClient(id)</code></td>
+<td>Delete a client profile</td>
+<td><code>DELETE /clients/:id</code></td>
+</tr>
+<tr class="odd">
+<td><code>getHistory(clientId)</code></td>
+<td>Read all history entries for a client</td>
+<td><code>GET /clients/:id/history</code></td>
+</tr>
+<tr class="even">
+<td><code>saveHistoryEntry(entry)</code></td>
+<td>Create a history entry</td>
+<td><code>POST /history</code></td>
+</tr>
+<tr class="odd">
+<td><code>deleteHistoryEntry(id)</code></td>
+<td>Delete a history entry</td>
+<td><code>DELETE /history/:id</code></td>
+</tr>
+</tbody>
+</table>
+<p>If a future version (v2) migrates to a real database, this table is effectively the REST API spec to implement — the function names and responsibilities can map almost directly onto real endpoints.</p>
+
+  </section>
+
+  <section class="doc-part" id="ui">
+    <div class="part-title"><div class="label">PART 4</div><h1>UI, User Flow &amp; Wireframes</h1></div>
+    <h1 id="contentspark-ui-user-flow-wireframes">ContentSpark — UI, User Flow &amp; Wireframes</h1>
+<p><strong>Status:</strong> Approved Day 2 design — matches Blueprint’s Day 3 component list (Dashboard, ClientForm, ClientDetail + ProfileCard, GenerationResult, HistoryList, CopyButton). No new screens added.</p>
+<h2 id="user-flow-diagram">1. User Flow Diagram</h2>
+<div class="mermaid">flowchart TD
+    A[Open App] --&gt; B{Any clients saved?}
+    B -- No --&gt; C[Dashboard: Empty State]
+    C --&gt; D[Click &#39;+ New Client&#39;]
+    B -- Yes --&gt; E[Dashboard: Client Grid]
+    E --&gt; D
+    E --&gt; F[Click a Client Card]
+    D --&gt; G[ClientForm: Fill niche/tone/goal/past posts]
+    G --&gt; H[Save]
+    H --&gt; I[ClientDetail Page]
+    F --&gt; I
+    I --&gt; J[Click &#39;Generate Content&#39;]
+    J --&gt; K[Loading Skeleton]
+    K --&gt; L[GenerationResult: ideas/captions/hashtags/visual direction]
+    L --&gt; M[Copy any element]
+    L --&gt; N[Click &#39;Regenerate&#39;]
+    N --&gt; J
+    I --&gt; O[View History]
+    O --&gt; P[Click a past entry]
+    P --&gt; L
+    I --&gt; Q[Edit / Delete Client]
+    Q --&gt; G
+    Q --&gt; E</div>
+<h2 id="screens-why-each-one-exists">2. Screens — Why Each One Exists</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Screen</th>
+<th>Purpose</th>
+<th>Exists Because</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Dashboard</strong></td>
+<td>Home base — list all clients, entry point to everything</td>
+<td>Every session starts here (FR-2)</td>
+</tr>
+<tr class="even">
+<td><strong>ClientForm</strong></td>
+<td>Create OR edit a client profile (same screen, two modes)</td>
+<td>FR-1, FR-3 — one form avoids duplicate UI</td>
+</tr>
+<tr class="odd">
+<td><strong>ClientDetail</strong></td>
+<td>Generate content + view history for one client</td>
+<td>FR-5 through FR-14 all happen here — the core value of the product</td>
+</tr>
+</tbody>
+</table>
+<p>No 4th screen is needed — adding one (e.g. a separate “History” page) would be scope creep; history is scoped per-client and belongs inside ClientDetail.</p>
+<h2 id="low-fidelity-wireframes">3. Low-Fidelity Wireframes</h2>
+<h3 id="dashboard">3.1 Dashboard</h3>
+<pre><code>┌─────────────────────────────────────────────┐
+│  ContentSpark                                │
+├─────────────────────────────────────────────┤
+│  Your Clients                  [+ New Client]│
+│                                               │
+│  ┌───────────┐  ┌───────────┐  ┌───────────┐│
+│  │ Client A  │  │ Client B  │  │ Client C  ││
+│  │ niche     │  │ niche     │  │ niche     ││
+│  └───────────┘  └───────────┘  └───────────┘│
+│                                               │
+│  (Empty state, if no clients:)               │
+│  &quot;No clients yet — add your first one&quot;       │
+│              [+ New Client]                  │
+└─────────────────────────────────────────────┘</code></pre>
+<h3 id="clientform-create-edit">3.2 ClientForm (Create / Edit)</h3>
+<pre><code>┌─────────────────────────────────────────────┐
+│  ContentSpark            [&lt; Back]            │
+├─────────────────────────────────────────────┤
+│  New Client / Edit Client                    │
+│                                               │
+│  Client Name        [_______________]        │
+│  Niche               [_______________]        │
+│  Brand Tone          [_______________]        │
+│  Current Goal        [_______________]        │
+│  Past Post Examples                          │
+│  [___________________________________]       │
+│  [___________________________________]       │
+│  (helper text: &quot;paste 2-3 example captions&quot;) │
+│                                               │
+│              [Cancel]   [Save Client]        │
+└─────────────────────────────────────────────┘</code></pre>
+<h3 id="clientdetail">3.3 ClientDetail</h3>
+<pre><code>┌─────────────────────────────────────────────┐
+│  ContentSpark            [&lt; Back]            │
+├─────────────────────────────────────────────┤
+│  Client A — niche              [Edit][Delete]│
+│                                               │
+│           [ Generate Content ]               │
+│                                               │
+│  ── Result ──────────────────────────────    │
+│  Idea 1: ...                    [Copy]       │
+│  Caption: ...                   [Copy]       │
+│  #hashtag #hashtag #hashtag     [Copy]       │
+│  Visual Direction: ...          [Copy]       │
+│                          [Regenerate]        │
+│                                               │
+│  ── History ─────────────────────────────    │
+│  • 2 hours ago — &quot;Idea about...&quot;   [Delete]  │
+│  • Yesterday — &quot;Idea about...&quot;     [Delete]  │
+│  (Empty state: &quot;No generations yet&quot;)         │
+└─────────────────────────────────────────────┘</code></pre>
+<h2 id="navigation-map">4. Navigation Map</h2>
+<div class="mermaid">graph LR
+    Dashboard --&gt;|+ New Client| ClientForm
+    Dashboard --&gt;|Click card| ClientDetail
+    ClientDetail --&gt;|Edit| ClientForm
+    ClientForm --&gt;|Save / Cancel| Dashboard
+    ClientForm --&gt;|Save from edit| ClientDetail
+    ClientDetail --&gt;|Back| Dashboard</div>
+<p>Every screen has exactly one way back to Dashboard (via header “Back” link or nav), keeping navigation predictable and shallow — max 2 clicks from Dashboard to any screen.</p>
+
+  </section>
+
+  <section class="doc-part" id="structure">
+    <div class="part-title"><div class="label">PART 5</div><h1>Project Structure</h1></div>
+    <h1 id="contentspark-project-structure">ContentSpark — Project Structure</h1>
+<p><strong>Status:</strong> Approved Day 2 design <strong>Important:</strong> This repo is a <strong>monorepo</strong> (<code>60-days-challenge-on-Claude</code>). ContentSpark lives inside the <code>Day51/</code> subfolder, not at the repo root. Every path below is relative to <code>Day51/</code>.</p>
+<h2 id="full-folder-tree-target-state-grows-through-day-3-onward">1. Full Folder Tree (target state — grows through Day 3 onward)</h2>
+<pre><code>60-days-challenge-on-Claude/          (repo root — NOT ours to restructure)
+└── Day51/                            (ContentSpark project root)
+    ├── docs/                         (Day 2 design docs — created today)
+    │   ├── ARCHITECTURE.md
+    │   ├── SCHEMA.md
+    │   ├── API.md
+    │   ├── UI-WIREFRAMES.md
+    │   └── PROJECT-STRUCTURE.md
+    ├── api/
+    │   └── generate.js               (serverless function — built Day 5)
+    ├── src/
+    │   ├── main.jsx                  (React entry point)
+    │   ├── App.jsx                   (routing)
+    │   ├── index.css                 (Tailwind import)
+    │   ├── pages/
+    │   │   ├── Dashboard.jsx
+    │   │   ├── ClientForm.jsx
+    │   │   └── ClientDetail.jsx
+    │   ├── components/
+    │   │   ├── ProfileCard.jsx
+    │   │   ├── GenerationResult.jsx
+    │   │   ├── HistoryList.jsx
+    │   │   ├── CopyButton.jsx
+    │   │   ├── LoadingSkeleton.jsx   (Day 6)
+    │   │   ├── Button.jsx            (Day 8, optional)
+    │   │   └── Header.jsx            (Day 8)
+    │   └── utils/
+    │       ├── storage.js            (all localStorage logic — Day 4)
+    │       └── api.js                (calls /api/generate — Day 5)
+    ├── .env.local                    (local only — gitignored, holds ANTHROPIC_API_KEY)
+    ├── .gitignore
+    ├── package.json
+    ├── vite.config.js
+    └── README.md                     (written Day 10)</code></pre>
+<h2 id="what-each-folder-is-responsible-for">2. What Each Folder Is Responsible For</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Folder / File</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>docs/</code></td>
+<td>All design documentation (today’s deliverables). Not shipped in the built app — reference material only.</td>
+</tr>
+<tr class="even">
+<td><code>api/</code></td>
+<td>Server-side code. Currently just one file (<code>generate.js</code>). This is the <em>only</em> folder where the Claude API key may ever be referenced.</td>
+</tr>
+<tr class="odd">
+<td><code>src/pages/</code></td>
+<td>Route-level components — one per screen (Dashboard, ClientForm, ClientDetail). Each owns its own page-level state and data loading.</td>
+</tr>
+<tr class="even">
+<td><code>src/components/</code></td>
+<td>Reusable, presentational pieces used across pages (cards, buttons, result display). No component here should talk to <code>localStorage</code> directly.</td>
+</tr>
+<tr class="odd">
+<td><code>src/utils/</code></td>
+<td>All logic that isn’t a UI component: <code>storage.js</code> (data layer) and <code>api.js</code> (network layer). Pages call these; components never do.</td>
+</tr>
+<tr class="even">
+<td><code>.env.local</code></td>
+<td>Local secret storage. Never committed (already in <code>.gitignore</code> per Day 2 setup).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="why-this-structure">3. Why This Structure</h2>
+<ul>
+<li><strong>Pages vs. components separation</strong> keeps route-level concerns (data loading, navigation) out of reusable UI pieces — matches the Blueprint’s Day 3–7 build order exactly, so no restructuring will be needed mid-build.</li>
+<li><strong><code>utils/</code> as the only data/network layer</strong> means <code>localStorage</code> keys and API call logic exist in exactly one place each — easy to update later (e.g. if v2 swaps <code>localStorage</code> for a real database, only <code>storage.js</code> changes, not every component).</li>
+<li><strong><code>api/</code> isolated from <code>src/</code></strong> is a Vercel convention (file-based routing for serverless functions) and doubles as a hard boundary: nothing in <code>src/</code> should ever import from <code>api/</code>, which is how the API key stays server-side.</li>
+<li><strong><code>docs/</code> inside <code>Day51/</code></strong> keeps all project artifacts (design + code) together in one place within the monorepo, so anyone opening <code>Day51/</code> sees the complete picture.</li>
+</ul>
+<h2 id="where-future-code-lives-day-by-day">4. Where Future Code Lives (Day-by-Day)</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Day</th>
+<th>Adds To</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Day 3</td>
+<td><code>package.json</code>, <code>vite.config.js</code>, <code>.gitignore</code>, <code>.env.local</code>, <code>src/main.jsx</code>, <code>src/App.jsx</code>, <code>src/index.css</code>, empty <code>pages/</code>, <code>components/</code>, <code>utils/</code> folders, first Vercel deploy</td>
+</tr>
+<tr class="even">
+<td>Day 4</td>
+<td><code>utils/storage.js</code>, wires <code>ClientForm.jsx</code> + <code>Dashboard.jsx</code></td>
+</tr>
+<tr class="odd">
+<td>Day 5</td>
+<td><code>api/generate.js</code>, <code>utils/api.js</code>, wires <code>ClientDetail.jsx</code></td>
+</tr>
+<tr class="even">
+<td>Day 6</td>
+<td><code>components/LoadingSkeleton.jsx</code>, polish to <code>GenerationResult.jsx</code></td>
+</tr>
+<tr class="odd">
+<td>Day 7</td>
+<td>Extends <code>storage.js</code> with history functions, wires <code>HistoryList.jsx</code></td>
+</tr>
+<tr class="even">
+<td>Day 8</td>
+<td><code>components/Header.jsx</code>, optional <code>Button.jsx</code></td>
+</tr>
+<tr class="odd">
+<td>Day 10</td>
+<td><code>README.md</code></td>
+</tr>
+</tbody>
+</table>
+<p>No folder in this tree is speculative — every one maps to a specific day’s task in the Implementation Blueprint.</p>
+
+  </section>
+
+  <footer>
+    ContentSpark &bull; AB Talks 60-Day Claude AI Challenge &bull; Day 2: System Design<br>
+    Prepared for Sadia Ramzan, Founder &mdash; Social Strokes
+  </footer>
+</div>
+
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'base', themeVariables: { primaryColor: '#CADCFC', primaryBorderColor: '#1E2761', lineColor: '#1E2761', primaryTextColor: '#1E2761' } });
+</script>
+
+</body>
+</html>
