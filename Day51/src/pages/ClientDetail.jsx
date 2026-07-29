@@ -4,6 +4,7 @@ import { getClientById, deleteClient } from '../utils/storage'
 import { generateContent } from '../utils/api'
 import GenerationResult from '../components/GenerationResult'
 import HistoryList from '../components/HistoryList'
+import LoadingSkeleton from '../components/LoadingSkeleton'
 
 function ClientDetail() {
   const { id } = useParams()
@@ -77,13 +78,14 @@ function ClientDetail() {
         </div>
       </div>
 
-      <button
-        onClick={handleGenerate}
-        disabled={isLoading}
-        className="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-medium mb-4 disabled:opacity-50"
-      >
-        {isLoading ? 'Generating...' : 'Generate Content'}
-      </button>
+      {!result && !isLoading && (
+        <button
+          onClick={handleGenerate}
+          className="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-medium mb-6"
+        >
+          Generate Content
+        </button>
+      )}
 
       {error && (
         <div className="bg-red-50 text-red-700 text-sm rounded-lg px-3 py-2 mb-6">
@@ -91,13 +93,20 @@ function ClientDetail() {
         </div>
       )}
 
-      {isLoading && (
-        <div className="border rounded-lg p-5 mb-8 text-gray-400 text-sm">
-          Generating content...
-        </div>
+      {isLoading && <LoadingSkeleton />}
+
+      {result && !isLoading && (
+        <>
+          <GenerationResult result={result} />
+          <button
+            onClick={handleGenerate}
+            className="border px-4 py-2 rounded-lg text-sm mb-8"
+          >
+            ↻ Regenerate
+          </button>
+        </>
       )}
 
-      <GenerationResult result={result} />
       <HistoryList />
     </div>
   )
