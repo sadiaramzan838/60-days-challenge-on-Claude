@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { getClientById, deleteClient } from '../utils/storage'
+import { generateContent } from '../utils/api'
 import GenerationResult from '../components/GenerationResult'
 import HistoryList from '../components/HistoryList'
 
@@ -9,6 +10,9 @@ function ClientDetail() {
   const navigate = useNavigate()
   const [client, setClient] = useState(null)
   const [notFound, setNotFound] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [result, setResult] = useState(null)
 
   useEffect(() => {
     const found = getClientById(id)
@@ -24,6 +28,19 @@ function ClientDetail() {
     if (confirmed) {
       deleteClient(id)
       navigate('/')
+    }
+  }
+
+  const handleGenerate = async () => {
+    setIsLoading(true)
+    setError('')
+    try {
+      const data = await generateContent(client)
+      setResult(data)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -48,10 +65,7 @@ function ClientDetail() {
           <p className="text-sm text-gray-500">{client.niche}</p>
         </div>
         <div className="flex gap-2">
-          <Link
-            to={`/client/${id}/edit`}
-            className="border px-3 py-1.5 rounded-lg text-sm"
-          >
+          <Link to={`/client/${id}/edit`} className="border px-3 py-1.5 rounded-lg text-sm">
             Edit
           </Link>
           <button
@@ -63,11 +77,27 @@ function ClientDetail() {
         </div>
       </div>
 
-      <button className="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-medium mb-8">
-        Generate Content
+      <button
+        onClick={handleGenerate}
+        disabled={isLoading}
+        className="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-medium mb-4 disabled:opacity-50"
+      >
+        {isLoading ? 'Generating...' : 'Generate Content'}
       </button>
 
-      <GenerationResult />
+      {error && (
+        <div className="bg-red-50 text-red-700 text-sm rounded-lg px-3 py-2 mb-6">
+          {error}
+        </div>
+      )}
+
+      {isLoading && (
+        <div className="border rounded-lg p-5 mb-8 text-gray-400 text-sm">
+          Generating content...
+        </div>
+      )}
+
+      <GenerationResult result={result} />
       <HistoryList />
     </div>
   )
