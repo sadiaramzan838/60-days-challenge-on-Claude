@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
-import { getClientById, deleteClient } from '../utils/storage'
+import {
+  getClientById,
+  deleteClient,
+  getHistory,
+  saveHistoryEntry,
+  deleteHistoryEntry,
+} from '../utils/storage'
 import { generateContent } from '../utils/api'
 import GenerationResult from '../components/GenerationResult'
 import HistoryList from '../components/HistoryList'
@@ -14,11 +20,13 @@ function ClientDetail() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [result, setResult] = useState(null)
+  const [history, setHistory] = useState([])
 
   useEffect(() => {
     const found = getClientById(id)
     if (found) {
       setClient(found)
+      setHistory(getHistory(id))
     } else {
       setNotFound(true)
     }
@@ -38,10 +46,26 @@ function ClientDetail() {
     try {
       const data = await generateContent(client)
       setResult(data)
+      saveHistoryEntry({ clientId: id, ...data })
+      setHistory(getHistory(id))
     } catch (err) {
       setError(err.message)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleSelectHistory = (entry) => {
+    setResult(entry)
+    setError('')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleDeleteHistory = (entryId) => {
+    const confirmed = window.confirm('Delete this history entry?')
+    if (confirmed) {
+      deleteHistoryEntry(entryId)
+      setHistory(getHistory(id))
     }
   }
 
@@ -107,7 +131,11 @@ function ClientDetail() {
         </>
       )}
 
-      <HistoryList />
+      <HistoryList
+        entries={history}
+        onSelect={handleSelectHistory}
+        onDelete={handleDeleteHistory}
+      />
     </div>
   )
 }
