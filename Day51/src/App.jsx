@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Dashboard from './pages/Dashboard'
 import ClientForm from './pages/ClientForm'
 import ClientDetail from './pages/ClientDetail'
+import NotFound from './pages/NotFound'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -18,6 +19,7 @@ function App() {
               <Route path="/client/new" element={<ClientForm />} />
               <Route path="/client/:id/edit" element={<ClientForm />} />
               <Route path="/client/:id" element={<ClientDetail />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
           <Footer />

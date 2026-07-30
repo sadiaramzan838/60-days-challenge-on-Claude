@@ -1,7 +1,10 @@
 {
-  "name": "content-spark",
+  "name": "contentspark",
+  "version": "1.0.0",
+  "description": "AI-powered content ideation studio for social media marketers, built as part of the AB Talks 60-Day Claude AI Challenge.",
+  "author": "Sadia Ramzan",
+  "license": "MIT",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
