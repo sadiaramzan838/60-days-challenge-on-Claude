@@ -34,9 +34,12 @@ function ClientDetail() {
 
   const handleDelete = () => {
     const confirmed = window.confirm(`Delete "${client.name}"? This cannot be undone.`)
-    if (confirmed) {
+    if (!confirmed) return
+    try {
       deleteClient(id)
       navigate('/')
+    } catch (err) {
+      setError(err.message || 'Something went wrong deleting this client.')
     }
   }
 
@@ -63,9 +66,12 @@ function ClientDetail() {
 
   const handleDeleteHistory = (entryId) => {
     const confirmed = window.confirm('Delete this history entry?')
-    if (confirmed) {
+    if (!confirmed) return
+    try {
       deleteHistoryEntry(entryId)
       setHistory(getHistory(id))
+    } catch (err) {
+      setError(err.message || 'Something went wrong deleting this entry.')
     }
   }
 
@@ -124,7 +130,7 @@ function ClientDetail() {
       )}
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2 mb-6 flex items-center gap-2">
+        <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2 mb-6 flex items-center gap-2" role="alert">
           <span>⚠</span> {error}
         </div>
       )}

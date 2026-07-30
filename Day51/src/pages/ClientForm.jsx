@@ -36,14 +36,24 @@ function ClientForm() {
   }
 
   const handleSubmit = () => {
-    if (!form.name.trim()) {
-      setError('Client name is required.')
+    const missing = []
+    if (!form.name.trim()) missing.push('Client Name')
+    if (!form.niche.trim()) missing.push('Niche')
+    if (!form.tone.trim()) missing.push('Brand Tone')
+    if (!form.goal.trim()) missing.push('Current Goal')
+
+    if (missing.length > 0) {
+      setError(`Please fill in: ${missing.join(', ')}.`)
       return
     }
     setError('')
 
-    const saved = saveClient(isEditing ? { ...form, id } : form)
-    navigate(`/client/${saved.id}`)
+    try {
+      const saved = saveClient(isEditing ? { ...form, id } : form)
+      navigate(`/client/${saved.id}`)
+    } catch (err) {
+      setError(err.message || 'Something went wrong saving this client.')
+    }
   }
 
   const inputClass =
@@ -70,6 +80,7 @@ function ClientForm() {
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Client Name</label>
           <input
             id="name"
+            maxLength={80}
             className={inputClass}
             placeholder="e.g. Bloom Bakery"
             value={form.name}
@@ -80,6 +91,7 @@ function ClientForm() {
           <label htmlFor="niche" className="block text-sm font-medium text-gray-700 mb-1">Niche</label>
           <input
             id="niche"
+            maxLength={60}
             className={inputClass}
             placeholder="e.g. Bakery"
             value={form.niche}
@@ -90,6 +102,7 @@ function ClientForm() {
           <label htmlFor="tone" className="block text-sm font-medium text-gray-700 mb-1">Brand Tone</label>
           <input
             id="tone"
+            maxLength={60}
             className={inputClass}
             placeholder="e.g. Fun, warm, playful"
             value={form.tone}
@@ -100,6 +113,7 @@ function ClientForm() {
           <label htmlFor="goal" className="block text-sm font-medium text-gray-700 mb-1">Current Goal</label>
           <input
             id="goal"
+            maxLength={100}
             className={inputClass}
             placeholder="e.g. Promote weekend sale"
             value={form.goal}
@@ -107,14 +121,18 @@ function ClientForm() {
           />
         </div>
         <div>
-          <label htmlFor="pastPosts" className="block text-sm font-medium text-gray-700 mb-1">Past Post Examples</label>
+          <label htmlFor="pastPosts" className="block text-sm font-medium text-gray-700 mb-1">
+            Past Post Examples <span className="text-gray-400 font-normal">(optional)</span>
+          </label>
           <textarea
             id="pastPosts"
+            maxLength={2000}
             className={`${inputClass} h-24`}
             placeholder="Paste 2-3 example captions here"
             value={form.pastPostExamples}
             onChange={handleChange('pastPostExamples')}
           />
+          <p className="text-xs text-gray-400 mt-1">{form.pastPostExamples.length}/2000</p>
         </div>
 
         <div className="flex gap-3 pt-2">

@@ -1,6 +1,14 @@
 const CLIENTS_KEY = 'contentspark_clients'
 const HISTORY_KEY = 'contentspark_history'
 
+function safeSetItem(key, value) {
+  try {
+    localStorage.setItem(key, value)
+  } catch {
+    throw new Error('Could not save — your browser storage may be full.')
+  }
+}
+
 export function getClients() {
   const raw = localStorage.getItem(CLIENTS_KEY)
   if (!raw) return []
@@ -18,19 +26,27 @@ export function getClientById(id) {
 
 export function saveClient(client) {
   const clients = getClients()
+  const trimmed = {
+    ...client,
+    name: (client.name || '').trim(),
+    niche: (client.niche || '').trim(),
+    tone: (client.tone || '').trim(),
+    goal: (client.goal || '').trim(),
+    pastPostExamples: (client.pastPostExamples || '').trim(),
+  }
 
-  if (client.id) {
-    const updated = clients.map((c) => (c.id === client.id ? { ...c, ...client } : c))
-    localStorage.setItem(CLIENTS_KEY, JSON.stringify(updated))
-    return client
+  if (trimmed.id) {
+    const updated = clients.map((c) => (c.id === trimmed.id ? { ...c, ...trimmed } : c))
+    safeSetItem(CLIENTS_KEY, JSON.stringify(updated))
+    return trimmed
   } else {
     const newClient = {
-      ...client,
+      ...trimmed,
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
     }
     const updated = [...clients, newClient]
-    localStorage.setItem(CLIENTS_KEY, JSON.stringify(updated))
+    safeSetItem(CLIENTS_KEY, JSON.stringify(updated))
     return newClient
   }
 }
@@ -38,7 +54,7 @@ export function saveClient(client) {
 export function deleteClient(id) {
   const clients = getClients()
   const updated = clients.filter((c) => c.id !== id)
-  localStorage.setItem(CLIENTS_KEY, JSON.stringify(updated))
+  safeSetItem(CLIENTS_KEY, JSON.stringify(updated))
 }
 
 function getAllHistory() {
@@ -66,12 +82,12 @@ export function saveHistoryEntry(entry) {
     createdAt: new Date().toISOString(),
   }
   const updated = [...all, newEntry]
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(updated))
+  safeSetItem(HISTORY_KEY, JSON.stringify(updated))
   return newEntry
 }
 
 export function deleteHistoryEntry(id) {
   const all = getAllHistory()
   const updated = all.filter((entry) => entry.id !== id)
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(updated))
+  safeSetItem(HISTORY_KEY, JSON.stringify(updated))
 }
