@@ -46,60 +46,71 @@ function ClientForm() {
     navigate(`/client/${saved.id}`)
   }
 
+  const inputClass =
+    'w-full border rounded-lg px-3 py-2 transition-colors focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100'
+
   return (
     <div className="max-w-xl mx-auto p-8">
-      <Link to="/" className="text-blue-600 text-sm">&larr; Back</Link>
-      <h1 className="text-2xl font-bold text-gray-900 mt-4 mb-6">
+      <p className="text-sm text-gray-400 mb-4">
+        <Link to="/" className="hover:text-blue-600 transition-colors">Clients</Link>
+        {' / '}{isEditing ? 'Edit' : 'New'}
+      </p>
+      <h1 className="text-2xl font-bold text-gray-900 tracking-tight mb-6">
         {isEditing ? 'Edit Client' : 'New Client'}
       </h1>
 
       {error && (
-        <div className="bg-red-50 text-red-700 text-sm rounded-lg px-3 py-2 mb-4">
-          {error}
+        <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2 mb-4 flex items-center gap-2">
+          <span>⚠</span> {error}
         </div>
       )}
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Client Name</label>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Client Name</label>
           <input
-            className="w-full border rounded-lg px-3 py-2"
+            id="name"
+            className={inputClass}
             placeholder="e.g. Bloom Bakery"
             value={form.name}
             onChange={handleChange('name')}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Niche</label>
+          <label htmlFor="niche" className="block text-sm font-medium text-gray-700 mb-1">Niche</label>
           <input
-            className="w-full border rounded-lg px-3 py-2"
+            id="niche"
+            className={inputClass}
             placeholder="e.g. Bakery"
             value={form.niche}
             onChange={handleChange('niche')}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Brand Tone</label>
+          <label htmlFor="tone" className="block text-sm font-medium text-gray-700 mb-1">Brand Tone</label>
           <input
-            className="w-full border rounded-lg px-3 py-2"
+            id="tone"
+            className={inputClass}
             placeholder="e.g. Fun, warm, playful"
             value={form.tone}
             onChange={handleChange('tone')}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Current Goal</label>
+          <label htmlFor="goal" className="block text-sm font-medium text-gray-700 mb-1">Current Goal</label>
           <input
-            className="w-full border rounded-lg px-3 py-2"
+            id="goal"
+            className={inputClass}
             placeholder="e.g. Promote weekend sale"
             value={form.goal}
             onChange={handleChange('goal')}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Past Post Examples</label>
+          <label htmlFor="pastPosts" className="block text-sm font-medium text-gray-700 mb-1">Past Post Examples</label>
           <textarea
-            className="w-full border rounded-lg px-3 py-2 h-24"
+            id="pastPosts"
+            className={`${inputClass} h-24`}
             placeholder="Paste 2-3 example captions here"
             value={form.pastPostExamples}
             onChange={handleChange('pastPostExamples')}
@@ -107,10 +118,15 @@ function ClientForm() {
         </div>
 
         <div className="flex gap-3 pt-2">
-          <Link to="/" className="border px-4 py-2 rounded-lg">Cancel</Link>
+          <Link
+            to="/"
+            className="border px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+          >
+            Cancel
+          </Link>
           <button
             onClick={handleSubmit}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2"
           >
             Save Client
           </button>

@@ -21,7 +21,7 @@ function HistoryList({ entries, onSelect, onDelete }) {
           >
             <button
               onClick={() => onSelect(entry)}
-              className="text-left flex-1 hover:text-blue-600 transition-colors truncate pr-4"
+              className="text-left flex-1 hover:text-blue-600 transition-colors truncate pr-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 rounded"
             >
               {entry.ideas?.[0] || 'Untitled generation'}
             </button>
@@ -29,7 +29,7 @@ function HistoryList({ entries, onSelect, onDelete }) {
               <span className="text-gray-400">{formatRelativeTime(entry.createdAt)}</span>
               <button
                 onClick={() => onDelete(entry.id)}
-                className="text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                className="text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-300 rounded"
                 aria-label="Delete history entry"
               >
                 ✕
